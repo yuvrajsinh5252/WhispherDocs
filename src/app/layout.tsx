@@ -1,9 +1,8 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { poppins } from '@/components/ui/font'
 import './global.css'
 import Navbar from '@/components/Navbar'
-
-const inter = Inter({ subsets: ['latin'] })
+import { ClerkProvider } from '@clerk/nextjs'
 
 export const metadata: Metadata = {
   title: 'WhisperDocs',
@@ -15,11 +14,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <Navbar />
-        {children}
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body className={poppins.className}>
+          <Navbar />
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }
