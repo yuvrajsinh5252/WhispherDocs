@@ -1,7 +1,7 @@
 import MaxWidthWrapper from "./MaxWidthWrapper";
 import Link from "next/link";
 import { buttonVariants } from "./ui/button";
-import { UserButton } from "@clerk/nextjs";
+import { LoginLink } from "@kinde-oss/kinde-auth-nextjs/server";
 
 const Navbar = () => {
     return (
@@ -22,7 +22,11 @@ const Navbar = () => {
                     }) + " text-lg"} href="/pricing">
                         home
                     </Link>
-                    <UserButton afterSignOutUrl="/"></UserButton>
+
+                    <LoginLink className={buttonVariants({
+                        variant: "ghost",
+                        size: 'sm',
+                    }) + " text-lg"}>sign in</LoginLink>
                 </div>
             </MaxWidthWrapper>
         </nav>
