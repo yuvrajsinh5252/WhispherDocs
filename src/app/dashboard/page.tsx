@@ -1,12 +1,9 @@
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-
-export default async function page() {
-    const {getUser} = getKindeServerSession();
-    const user = await getUser();
-
+function dashboard() {
     return (
-        <div>
-            <h1>{user?.email}</h1>
+        <div className="dark:bg-blue-500 p-20 flex items-center justify-center">
+            <h1>Protected</h1>
         </div>
     );
 }
+
+export default dashboard;

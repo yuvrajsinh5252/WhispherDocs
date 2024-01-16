@@ -2,9 +2,12 @@ import MaxWidthWrapper from "../components/MaxWidthWrapper"
 
 export default function Home() {
   return (
-    <MaxWidthWrapper className='mb-12 mt-28 sm:mt-40 flex flex-col items-center justify-center text-center'>
-      <div className="flex flex-col justify-center items-center gap-1">
-      </div>
-    </MaxWidthWrapper>
+    <>
+      <MaxWidthWrapper className='mb-12 mt-28 sm:mt-40 flex flex-col items-center justify-center text-center'>
+        <div className="flex flex-col justify-center items-center gap-1">
+        </div>
+      </MaxWidthWrapper>
+    </>
+
   )
 }
