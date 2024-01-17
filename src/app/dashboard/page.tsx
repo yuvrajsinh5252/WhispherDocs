@@ -1,9 +1,15 @@
-function dashboard() {
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { redirect } from "next/navigation";
+
+export default async function Dashboard() {
+    const { getUser } = getKindeServerSession();
+    const user = await getUser();
+
+    if (!user || !user.email) redirect("/auth-callback?origin=dashboard");
+
     return (
-        <div className="dark:bg-blue-500 p-20 flex items-center justify-center">
-            <h1>Protected</h1>
+        <div>
+            <h1>Dashboard</h1>
         </div>
     );
 }
-
-export default dashboard;
