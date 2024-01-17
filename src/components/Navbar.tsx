@@ -1,10 +1,22 @@
 import MaxWidthWrapper from "./MaxWidthWrapper";
 import Link from "next/link";
 import { buttonVariants } from "./ui/button";
-import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/server";
+import { LoginLink, LogoutLink, getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import ThemeToggle from "./ThemeToggle";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { FaArrowRight } from "react-icons/fa";
 
-const Navbar = () => {
+const Navbar = async () => {
+    const { getUser } = getKindeServerSession();
+    const user = await getUser();
+
     return (
         <nav className="sticky top-0 z-50 bg-white dark:bg-gray-400 shadow-md">
             <MaxWidthWrapper className="flex items-center justify-between p-6 mx-auto text-gray-600 capitalize">
@@ -31,22 +43,31 @@ const Navbar = () => {
                         pricing
                     </Link>
 
-                    <LoginLink className={buttonVariants({
-                        variant: "ghost",
-                        size: 'sm',
-                    }) + " text-lg"}>
-                        sign in
-                    </LoginLink>
-
-                    <LogoutLink className={
-                        buttonVariants({
-                            variant: "ghost",
-                            size: 'sm',
-                        }) + " text-lg"}>
-                        logout
-                    </LogoutLink>
-
                     <ThemeToggle />
+
+                    {
+                        user ?
+                            <DropdownMenu>
+                                <DropdownMenuTrigger><img className="rounded-full w-10 h-10 mx-2" src={user?.picture ?? ''} alt="Profile picture" /></DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem>
+                                        <LogoutLink>
+                                            Logout
+                                        </LogoutLink>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            :
+                            <LoginLink className={buttonVariants({
+                                variant: "default",
+                                size: 'sm',
+                            }) + " text-lg mx-2 flex gap-2"}>
+                                Get started
+                                <FaArrowRight size={20} />
+                            </LoginLink>
+                    }
                 </div>
             </MaxWidthWrapper>
         </nav>
