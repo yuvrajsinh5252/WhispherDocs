@@ -3,6 +3,7 @@ import { poppins } from '@/components/ui/font'
 import './global.css'
 import Navbar from '@/components/Navbar'
 import { Providers } from '@/components/Providers'
+import 'react-loading-skeleton/dist/skeleton.css'
 
 export const metadata: Metadata = {
   title: 'WhisperDocs',

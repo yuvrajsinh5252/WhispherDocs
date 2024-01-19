@@ -18,7 +18,7 @@ const Navbar = async () => {
     const user = await getUser();
 
     return (
-        <nav className="sticky top-0 z-50 bg-white dark:bg-gray-400 shadow-md">
+        <nav className="sticky top-0 z-50 bg-white shadow-md">
             <MaxWidthWrapper className="flex items-center justify-between p-6 mx-auto text-gray-600 capitalize">
                 <div>
                     <Link href="/" className="text-3xl font-bold">
@@ -31,14 +31,12 @@ const Navbar = async () => {
                 <div className="flex justify-around items-center">
                     <Link className={buttonVariants({
                         variant: "ghost",
-                        size: 'sm',
                     }) + " text-lg"} href="/pricing">
                         home
                     </Link>
 
                     <Link className={buttonVariants({
                         variant: "ghost",
-                        size: 'sm',
                     }) + " text-lg"} href="/pricing">
                         pricing
                     </Link>
@@ -48,7 +46,9 @@ const Navbar = async () => {
                     {
                         user ?
                             <DropdownMenu>
-                                <DropdownMenuTrigger><img className="rounded-full w-10 h-10 mx-2" src={user?.picture ?? ''} alt="Profile picture" /></DropdownMenuTrigger>
+                                <DropdownMenuTrigger>
+                                    <img className="rounded-full w-10 h-10 mx-2" src={user?.picture ?? ''} alt="Profile picture" />
+                                </DropdownMenuTrigger>
                                 <DropdownMenuContent>
                                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                                     <DropdownMenuSeparator />

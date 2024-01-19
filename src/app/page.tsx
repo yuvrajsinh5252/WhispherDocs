@@ -1,8 +1,13 @@
 import { buttonVariants } from "@/components/ui/button"
 import MaxWidthWrapper from "../components/MaxWidthWrapper"
 import { FaArrowRight } from "react-icons/fa"
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
+import { redirect } from "next/navigation";
 
-export default function Home() {
+export default async function Home() {
+  const { isAuthenticated } = getKindeServerSession();
+  if (await isAuthenticated()) redirect("/dashboard");
+
   return (
     <>
       <MaxWidthWrapper className='mb-12 mt-28 sm:mt-40 flex flex-col items-center justify-center text-center'>
