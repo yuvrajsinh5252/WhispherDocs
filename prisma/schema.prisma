@@ -15,18 +15,29 @@ model User {
   id    String @id @unique
   email String @unique
 
+  File file[]
+
   stripeCustomerId       String?   @unique @map("stripe_customer_id")
   stripeSubscriptionId   String?   @unique @map("stripe_subscription_id")
   stripePriceId          String?   @unique @map("stripe_price_id")
   stripeCurrentPeriodEnd DateTime? @map("stripe_current_period_end")
-  file                   file[]
+}
+
+enum uploadStatus {
+  PENDING
+  DONE
+  ERROR
+  SUCCESS
 }
 
 model file {
-  id        String   @id @unique
+  id        String   @id @default(cuid())
   name      String
+  uploadStatus uploadStatus @default(PENDING)
   url       String
-  user      User     @relation(fields: [userId], references: [id])
+  key       String
+
+  User      User?     @relation(fields: [userId], references: [id])
   userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
