@@ -15,9 +15,7 @@ export default async function Dashboard() {
         },
     });
 
-
     if (!dbUser) redirect("/auth-callback?origin=dashboard");
-
 
     return <DashboardComponent />;
 }
