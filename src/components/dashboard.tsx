@@ -30,11 +30,11 @@ const DashboardComponent = () => {
 
     return (
         <div className="divide-y-2">
-            <div className="flex justify-between py-10 px-16 items-center">
+            <div className="flex justify-between py-10  items-center">
                 <h1 className="text-2xl font-bold">My Files</h1>
                 <UploadButton />
             </div>
-            <div className="h-screen flex gap-2 py-10 px-16">
+            <div className="h-screen flex gap-2 ">
                 {
                     file && file.length != 0 ? (
                         <div className="w-full">
@@ -42,31 +42,33 @@ const DashboardComponent = () => {
                                 {
                                     file.map((item, index) => (
                                         <div key={index}
-                                            className="dark:shadow-none dark:bg-transparent dark:border-white border-1 w-96 h-36 hover:shadow-lg rounded-sm flex justify-around items-center flex-col divide-y divide-gray-200 bg-white shadow border transition">
-                                            <Link href={`/dashboard/${item.id}`}>
-                                                <div className="flex items-center px-6 gap-5 justify-start h-[82px] w-[384px]">
-                                                    <FileText />
-                                                    <div>
-                                                        {item.name}
+                                            className="border shadow hover:shadow-lg rounded-lg">
+                                            <div className="divide-y divide-gray-200">
+                                                <Link href={`/dashboard/${item.id}`}>
+                                                    <div className="flex items-center px-6 gap-5 justify-start h-[82px] w-[384px]">
+                                                        <FileText />
+                                                        <div>
+                                                            {item.name}
+                                                        </div>
                                                     </div>
+                                                </Link>
+                                                <div className="flex gap-16 w-[inherit] justify-center items-center p-2">
+                                                    <span className="text-xs">{format(new Date(item.createdAt), "MMM yyyy")}</span>
+                                                    <span className="text-xs">
+                                                        <a className="" href={item.url} target="_blank" rel="noreferrer">
+                                                            <MessageSquareCode />
+                                                            <div>{item.name}</div>
+                                                        </a>
+                                                    </span>
+                                                    <Button size="sm" className="w-full min-w-[166px]:" variant="destructive"
+                                                        onClick={() => { deleteFile({ id: item.id }) }}
+                                                    >
+                                                        {
+                                                            deletingFile === item.id ?
+                                                                <Loader2 className="animate-spin" /> : <Trash />
+                                                        }
+                                                    </Button>
                                                 </div>
-                                            </Link>
-                                            <div className="flex gap-16 w-[inherit] justify-center items-center p-2">
-                                                <span className="text-xs">{format(new Date(item.createdAt), "MMM yyyy")}</span>
-                                                <span className="text-xs">
-                                                    <a className="" href={item.url} target="_blank" rel="noreferrer">
-                                                        <MessageSquareCode />
-                                                        <div>{item.name}</div>
-                                                    </a>
-                                                </span>
-                                                <Button size="sm" className="w-full min-w-[166px]:" variant="destructive"
-                                                    onClick={() => { deleteFile({ id: item.id }) }}
-                                                >
-                                                    {
-                                                        deletingFile === item.id ?
-                                                            <Loader2 className="animate-spin" /> : <Trash />
-                                                    }
-                                                </Button>
                                             </div>
                                         </div>
                                     ))

@@ -26,17 +26,17 @@ export default function ThemeToggle() {
     return (
         <>
             <div
-                className='relative w-12 h-7 dark:bg-black bg-violet-500 flex items-center cursor-pointer rounded-full p-1 ml-3 justify-around'
+                className='relative w-12 h-7 dark:bg-black bg-blue-400 flex items-center cursor-pointer rounded-full p-1 justify-around'
                 onClick={() => setDarkmode(!darkmode)}
             >
                 <div
-                    className='absolute left-[3.5px] w-[23px] h-[23px] dark:bg-gray-500 bg-white rounded-full transition flex justify-center items-center'
+                    className='absolute left-[2.5px] w-[23px] h-[23px] dark:bg-gray-500 bg-white rounded-full transition flex justify-center items-center'
                     style={
                         darkmode ? { transform: 'translateX(80%)' } : { transform: 'translateX(0)' }
                     }
                 >
                     {
-                        darkmode ? <FaMoon className='text-white' size={16} /> : <FaSun className='text-yellow-500' size={16} />
+                        darkmode ? <FaMoon className='text-white' size={16} /> : <FaSun className='text-blue-400' size={16} />
                     }
                 </div>
             </div>
