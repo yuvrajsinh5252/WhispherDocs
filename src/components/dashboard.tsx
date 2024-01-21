@@ -6,6 +6,8 @@ import { format } from 'date-fns'
 import { FileText, Loader2, MessageSquareCode, Trash } from 'lucide-react'
 import { Button } from "./ui/button";
 import { useState } from "react";
+import UploadButton from "./UploadButton";
+import Link from "next/link";
 
 const DashboardComponent = () => {
     const utils = trpc.useUtils();
@@ -28,9 +30,9 @@ const DashboardComponent = () => {
 
     return (
         <div className="divide-y-2">
-            <div>
-                <header>My Files</header>
-
+            <div className="flex justify-between py-10 px-16 items-center">
+                <h1 className="text-2xl font-bold">My Files</h1>
+                <UploadButton />
             </div>
             <div className="h-screen flex gap-2 py-10 px-16">
                 {
@@ -40,13 +42,15 @@ const DashboardComponent = () => {
                                 {
                                     file.map((item, index) => (
                                         <div key={index}
-                                            className="shadow-lg dark:shadow-none dark:bg-transparent dark:border-white border-2 w-96 h-36 hover:shadow-xl rounded-sm flex justify-around items-center flex-col divide-y-2">
-                                            <div className="flex items-center px-6 gap-5 justify-start h-[inherit] w-[inherit]">
-                                                <FileText />
-                                                <div>
-                                                    {item.name}
+                                            className="dark:shadow-none dark:bg-transparent dark:border-white border-1 w-96 h-36 hover:shadow-lg rounded-sm flex justify-around items-center flex-col divide-y divide-gray-200 bg-white shadow border transition">
+                                            <Link href={`/dashboard/${item.id}`}>
+                                                <div className="flex items-center px-6 gap-5 justify-start h-[82px] w-[384px]">
+                                                    <FileText />
+                                                    <div>
+                                                        {item.name}
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            </Link>
                                             <div className="flex gap-16 w-[inherit] justify-center items-center p-2">
                                                 <span className="text-xs">{format(new Date(item.createdAt), "MMM yyyy")}</span>
                                                 <span className="text-xs">
