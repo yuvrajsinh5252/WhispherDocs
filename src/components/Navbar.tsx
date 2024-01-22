@@ -27,7 +27,7 @@ const Navbar = async () => {
                     </Link>
                 </div>
 
-                <Hamburger />
+                <Hamburger user={user} />
 
                 <div className="max-sm:hidden">
                     <div className="flex justify-around items-center">

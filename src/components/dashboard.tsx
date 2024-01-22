@@ -30,37 +30,37 @@ const DashboardComponent = () => {
 
     return (
         <div className="divide-y-2">
-            <div className="flex justify-between py-10  items-center">
+            <div className="flex max-sm:justify-around max-sm:px-0 justify-between px-10 py-10  items-center">
                 <h1 className="text-2xl font-bold">My Files</h1>
                 <UploadButton />
             </div>
-            <div className="h-screen flex gap-2 ">
+            <div className="h-screen flex gap-2">
                 {
                     file && file.length != 0 ? (
                         <div className="w-full">
-                            <div className="flex flex-wrap gap-20">
+                            <div className="flex flex-wrap gap-20 max-sm:justify-around mx-10 justify-normal py-10">
                                 {
                                     file.map((item, index) => (
                                         <div key={index}
-                                            className="border shadow hover:shadow-lg rounded-lg">
+                                            className="border shadow dark:bg-gray-900 hover:shadow-lg rounded-lg w-[395px]">
                                             <div className="divide-y divide-gray-200">
                                                 <Link href={`/dashboard/${item.id}`}>
-                                                    <div className="flex items-center px-6 gap-5 justify-start h-[82px] w-[384px]">
+                                                    <div className="flex items-center px-6 gap-5 justify-start h-[82px]">
                                                         <FileText />
-                                                        <div>
+                                                        <div className="w-[100px] truncate">
                                                             {item.name}
                                                         </div>
                                                     </div>
                                                 </Link>
                                                 <div className="flex gap-16 w-[inherit] justify-center items-center p-2">
                                                     <span className="text-xs">{format(new Date(item.createdAt), "MMM yyyy")}</span>
-                                                    <span className="text-xs">
-                                                        <a className="" href={item.url} target="_blank" rel="noreferrer">
+                                                    <span className="text-xs w-[130px] truncate">
+                                                        <a className="flex flex-col justify-center items-start gap-1" href={item.url} target="_blank" rel="noreferrer">
                                                             <MessageSquareCode />
                                                             <div>{item.name}</div>
                                                         </a>
                                                     </span>
-                                                    <Button size="sm" className="w-full min-w-[166px]:" variant="destructive"
+                                                    <Button size="sm" className="w-full" variant="destructive"
                                                         onClick={() => { deleteFile({ id: item.id }) }}
                                                     >
                                                         {

@@ -26,7 +26,7 @@ export default function ThemeToggle() {
     return (
         <>
             <div
-                className='relative w-12 h-7 dark:bg-black bg-blue-400 flex items-center cursor-pointer rounded-full p-1 justify-around'
+                className='relative w-12 h-7 dark:bg-black bg-blue-500 flex items-center cursor-pointer rounded-full p-1 justify-around'
                 onClick={() => setDarkmode(!darkmode)}
             >
                 <div

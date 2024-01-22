@@ -1,38 +1,63 @@
 "use client"
 
+import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
+import Link from "next/link";
 import { useState } from "react";
+import { Button, buttonVariants } from "./ui/button";
+import { FaArrowRight } from "react-icons/fa";
+import ThemeToggle from "./ThemeToggle";
 
-export default function Hamburger() {
-    const [open, setOpen] = useState(false);
+export default function Hamburger(user: any) {
+    const [open, setOpen] = useState(true);
 
     return (
         <div className="lg:hidden xl:hidden sm:hidden">
             <div className="flex justify-around flex-col gap-1 w-10" onClick={() => { setOpen(!open) }}>
-                <div className="h-1 w-8 z-10 bg-black transition"
+                <div className="h-1 w-8 z-10 dark:bg-white bg-black transition"
                     style={
                         !open ? { transform: 'rotate(-45deg)', width: '1.68rem' } : { transform: 'rotate(0)' }
                     }
                 ></div>
-                <div className="h-1 w-8 z-10 bg-black transition"
+                <div className="h-1 w-8 z-10 dark:bg-white bg-black transition"
                     style={
                         !open ? { transform: 'translateX(15%)', width: '2.25rem' } : { transform: 'translateX(0)' }
                     }
                 ></div>
-                <div className="h-1 w-8 z-10 bg-black transition"
+                <div className="h-1 w-8 z-10 dark:bg-white bg-black transition"
                     style={
                         !open ? { transform: 'rotate(45deg)', width: '1.68rem' } : { transform: 'rotate(0)' }
                     }
                 ></div>
             </div>
 
-            <div className="absolute h-screen w-56 items-center flex flex-col gap-4 bg-slate-200 py-20 top-0 translate-x-96 px-2 transition"
+            <div className="fixed w-full h-screen dark:bg-gray-900 bg-white top-0 left-0 z-0 transition"
                 style={
-                    open ? { transform: 'translateX(100%)'} : { transform: 'translateX(-70%)'}
+                    !open ? { transform: 'translateX(0)' } : { transform: 'translateX(100%)' }
                 }
             >
-                <a href="/" className="text-gray-400 font-bold">Home</a>
-                <a href="/about" className="text-gray-400 font-bold">About</a>
-                <a href="/contact" className="text-gray-400 font-bold">Contact</a>
+                <div className="flex flex-col justify-center items-center gap-4 h-full">
+                    <ThemeToggle />
+                    <Link className="text-[16.5px]" href="/pricing">
+                        home
+                    </Link>
+
+                    <Link className="text-[16.5px]" href="/pricing">
+                        pricing
+                    </Link>
+                    {
+                        user ?
+                            <LogoutLink>
+                                Logout
+                            </LogoutLink>
+                            :
+                            <Button className="mx-2">
+                                <LoginLink className="flex gap-2 font-bold -m-2">
+                                    Get started
+                                    <FaArrowRight size={20} />
+                                </LoginLink>
+                            </Button>
+                    }
+                </div>
             </div>
         </div>
     );

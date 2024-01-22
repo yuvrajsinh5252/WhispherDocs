@@ -12,7 +12,7 @@ import { Cloud, File } from "lucide-react";
 const UploadDropZone = () => {
     return <DropZone multiple={false} onDrop={(acceptedFile) => { console.log(acceptedFile) }}>
         {({ getRootProps, getInputProps, acceptedFiles }) => (
-            <div {...getRootProps()} className="border h-64 m-4 bg-gray-100 border-dashed border-gray-500 rounded-lg">
+            <div {...getRootProps()} className="border h-64 m-4 bg-gray-100 dark:bg-gray-800 border-dashed border-gray-500 rounded-lg">
                 <div>
                     <label htmlFor="Drop-zone-file"
                         className="flex flex-col items-center justify-center h-full cursor-pointer"
