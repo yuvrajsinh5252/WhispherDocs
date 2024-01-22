@@ -1,18 +1,52 @@
+"use client"
+
 import {
     Dialog,
     DialogContent,
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from "./ui/button";
-import { useState } from "react";
+import { use, useState } from "react";
 
 import DropZone from "react-dropzone";
 import { Cloud, File } from "lucide-react";
+import { Progress } from "./ui/progress";
+import { clear } from "console";
+import { set } from "date-fns";
+import { useUploadThing } from "@/lib/uploadthing";
 
 const UploadDropZone = () => {
-    return <DropZone multiple={false} onDrop={(acceptedFile) => { console.log(acceptedFile) }}>
+    const [isUploading, setIsUploading] = useState<boolean>(true);
+    const [uploadProgress, setUploadProgress] = useState<number>(0);
+
+    const {startUpload} = useUploadThing("PDFUploader");
+
+    function simulatedProgress() {
+        setUploadProgress(0);
+
+        const interval = setInterval(() => {
+            setUploadProgress((prev) => {
+                if (prev >= 95) {
+                    clearInterval(interval);
+                    return prev;
+                }
+
+
+                return prev + 5;
+            });
+        }, 500);
+
+        return interval;
+    }
+
+    return <DropZone multiple={false} onDrop={(acceptedFile) => {
+        setIsUploading(true);
+        const ProgressInterval = simulatedProgress();
+        clearInterval(ProgressInterval);
+        setUploadProgress(100);
+    }}>
         {({ getRootProps, getInputProps, acceptedFiles }) => (
-            <div {...getRootProps()} className="border h-64 m-4 bg-gray-100 dark:bg-gray-800 border-dashed border-gray-500 rounded-lg">
+            <div {...getRootProps()} className="border h-64 m-4 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 border-dashed border-gray-500 rounded-lg">
                 <div>
                     <label htmlFor="Drop-zone-file"
                         className="flex flex-col items-center justify-center h-full cursor-pointer"
@@ -47,6 +81,14 @@ const UploadDropZone = () => {
                                     </div>
                                 ) :
                                     null
+                            }
+
+                            {
+                                isUploading ? (
+                                    <div className="w-full mt-4 max-w-xs">
+                                        <Progress value={uploadProgress} className="h-2 w-full" />
+                                    </div>
+                                ) : null
                             }
                         </span>
                     </label>
