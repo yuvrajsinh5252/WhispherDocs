@@ -10,7 +10,7 @@ export const appRouter = router({
         const user = await getUser();
 
         if (!user?.id || !user?.email) {
-            throw new TRPCError({code: 'UNAUTHORIZED'});
+            throw new TRPCError({ code: 'UNAUTHORIZED' });
         }
 
         const dbUser = await db.user.findFirst({
@@ -31,7 +31,7 @@ export const appRouter = router({
         return { success: true };
     }),
 
-    getUserFiles: adminProcedure.query(async ({ctx}) => {
+    getUserFiles: adminProcedure.query(async ({ ctx }) => {
         const { userId } = ctx;
 
         return await db.file.findMany({
@@ -42,9 +42,28 @@ export const appRouter = router({
 
     }),
 
+    getFile: adminProcedure.input(
+            z.object({ key: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+            const { userId } = ctx;
+            const file = await db.file.findFirst({
+                where: {
+                    id: input.key,
+                    userId,
+                },
+            });
+
+            if (!file) {
+                throw new TRPCError({ code: 'NOT_FOUND' });
+            }
+
+            return file;
+        }
+        ),
+
     deleteFile: adminProcedure.input(
-        z.object({id: z.string()})
-    ).mutation(async ({ctx, input}) => {
+        z.object({ id: z.string() })
+    ).mutation(async ({ ctx, input }) => {
         const { userId } = ctx;
         const file = await db.file.findFirst({
             where: {
@@ -54,7 +73,7 @@ export const appRouter = router({
         });
 
         if (!file) {
-            throw new TRPCError({code: 'NOT_FOUND'});
+            throw new TRPCError({ code: 'NOT_FOUND' });
         }
 
         await db.file.delete({

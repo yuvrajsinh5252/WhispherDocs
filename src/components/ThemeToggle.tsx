@@ -26,7 +26,7 @@ export default function ThemeToggle() {
     return (
         <>
             <div
-                className='relative w-12 h-7 dark:bg-black bg-blue-500 flex items-center cursor-pointer rounded-full p-1 justify-around'
+                className='relative w-12 h-7 dark:bg-black bg-gray-300 flex items-center cursor-pointer rounded-full p-1 justify-around'
                 onClick={() => setDarkmode(!darkmode)}
             >
                 <div
@@ -36,7 +36,7 @@ export default function ThemeToggle() {
                     }
                 >
                     {
-                        darkmode ? <FaMoon className='text-white' size={16} /> : <FaSun className='text-blue-400' size={16} />
+                        darkmode ? <FaMoon className='text-white' size={16} /> : <FaSun className='text-gray-600' size={16} />
                     }
                 </div>
             </div>

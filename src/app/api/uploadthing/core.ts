@@ -1,9 +1,10 @@
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/dist/types/server";
+import { db } from "@/db";
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 const f = createUploadthing();
 
 export const ourFileRouter = {
-    PDFUploader: f({ image: { maxFileSize: "4MB" } })
+    PDFUploader: f({ pdf: { maxFileSize: "4MB" } })
         .middleware(async ({ req }) => {
             const { getUser } =getKindeServerSession();
             const user = await getUser();
@@ -13,6 +14,17 @@ export const ourFileRouter = {
             return { userId: user.id };
         })
         .onUploadComplete(async ({ metadata, file }) => {
+            const createdFile = await db.file.create({
+                data: {
+                    key: file.key,
+                    id: file.key,
+                    userId: metadata.userId,
+                    name: file.name,
+                    url: `https://uploadthing-prod.s3.us-west-2.amazonaws.com/${file.key}`,
+                    uploadStatus: "PENDING",
+                },
+            });
+
             return { };
         }),
 } satisfies FileRouter;

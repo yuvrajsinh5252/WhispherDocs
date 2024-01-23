@@ -29,10 +29,10 @@ export default async function page({ params }: PageProps) {
     return (
         <div className="flex h-[calc(100vh-5.5rem)] p-4">
             <div className="lg:flex rounded-lg justify-between p-2 shadow-xl w-full gap-2">
-                <div className="rounded-sm lg:w-[55vw] lg:h-full sm:h-[50%] bg-yellow-300 flex justify-center items-center">
-                    <PDFrenderer />
+                <div className="rounded-sm lg:w-[55vw] lg:h-full sm:h-[50%] border-2">
+                    <PDFrenderer url={file.url} />
                 </div>
-                <div className="rounded-sm lg:w-[45vw] lg:h-full sm:h-[50%] bg-green-300 flex justify-center items-center">
+                <div className="rounded-sm lg:w-[45vw] lg:h-full sm:h-[50%] border-2">
                     <Chatwrapper />
                 </div>
             </div>

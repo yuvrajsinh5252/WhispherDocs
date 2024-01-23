@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
-import { poppins } from '@/components/ui/font'
 import './global.css'
 import Navbar from '@/components/Navbar'
 import { Providers } from '@/components/Providers'
 import 'react-loading-skeleton/dist/skeleton.css'
+import { Toaster } from '@/components/ui/toaster'
 
 export const metadata: Metadata = {
   title: 'WhisperDocs',
@@ -17,7 +17,8 @@ export default function RootLayout({
   return (
     <html lang="en" className='no-scrollbar'>
       <Providers>
-        <body className={poppins.className}>
+        <body className="font-poppins">
+          <Toaster />
           <Navbar />
           {children}
         </body>

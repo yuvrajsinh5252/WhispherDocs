@@ -6,20 +6,32 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from "./ui/button";
-import { use, useState } from "react";
-
+import { useState } from "react";
 import DropZone from "react-dropzone";
-import { Cloud, File } from "lucide-react";
+import { Cloud, File, Loader2 } from "lucide-react";
 import { Progress } from "./ui/progress";
-import { clear } from "console";
-import { set } from "date-fns";
 import { useUploadThing } from "@/lib/uploadthing";
+import { useToast } from "./ui/use-toast";
+import { trpc } from "@/app/_trpc/client";
+import { useRouter } from "next/navigation";
 
 const UploadDropZone = () => {
     const [isUploading, setIsUploading] = useState<boolean>(true);
     const [uploadProgress, setUploadProgress] = useState<number>(0);
 
-    const {startUpload} = useUploadThing("PDFUploader");
+    const { startUpload } = useUploadThing("PDFUploader");
+    const { toast } = useToast();
+
+    const router = useRouter();
+
+    const { mutate: startPolling } = trpc.getFile.useMutation({
+        onSuccess: (file) => {
+            setIsUploading(false);
+            router.push(`/dashboard/${file.key}`);
+        },
+        retry: true,
+        retryDelay: 500,
+    });
 
     function simulatedProgress() {
         setUploadProgress(0);
@@ -31,7 +43,6 @@ const UploadDropZone = () => {
                     return prev;
                 }
 
-
                 return prev + 5;
             });
         }, 500);
@@ -39,11 +50,38 @@ const UploadDropZone = () => {
         return interval;
     }
 
-    return <DropZone multiple={false} onDrop={(acceptedFile) => {
+    return <DropZone multiple={false} onDrop={async (acceptedFile) => {
         setIsUploading(true);
         const ProgressInterval = simulatedProgress();
+
+        const res = await startUpload(acceptedFile);
+
+        if (!res) {
+            clearInterval(ProgressInterval);
+            return toast({
+                title: "Error",
+                description: "Something went wrong while uploading",
+                variant: "destructive",
+            });
+        }
+
+        const [fileResponse] = res;
+
+        const key = fileResponse?.key;
+
+        if (!key) {
+            clearInterval(ProgressInterval);
+            return toast({
+                title: "Error",
+                description: "Something went wrong while uploading",
+                variant: "destructive",
+            });
+        }
+
         clearInterval(ProgressInterval);
         setUploadProgress(100);
+
+        startPolling({ key });
     }}>
         {({ getRootProps, getInputProps, acceptedFiles }) => (
             <div {...getRootProps()} className="border h-64 m-4 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 border-dashed border-gray-500 rounded-lg">
@@ -53,7 +91,7 @@ const UploadDropZone = () => {
                     >
                         <span className="flex flex-col text-sm gap-2 w-full h-64 justify-center items-center text-gray-400">
                             <Cloud />
-                            <p className="flex gap-3">
+                            <p className="flex gap-3 max-sm:items-center max-sm:flex-col">
                                 <span className="text-gray-400 font-bold">
                                     Click to Upload
                                 </span>
@@ -88,7 +126,14 @@ const UploadDropZone = () => {
                                     <div className="w-full mt-4 max-w-xs">
                                         <Progress value={uploadProgress} className="h-2 w-full" />
                                     </div>
-                                ) : null
+                                ) : (
+                                    uploadProgress === 100 ? (
+                                        <span className="flex justify-center gap-1 items-center text-green-500 font-bold">
+                                            redirecting...
+                                            <Loader2 className="animate-spin" />
+                                        </span>
+                                    ) : null
+                                )
                             }
                         </span>
                     </label>

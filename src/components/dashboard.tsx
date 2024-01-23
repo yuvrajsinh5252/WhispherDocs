@@ -1,9 +1,9 @@
 "use client"
 
 import { trpc } from "@/app/_trpc/client";
-import Skeleton from 'react-loading-skeleton'
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton'
 import { format } from 'date-fns'
-import { FileText, Loader2, MessageSquareCode, Trash } from 'lucide-react'
+import { FileText, Ghost, Loader2, MessageSquareCode, Trash } from 'lucide-react'
 import { Button } from "./ui/button";
 import { useState } from "react";
 import UploadButton from "./UploadButton";
@@ -12,6 +12,8 @@ import Link from "next/link";
 const DashboardComponent = () => {
     const utils = trpc.useUtils();
     const [deletingFile, setDeletingFile] = useState(String);
+
+    const theme = localStorage.getItem("theme");
 
     const { data: file, isLoading } = trpc.getUserFiles.useQuery();
     const { mutate: deleteFile } = trpc.deleteFile.useMutation({
@@ -34,7 +36,7 @@ const DashboardComponent = () => {
                 <h1 className="text-2xl font-bold">My Files</h1>
                 <UploadButton />
             </div>
-            <div className="h-screen flex gap-2">
+            <div className="h-[calc(100vh-15.25rem)] flex gap-2">
                 {
                     file && file.length != 0 ? (
                         <div className="w-full">
@@ -42,19 +44,19 @@ const DashboardComponent = () => {
                                 {
                                     file.map((item, index) => (
                                         <div key={index}
-                                            className="border shadow dark:bg-gray-900 hover:shadow-lg rounded-lg w-[395px]">
+                                            className="border shadow dark:bg-gray-900 hover:shadow-lg rounded-lg w-[450px]">
                                             <div className="divide-y divide-gray-200">
                                                 <Link href={`/dashboard/${item.id}`}>
                                                     <div className="flex items-center px-6 gap-5 justify-start h-[82px]">
                                                         <FileText />
-                                                        <div className="w-[100px] truncate">
+                                                        <div className="w-[200px] truncate">
                                                             {item.name}
                                                         </div>
                                                     </div>
                                                 </Link>
                                                 <div className="flex gap-16 w-[inherit] justify-center items-center p-2">
                                                     <span className="text-xs">{format(new Date(item.createdAt), "MMM yyyy")}</span>
-                                                    <span className="text-xs w-[130px] truncate">
+                                                    <span className="text-xs w-[100px] truncate">
                                                         <a className="flex flex-col justify-center items-start gap-1" href={item.url} target="_blank" rel="noreferrer">
                                                             <MessageSquareCode />
                                                             <div>{item.name}</div>
@@ -75,18 +77,29 @@ const DashboardComponent = () => {
                                 }
                             </div>
                         </div>
-                    ) : isLoading ? (<Skeleton style={
-                        {
-                            width: "20vw",
-                            height: "10vh"
-                        }
-                    } />) : (
-                        <div className="w-full">
-                            <div className="flex flex-wrap justify-center">
-                                <div className="bg-red-400 w-80 h-52">
-                                    No file found
-                                </div>
-                            </div>
+                    ) : isLoading ? (
+                        <SkeletonTheme {
+                            ...{
+                                baseColor: theme === "dark" ? "#1F2937" : "#F3F4F6",
+                                highlightColor: theme === "dark" ? "#374151" : "#E5E7EB",
+                            }
+                        }>
+                            <Skeleton style={
+                            {
+                                display: "flex",
+                                marginTop: "2.5rem",
+                                marginLeft: "2.5rem",
+                                width: "calc(100vw - 5rem)",
+                                height: "10vh",
+                            }
+                        } count={4} className="bg-red-500"/>
+                        </SkeletonTheme>
+                    ) : (
+                        <div className="m-auto">
+                            <h1 className="m-auto flex items-center flex-col gap-3 text-lg">
+                                <Ghost />
+                                No files uploaded yet
+                            </h1>
                         </div>
                     )
                 }
