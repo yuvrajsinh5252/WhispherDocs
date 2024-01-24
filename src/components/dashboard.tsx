@@ -3,7 +3,7 @@
 import { trpc } from "@/app/_trpc/client";
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton'
 import { format } from 'date-fns'
-import { FileText, Ghost, Loader2, MessageSquareCode, Trash } from 'lucide-react'
+import { FileText, Ghost, Loader2, MessageSquareCode, Plus, Trash } from 'lucide-react'
 import { Button } from "./ui/button";
 import { useState } from "react";
 import UploadButton from "./UploadButton";
@@ -13,7 +13,7 @@ const DashboardComponent = () => {
     const utils = trpc.useUtils();
     const [deletingFile, setDeletingFile] = useState(String);
 
-    const theme = localStorage.getItem("theme");
+    const theme = window.localStorage.getItem("theme");
 
     const { data: file, isLoading } = trpc.getUserFiles.useQuery();
     const { mutate: deleteFile } = trpc.deleteFile.useMutation({
@@ -36,7 +36,7 @@ const DashboardComponent = () => {
                 <h1 className="text-2xl font-bold">My Files</h1>
                 <UploadButton />
             </div>
-            <div className="h-[calc(100vh-15.25rem)] flex gap-2">
+            <div className="h-[calc(100vh-15.25rem)] flex gap-2 justify-center">
                 {
                     file && file.length != 0 ? (
                         <div className="w-full">
@@ -44,7 +44,7 @@ const DashboardComponent = () => {
                                 {
                                     file.map((item, index) => (
                                         <div key={index}
-                                            className="border shadow dark:bg-gray-900 hover:shadow-lg rounded-lg w-[450px]">
+                                            className="border shadow dark:bg-gray-900 hover:shadow-lg rounded-lg w-[470px]">
                                             <div className="divide-y divide-gray-200">
                                                 <Link href={`/dashboard/${item.id}`}>
                                                     <div className="flex items-center px-6 gap-5 justify-start h-[82px]">
@@ -54,12 +54,19 @@ const DashboardComponent = () => {
                                                         </div>
                                                     </div>
                                                 </Link>
-                                                <div className="flex gap-16 w-[inherit] justify-center items-center p-2">
-                                                    <span className="text-xs">{format(new Date(item.createdAt), "MMM yyyy")}</span>
-                                                    <span className="text-xs w-[100px] truncate">
-                                                        <a className="flex flex-col justify-center items-start gap-1" href={item.url} target="_blank" rel="noreferrer">
-                                                            <MessageSquareCode />
-                                                            <div>{item.name}</div>
+                                                <div className="flex justify-around text-gray-600 dark:text-gray-300 gap-14 w-full p-2">
+                                                    <span className="flex items-center gap-2 text-xs">
+                                                        <div>
+                                                            <Plus size={15} />
+                                                        </div>
+                                                        {format(new Date(item.createdAt), "MMM yyyy")}
+                                                    </span>
+                                                    <span className="text-xs">
+                                                        <a className="flex gap-1 w-full" href={item.url} target="_blank" rel="noreferrer">
+                                                            <div>
+                                                                <MessageSquareCode size={20} />
+                                                            </div>
+                                                            <div className="flex w-[100px] truncate">{item.name}</div>
                                                         </a>
                                                     </span>
                                                     <Button size="sm" className="w-full" variant="destructive"
@@ -87,12 +94,13 @@ const DashboardComponent = () => {
                             <Skeleton style={
                             {
                                 display: "flex",
-                                marginTop: "2.5rem",
-                                marginLeft: "2.5rem",
-                                width: "calc(100vw - 5rem)",
+                                marginTop: "1.5rem",
+                                width: "58vw",
                                 height: "10vh",
+
+                                minWidth: "350px",
                             }
-                        } count={4} className="bg-red-500"/>
+                        } count={4}/>
                         </SkeletonTheme>
                     ) : (
                         <div className="m-auto">

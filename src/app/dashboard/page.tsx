@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 import DashboardComponent from "../../components/dashboard";
+import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 
 export default async function Dashboard() {
     const { getUser } = getKindeServerSession();
@@ -17,5 +18,9 @@ export default async function Dashboard() {
 
     if (!dbUser) redirect("/auth-callback?origin=dashboard");
 
-    return <DashboardComponent />;
+    return (
+        <MaxWidthWrapper>
+            <DashboardComponent />
+        </MaxWidthWrapper>
+    );
 }
