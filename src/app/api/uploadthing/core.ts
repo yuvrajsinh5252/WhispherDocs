@@ -17,10 +17,9 @@ export const ourFileRouter = {
             const createdFile = await db.file.create({
                 data: {
                     key: file.key,
-                    id: file.key,
-                    userId: metadata.userId,
                     name: file.name,
-                    url: `https://uploadthing-prod.s3.us-west-2.amazonaws.com/${file.key}`,
+                    userId: metadata.userId,
+                    url: `https://utfs.io/f/${file.key}`,
                     uploadStatus: "PENDING",
                 },
             });

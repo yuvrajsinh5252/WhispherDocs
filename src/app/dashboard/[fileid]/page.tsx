@@ -27,12 +27,12 @@ export default async function page({ params }: PageProps) {
     if (!file) notFound();
 
     return (
-        <div className="flex h-[calc(100vh-5.5rem)] p-4">
-            <div className="lg:flex rounded-lg justify-between p-2 shadow-xl w-full gap-2">
-                <div className="rounded-sm lg:w-[55vw] lg:h-full sm:h-[50%] border-2">
+        <div className="flex h-[calc(100vh-5.5rem)] p-7">
+            <div className="flex max-sm:flex-col  justify-between w-full gap-4">
+                <div className="border-2 rounded-lg max-sm:h-full w-full overflow-hidden border-zinc-300">
                     <PDFrenderer url={file.url} />
                 </div>
-                <div className="rounded-sm lg:w-[45vw] lg:h-full sm:h-[50%] border-2">
+                <div className="max-sm:w-full max-sm:border-none border-2 rounded-lg w-9/12 border-zinc-300">
                     <Chatwrapper />
                 </div>
             </div>
