@@ -41,13 +41,30 @@ export const appRouter = router({
         });
     }),
 
+    getFileUploadStatus: adminProcedure.input(
+        z.object({fileId: z.string()}))
+        .query(async ({ ctx, input }) => {
+
+        const file = await db.file.findFirst({
+            where: {
+                id: input.fileId,
+                userId: ctx.userId,
+            },
+        });
+
+        if (!file) return { status: 'PENDING' as const};
+
+        return { status: file.uploadStatus };
+    }),
+
     getFile: adminProcedure.input(
-            z.object({ key: z.string() }))
-        .mutation(async ({ ctx, input }) => {
+        z.object({ key: z.string() }))
+    .mutation(async ({ ctx, input }) => {
             const { userId } = ctx;
+
             const file = await db.file.findFirst({
                 where: {
-                    id: input.key,
+                    key: input.key,
                     userId,
                 },
             });
@@ -58,7 +75,7 @@ export const appRouter = router({
 
             return file;
         }
-        ),
+    ),
 
     deleteFile: adminProcedure.input(
         z.object({ id: z.string() })

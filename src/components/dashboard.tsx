@@ -13,7 +13,7 @@ const DashboardComponent = () => {
     const utils = trpc.useUtils();
     const [deletingFile, setDeletingFile] = useState(String);
 
-    const theme = window.localStorage.getItem("theme");
+    const theme = "dark";
 
     const { data: file, isLoading } = trpc.getUserFiles.useQuery();
     const { mutate: deleteFile } = trpc.deleteFile.useMutation({

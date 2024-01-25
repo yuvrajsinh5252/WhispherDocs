@@ -80,7 +80,7 @@ export default function PDFrenderer({ url }: PDFRenedererProps) {
                         file={url}
                         className="rounded-lg max-h-full items-center flex justify-center"
                         loading={
-                            <div className="flex justify-center items-center h-full">
+                            <div className="flex justify-center items-center h-[calc(100vh-10rem)]">
                                 <Loader2 className="m-auto animate-spin" size={50} />
                             </div>
                         }

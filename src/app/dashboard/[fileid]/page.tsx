@@ -1,4 +1,4 @@
-import Chatwrapper from "@/components/Chatwrapper";
+import Chatwrapper from "@/components/chat/Chatwrapper";
 import PDFrenderer from "@/components/PDFrenderer";
 import { db } from "@/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
@@ -33,7 +33,7 @@ export default async function page({ params }: PageProps) {
                     <PDFrenderer url={file.url} />
                 </div>
                 <div className="max-sm:w-full max-sm:border-none border-2 rounded-lg w-9/12 border-zinc-300">
-                    <Chatwrapper />
+                    <Chatwrapper fileId={file.id} />
                 </div>
             </div>
         </div>

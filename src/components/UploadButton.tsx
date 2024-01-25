@@ -14,6 +14,7 @@ import { useUploadThing } from "@/lib/uploadthing";
 import { useToast } from "./ui/use-toast";
 import { trpc } from "@/app/_trpc/client";
 import { useRouter } from "next/navigation";
+import { set } from "zod";
 
 const UploadDropZone = () => {
     const [isUploading, setIsUploading] = useState<boolean>(true);
@@ -26,7 +27,8 @@ const UploadDropZone = () => {
 
     const { mutate: startPolling } = trpc.getFile.useMutation({
         onSuccess: (file) => {
-            router.push(`/dashboard/${file.key}`);
+            setIsUploading(false);
+            router.push(`/dashboard/${file.id}`);
         },
         retry: true,
         retryDelay: 500,
