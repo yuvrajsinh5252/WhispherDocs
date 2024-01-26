@@ -52,7 +52,7 @@ export const appRouter = router({
             },
         });
 
-        if (!file) return { status: 'PENDING' as const};
+        if (!file) return { status: "PENDING" as const};
 
         return { status: file.uploadStatus };
     }),

@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronDown, ChevronUp, Loader2, RotateCw, Search } from 'lucide-react';
+import { ChevronDown, Loader2, RotateCw, Search } from 'lucide-react';
 import { Document, Page, pdfjs } from 'react-pdf';
 
 import 'react-pdf/dist/Page/AnnotationLayer.css';
