@@ -3,12 +3,16 @@ import { INFINITE_QUERRY_LIMIT } from "@/config/infiinte-querry";
 import { Loader2 } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
 import { Message } from "./Message";
+import { useContext } from "react";
+import { ChatContext } from "./ChatContext";
 
 interface MessageProps {
     fileId: string;
 }
 
 export default function Messages({ fileId }: MessageProps) {
+
+    const { isLoading: isAithinking} = useContext(ChatContext)
 
     const { data, isLoading, fetchNextPage } = trpc.getMessages.useInfiniteQuery({
         fileId,
@@ -31,12 +35,12 @@ export default function Messages({ fileId }: MessageProps) {
     }
 
     const CombinedMessage = [
-        ...(true ? [loadingMessage] : []),
+        ...(isAithinking ? [loadingMessage] : []),
         ...(messages ?? []),
     ]
 
     return (
-        <div className="border-2 m-2 p-2 no-scrollbar max-sm:hidden rounded-md h-full overflow-y-scroll flex flex-col gap-2">
+        <div className="m-2 p-2 no-scrollbar max-sm:hidden rounded-md h-full overflow-y-scroll flex flex-col gap-2">
             {CombinedMessage && CombinedMessage.length > 0 ? (
                 CombinedMessage.map((message, i) => {
 
