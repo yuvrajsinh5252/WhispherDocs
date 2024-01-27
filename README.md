@@ -1,3 +1,3 @@
 # WhispherDocs
 
-### Docs also Whispher nowadays
+### Simple way to get answers to your questions.

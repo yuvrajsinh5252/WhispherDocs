@@ -14,7 +14,6 @@ import { useUploadThing } from "@/lib/uploadthing";
 import { useToast } from "./ui/use-toast";
 import { trpc } from "@/app/_trpc/client";
 import { useRouter } from "next/navigation";
-import { set } from "zod";
 
 const UploadDropZone = () => {
     const [isUploading, setIsUploading] = useState<boolean>(true);

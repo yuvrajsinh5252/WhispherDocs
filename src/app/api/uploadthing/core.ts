@@ -3,15 +3,15 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { PDFLoader } from "langchain/document_loaders/fs/pdf";
 import { pineconeClient } from "@/lib/pinecone";
-import { PineconeStore } from "langchain/vectorstores/pinecone";
-import {OpenAIEmbeddings} from "langchain/embeddings/openai";
+import { PineconeStore } from "@langchain/pinecone";
+import { OpenAIEmbeddings } from "@langchain/openai";
 
 const f = createUploadthing();
 
 export const ourFileRouter = {
     PDFUploader: f({ pdf: { maxFileSize: "4MB" } })
         .middleware(async ({ req }) => {
-            const { getUser } =getKindeServerSession();
+            const { getUser } = getKindeServerSession();
             const user = await getUser();
 
             if (!user || !user.id) throw new Error("Unauthorized");
@@ -39,14 +39,17 @@ export const ourFileRouter = {
                 const pageLevelDocs = await loader.load();
 
                 // vectorizing and indexing the entire pdf to pinecone
-                const PineConeIndex = pineconeClient.Index("docs");
+                const pinecone = pineconeClient();
+                const pineconeIndex = pinecone.Index('chatdoc');
+
                 const embeddings = new OpenAIEmbeddings({
-                    openAIApiKey: process.env.OPENAI_API_KEY!,
+                    openAIApiKey: process.env.OPENAI_API_KEY,
                 });
-                await PineconeStore.fromDocuments(pageLevelDocs, embeddings,{
-                    pineconeIndex: PineConeIndex,
+
+                const vectoreStore = await PineconeStore.fromDocuments(pageLevelDocs, embeddings, {
+                    pineconeIndex,
                     namespace: createdFile.id,
-                })
+                });
 
                 await db.file.update({
                     data: {
@@ -56,7 +59,7 @@ export const ourFileRouter = {
                         id: createdFile.id,
                     },
                 });
-            } catch (e) {
+            } catch (err) {
                 await db.file.update({
                     data: {
                         uploadStatus: "FAILED",
@@ -65,8 +68,10 @@ export const ourFileRouter = {
                         id: createdFile.id,
                     },
                 });
-                throw e;
+                throw err;
             }
+
+            return {}
         }),
 } satisfies FileRouter;
 

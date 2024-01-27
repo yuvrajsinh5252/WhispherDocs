@@ -1,20 +1,19 @@
 "use client"
 
 import { createContext, useState } from "react";
-import { useToast } from "../ui/use-toast";
 import { useMutation } from "@tanstack/react-query";
 
 type streamResponse = {
-    addMessage: (message: string) => void;
-    messages: string;
-    handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    isLoading: boolean;
+    addMessage: () => void,
+    message: string,
+    handleInputChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void,
+    isLoading: boolean,
 };
 
-export const ChatContext = createContext({
-    addMessage: (message: string) => {},
-    messages: "",
-    handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => {},
+export const ChatContext = createContext<streamResponse>({
+    addMessage: () => {},
+    message: "",
+    handleInputChange: () => {},
     isLoading: false,
 });
 
@@ -24,9 +23,8 @@ interface Props {
 }
 
 export default function ChatContextProvider({fileId, children} : Props) {
-    const [messages, setMessages] = useState("");
+    const [message, setMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const {toast} = useToast();
 
     const { mutate: sendMessage} = useMutation({
         mutationFn: async ({message}: {message: string}) => {
@@ -34,7 +32,7 @@ export default function ChatContextProvider({fileId, children} : Props) {
                 method: "POST",
                 body: JSON.stringify({
                     fileId,
-                    messages,
+                    message,
                 }),
             });
 
@@ -46,12 +44,18 @@ export default function ChatContextProvider({fileId, children} : Props) {
         }
     })
 
+    const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setMessage(event.target.value);
+    }
+
+    const addMessage = () => sendMessage({ message });
+
     return (
         <ChatContext.Provider
             value={{
-                addMessage: (message: string) => {setMessages(message);},
-                messages,
-                handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => {setMessages(event.target.value);},
+                addMessage,
+                message,
+                handleInputChange,
                 isLoading,
             }}
         >

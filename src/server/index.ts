@@ -42,24 +42,24 @@ export const appRouter = router({
     }),
 
     getFileUploadStatus: adminProcedure.input(
-        z.object({fileId: z.string()}))
+        z.object({ fileId: z.string() }))
         .query(async ({ ctx, input }) => {
 
-        const file = await db.file.findFirst({
-            where: {
-                id: input.fileId,
-                userId: ctx.userId,
-            },
-        });
+            const file = await db.file.findFirst({
+                where: {
+                    id: input.fileId,
+                    userId: ctx.userId,
+                },
+            });
 
-        if (!file) return { status: "PENDING" as const};
+            if (!file) return { status: "PENDING" as const };
 
-        return { status: file.uploadStatus };
-    }),
+            return { status: file.uploadStatus };
+        }),
 
     getFile: adminProcedure.input(
         z.object({ key: z.string() }))
-    .mutation(async ({ ctx, input }) => {
+        .mutation(async ({ ctx, input }) => {
             const { userId } = ctx;
 
             const file = await db.file.findFirst({
@@ -75,7 +75,7 @@ export const appRouter = router({
 
             return file;
         }
-    ),
+        ),
 
     deleteFile: adminProcedure.input(
         z.object({ id: z.string() })
@@ -99,6 +99,36 @@ export const appRouter = router({
         });
 
         return file;
+    }),
+
+    getMessages: adminProcedure.input(z.object({
+        fileId: z.string(),
+        limit: z.number().min(1).max(100).nullish(),
+        cursor: z.string().nullish(),
+    })).query(async ({ input, ctx }) => {
+        const { userId } = ctx;
+
+        const file = await db.file.findFirst({
+            where: {
+                id: input.fileId,
+                userId,
+            },
+        });
+
+        if (!file) {
+            throw new TRPCError({ code: 'NOT_FOUND' });
+        }
+
+        const messages = await db.messages.findMany({
+            where: {
+                fileId: file.id,
+            },
+            orderBy: {
+                createdAt: "asc",
+            },
+        });
+
+        return messages;
     }),
 });
 
