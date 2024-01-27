@@ -32,7 +32,7 @@ export default async function page({ params }: PageProps) {
                 <div className="border-2 rounded-lg max-sm:h-full w-full overflow-y-scroll overflow-x-scroll no-scrollbar border-zinc-300">
                     <PDFrenderer url={file.url} />
                 </div>
-                <div className="max-sm:w-full max-sm:border-none border-2 rounded-lg w-9/12 border-zinc-300">
+                <div className="max-sm:w-full border-2 rounded-lg w-9/12 border-zinc-300">
                     <Chatwrapper fileId={file.id} />
                 </div>
             </div>

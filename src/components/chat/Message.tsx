@@ -21,7 +21,7 @@ export const Message = ({
                     <Bot className="w-6 h-6 text-white" />
                 </div>
             )}
-            <div className={cn("max-w-[75%] rounded-lg text-white inline-block", {
+            <div className={cn("max-w-[75%] max-sm:text-sm rounded-lg text-white inline-block", {
                 'bg-blue-500 rounded-br-none': message.isUserMessage,
                 'bg-gray-500 rounded-bl-none': !message.isUserMessage,
                 invisible: isNextMessageSamePerson,
