@@ -3,6 +3,7 @@ import { adminProcedure, publicProcedure, router } from './trpc';
 import { db } from '@/db';
 import { TRPCError } from '@trpc/server';
 import * as z from 'zod';
+import { INFINITE_QUERRY_LIMIT } from '@/config/infiinte-querry';
 
 export const appRouter = router({
     AuthCallback: publicProcedure.query(async () => {
@@ -107,10 +108,12 @@ export const appRouter = router({
         cursor: z.string().nullish(),
     })).query(async ({ input, ctx }) => {
         const { userId } = ctx;
+        const { fileId, cursor } = input;
+        const limit = input.limit ?? INFINITE_QUERRY_LIMIT;
 
         const file = await db.file.findFirst({
             where: {
-                id: input.fileId,
+                id: fileId,
                 userId,
             },
         });
@@ -120,15 +123,29 @@ export const appRouter = router({
         }
 
         const messages = await db.messages.findMany({
+            take: limit + 1,
             where: {
                 fileId: file.id,
             },
             orderBy: {
                 createdAt: "asc",
             },
+            cursor: cursor ? {id: cursor} : undefined,
+            select: {
+                id: true,
+                text: true,
+                createdAt: true,
+                isUserMessage: true,
+            }
         });
 
-        return messages;
+        let nextCursor: typeof cursor | null = null;
+        if (messages.length > limit) {
+            const nextItem = messages.pop();
+            nextCursor = nextItem?.id;
+        }
+
+        return {messages, nextCursor};
     }),
 });
 

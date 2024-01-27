@@ -21,7 +21,7 @@ export default function ChatInput({ isDisabled }: ChatInputProps) {
 
     return (
         <div className="flex items-center">
-            <form className="w-full mx-2 mb-2 relative">
+            <div className="w-full mx-2 mb-2 relative">
                 <Textarea
                     placeholder="Enter your Question..."
                     autoFocus
@@ -50,7 +50,7 @@ export default function ChatInput({ isDisabled }: ChatInputProps) {
                 >
                     <Send className="h-4 w-4" />
                 </Button>
-            </form>
+            </div>
         </div>
     )
 }
