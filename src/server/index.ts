@@ -128,7 +128,7 @@ export const appRouter = router({
                 fileId: file.id,
             },
             orderBy: {
-                createdAt: "asc",
+                createdAt: "desc",
             },
             cursor: cursor ? {id: cursor} : undefined,
             select: {
@@ -139,10 +139,10 @@ export const appRouter = router({
             }
         });
 
-        let nextCursor: typeof cursor | null = null;
+        let nextCursor: typeof cursor | undefined = undefined;
         if (messages.length > limit) {
             const nextItem = messages.pop();
-            nextCursor = nextItem?.id;
+            nextCursor = nextItem!.id;
         }
 
         return {messages, nextCursor};

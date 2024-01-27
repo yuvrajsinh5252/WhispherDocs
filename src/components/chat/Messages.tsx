@@ -12,13 +12,13 @@ interface MessageProps {
 
 export default function Messages({ fileId }: MessageProps) {
 
-    const { isLoading: isAithinking} = useContext(ChatContext)
+    const { isLoading: isAithinking } = useContext(ChatContext)
 
-    const { data, isLoading, fetchNextPage } = trpc.getMessages.useInfiniteQuery({
+    const { data, isLoading } = trpc.getMessages.useInfiniteQuery({
         fileId,
         limit: INFINITE_QUERRY_LIMIT,
     }, {
-        getNextPageParam: (lastPage) => (lastPage?.nextCursor),
+        getNextPageParam: (lastPage) => lastPage?.nextCursor,
     });
 
     const messages = data?.pages.flatMap((page) => page.messages);
@@ -40,36 +40,38 @@ export default function Messages({ fileId }: MessageProps) {
     ]
 
     return (
-        <div className="m-2 p-2 no-scrollbar max-sm:hidden rounded-md h-full overflow-y-scroll flex flex-col gap-2">
+        <div className="m-2 p-2 overflow-y-scroll scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch max-sm:hidden rounded-md h-full flex flex-col-reverse gap-2">
             {CombinedMessage && CombinedMessage.length > 0 ? (
                 CombinedMessage.map((message, i) => {
 
                     const isNextMessageSamePerson =
                         CombinedMessage[i - 1]?.isUserMessage === CombinedMessage[i]?.isUserMessage
 
-                    if (i === CombinedMessage.length - 1)
-                        return <Message
-                            message={message}
-                            isNextMessageSamePerson={isNextMessageSamePerson}
-                            key={message.id}
-                        />
-                    else
-                        return <Message
-                            message={message}
-                            isNextMessageSamePerson={isNextMessageSamePerson}
-                            key={message.id}
-                        />
+                    if (i == CombinedMessage.length - 1) return <Message
+                        message={message}
+                        isNextMessageSamePerson={isNextMessageSamePerson}
+                        key={message.id}
+                    />
+                    else return <Message
+                        message={message}
+                        isNextMessageSamePerson={isNextMessageSamePerson}
+                        key={message.id}
+                    />
                 })
             ) :
                 isLoading ? (
-                    <div>
+                    <div className="flex gap-5 flex-col">
                         <Skeleton className="h-16" />
                         <Skeleton className="h-16" />
                         <Skeleton className="h-16" />
                         <Skeleton className="h-16" />
+                        <Skeleton className="h-16" />
+                        <Skeleton className="h-16" />
+                        <Skeleton className="h-16" />
+
                     </div>
                 ) : (
-                    <div>
+                    <div className="flex h-full font-semibold justify-center items-center">
                         No messages yet
                     </div>
                 )

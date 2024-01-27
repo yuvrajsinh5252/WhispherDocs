@@ -33,7 +33,7 @@ export default function ChatInput({ isDisabled }: ChatInputProps) {
                     ref={textAreaRef}
 
                     onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
+                        if (e.key === "Enter" && !e.shiftKey && !isLoading && !isDisabled) {
                             e.preventDefault();
                             addMessage();
                             textAreaRef.current?.focus();

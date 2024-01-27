@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { ExtendedMessages } from "@/types/messages";
 import { Bot, UserRound } from "lucide-react";
+import ReactMarkdown from 'react-markdown'
 
 interface MessageProps {
     message: ExtendedMessages
@@ -20,16 +21,26 @@ export const Message = ({
                     <Bot className="w-6 h-6 text-white" />
                 </div>
             )}
-            <div className={cn("max-w-[75%]", {
-                'bg-blue-500 rounded-lg rounded-br-none': message.isUserMessage,
-                'bg-gray-500 rounded-lg rounded-bl-none': !message.isUserMessage,
+            <div className={cn("max-w-[75%] rounded-lg text-white inline-block", {
+                'bg-blue-500 rounded-br-none': message.isUserMessage,
+                'bg-gray-500 rounded-bl-none': !message.isUserMessage,
                 invisible: isNextMessageSamePerson,
             })}>
-                <div className={cn("text-white p-2", {
-                    'rounded-br-none': isNextMessageSamePerson,
+                <div className={cn("p-2", {
+                    'rounded-br-non': isNextMessageSamePerson,
                     'rounded-bl-none': !isNextMessageSamePerson,
                 })}>
-                    {message.text}
+                    {
+                        typeof message.text === 'string' ? (
+                            <ReactMarkdown className={cn("prose", {
+                                'text-zinc-50': message.isUserMessage,
+                            })}>
+                                {message.text}
+                            </ReactMarkdown>
+                        ) : (
+                            message.text
+                        )
+                    }
                 </div>
                 <div className="flex justify-end m-2">
                     <span className="text-xs text-white">

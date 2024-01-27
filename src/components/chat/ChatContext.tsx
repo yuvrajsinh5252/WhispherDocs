@@ -33,7 +33,6 @@ export default function ChatContextProvider({ fileId, children }: Props) {
     const backUpMessages = useRef('');
 
 
-
     const { mutate: sendMessage } = useMutation({
         mutationFn: async ({ message }: { message: string }) => {
             const response = await fetch(`/api/message`, {
@@ -59,6 +58,7 @@ export default function ChatContextProvider({ fileId, children }: Props) {
             await utils.getMessages.cancel();
 
             const previousMessages = utils.getMessages.getInfiniteData();
+            console.log("previousMessages", previousMessages);
 
             utils.getMessages.setInfiniteData(
                 { fileId, limit: INFINITE_QUERRY_LIMIT },
@@ -188,7 +188,6 @@ export default function ChatContextProvider({ fileId, children }: Props) {
 
             await utils.getMessages.invalidate({ fileId })
         },
-        //  ah it ended here
     })
 
     const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
