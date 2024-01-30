@@ -33,10 +33,10 @@ export default function PDFrenderer({ url }: PDFRenedererProps) {
     return (
         <div>
             <div className='flex border-b items-center justify-between p-2'>
-                <div className='flex items-center gap-2'>
+                <div className='flex items-center gap-2 max-sm:gap-1'>
                     <Input
                         type='number'
-                        className='w-20 h-10'
+                        className='w-20 h-10 max-sm:w-10'
                         min={1} max={numPages}
                         value={pageNumber}
                         onChange={(e) => setPageNumber(parseInt(e.target.value))}
@@ -46,7 +46,7 @@ export default function PDFrenderer({ url }: PDFRenedererProps) {
                         <span>{numPages}</span>
                     </p>
                 </div>
-                <div className='flex gap-2'>
+                <div className='flex gap-2 max-sm:gap-0'>
                     <DropdownMenu>
                         <DropdownMenuTrigger className='flex items-center gap-2 text-lg' asChild>
                             <Button variant='ghost' aria-label='zoom' className='flex gap-2'>

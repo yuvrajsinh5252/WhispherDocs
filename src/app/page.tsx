@@ -1,6 +1,6 @@
 import MaxWidthWrapper from "../components/MaxWidthWrapper"
 import { FaArrowRight } from "react-icons/fa"
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
+import { LoginLink, getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
@@ -23,7 +23,9 @@ export default async function Home() {
                 Get started for free today and see how whispherDocs can help you.
               </span>
               <Button className="font-bold">
-                <span className="flex gap-2">Get started<FaArrowRight size={20} /></span>
+                <LoginLink>
+                  <span className="flex gap-2">Get started<FaArrowRight size={20} /></span>
+                </LoginLink>
               </Button>
             </div>
           </div>

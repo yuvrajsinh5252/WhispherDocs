@@ -21,9 +21,9 @@ export const Message = ({
                     <Bot className="w-6 h-6 text-white" />
                 </div>
             )}
-            <div className={cn("max-w-[75%] max-sm:text-sm rounded-lg text-white inline-block", {
+            <div className={cn("max-w-[75%] rounded-lg inline-block", {
                 'bg-blue-500 rounded-br-none': message.isUserMessage,
-                'bg-gray-500 rounded-bl-none': !message.isUserMessage,
+                'bg-zinc-200 rounded-bl-none': !message.isUserMessage,
                 invisible: isNextMessageSamePerson,
             })}>
                 <div className={cn("p-2", {
@@ -43,7 +43,9 @@ export const Message = ({
                     }
                 </div>
                 <div className="flex justify-end m-2">
-                    <span className="text-xs text-white">
+                    <span className={cn("text-xs", {
+                        'text-zinc-50': message.isUserMessage,
+                    })}>
                         {new Date(message.createdAt).toLocaleTimeString('en-US', {
                             hour: 'numeric',
                             minute: 'numeric',

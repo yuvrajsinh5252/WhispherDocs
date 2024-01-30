@@ -33,18 +33,18 @@ const DashboardComponent = () => {
     return (
         <div className="divide-y-2">
             <div className="flex max-sm:justify-around max-sm:px-0 justify-between px-10 py-10  items-center">
-                <h1 className="text-2xl font-bold">My Files</h1>
+                <h1 className="text-2xl font-bold max-sm:text-xl">My Files</h1>
                 <UploadButton />
             </div>
             <div className="h-[calc(100vh-15.25rem)] flex gap-2 justify-center">
                 {
                     file && file.length != 0 ? (
                         <div className="w-full">
-                            <div className="flex flex-wrap gap-20 max-sm:justify-around mx-10 justify-normal py-10">
+                            <div className="flex flex-wrap gap-10 max-sm:justify-around mx-10 justify-normal py-10">
                                 {
                                     file.map((item, index) => (
                                         <div key={index}
-                                            className="border shadow dark:bg-gray-900 hover:shadow-lg rounded-lg w-[470px]">
+                                            className="border shadow dark:bg-gray-900 hover:shadow-lg rounded-lg w-[350px]">
                                             <div className="divide-y divide-gray-200">
                                                 <Link href={`/dashboard/${item.id}`}>
                                                     <div className="flex items-center px-6 gap-5 justify-start h-[82px]">
@@ -54,7 +54,7 @@ const DashboardComponent = () => {
                                                         </div>
                                                     </div>
                                                 </Link>
-                                                <div className="flex justify-around text-gray-600 dark:text-gray-300 gap-14 w-full p-2">
+                                                <div className="flex justify-around text-gray-600 dark:text-gray-300 gap-10 w-full p-2">
                                                     <span className="flex items-center gap-2 text-xs">
                                                         <div>
                                                             <Plus size={15} />

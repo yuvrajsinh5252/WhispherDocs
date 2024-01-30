@@ -3,11 +3,9 @@
 import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import Link from "next/link";
 import { useState } from "react";
-import { Button, buttonVariants } from "./ui/button";
-import { FaArrowRight } from "react-icons/fa";
 import ThemeToggle from "./ThemeToggle";
 
-export default function Hamburger(user: any) {
+export default function Mobilenav(user: any) {
     const [open, setOpen] = useState(true);
 
     return (
@@ -50,12 +48,9 @@ export default function Hamburger(user: any) {
                                 Logout
                             </LogoutLink>
                             :
-                            <Button className="mx-2">
-                                <LoginLink className="flex gap-2 font-bold -m-2">
-                                    Get started
-                                    <FaArrowRight size={20} />
-                                </LoginLink>
-                            </Button>
+                            <LoginLink>
+                                sign in
+                            </LoginLink>
                     }
                 </div>
             </div>
