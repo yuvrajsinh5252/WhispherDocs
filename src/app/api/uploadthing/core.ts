@@ -9,7 +9,7 @@ import { OpenAIEmbeddings } from "@langchain/openai";
 const f = createUploadthing();
 
 export const ourFileRouter = {
-    PDFUploader: f({ pdf: { maxFileSize: "16MB" } })
+    PDFUploader: f({ pdf: { maxFileSize: "4MB" } })
         .middleware(async ({ req }) => {
             const { getUser } = getKindeServerSession();
             const user = await getUser();

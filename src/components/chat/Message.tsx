@@ -18,21 +18,21 @@ export const Message = ({
         })}>
             {!message.isUserMessage && (
                 <div className="mr-2 bg-gray-700 rounded-md p-1">
-                    <Bot className="w-6 h-6 text-white" />
+                    <Bot className="w-6 h-6 max-sm:w-5 max-sm:h-5 text-white" />
                 </div>
             )}
-            <div className={cn("max-w-[75%] rounded-lg inline-block", {
+            <div className={cn("max-w-[75%] max-sm:max-w-full rounded-lg inline-block", {
                 'bg-blue-500 rounded-br-none': message.isUserMessage,
                 'bg-zinc-200 rounded-bl-none': !message.isUserMessage,
                 invisible: isNextMessageSamePerson,
             })}>
-                <div className={cn("p-2", {
+                <div className={cn("p-2 max-sm:text-sm", {
                     'rounded-br-non': isNextMessageSamePerson,
                     'rounded-bl-none': !isNextMessageSamePerson,
                 })}>
                     {
                         typeof message.text === 'string' ? (
-                            <ReactMarkdown className={cn("prose", {
+                            <ReactMarkdown className={cn("prose max-sm:prose-sm", {
                                 'text-zinc-50': message.isUserMessage,
                             })}>
                                 {message.text}
@@ -56,7 +56,7 @@ export const Message = ({
             </div>
             {(message.isUserMessage && !isNextMessageSamePerson) && (
                 <div className="ml-2 p-1 bg-blue-500 rounded-md text-white">
-                    <UserRound className="w-6 h-6" />
+                    <UserRound className="w-6 h-6 max-sm:w-5 max-sm:h-5" />
                 </div>
             )}
         </div>

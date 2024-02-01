@@ -50,7 +50,7 @@ const UploadDropZone = () => {
         return interval;
     }
 
-    return <DropZone multiple={false} onDrop={async (acceptedFile) => {
+    return <DropZone noClick={true} multiple={false} onDrop={async (acceptedFile) => {
         setIsUploading(true);
         const ProgressInterval = simulatedProgress();
 
