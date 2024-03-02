@@ -50,7 +50,7 @@ const UploadDropZone = () => {
         return interval;
     }
 
-    return <DropZone noClick={true} multiple={false} onDrop={async (acceptedFile) => {
+    return <DropZone multiple={false} onDrop={async (acceptedFile) => {
         setIsUploading(true);
         const ProgressInterval = simulatedProgress();
 
@@ -92,7 +92,7 @@ const UploadDropZone = () => {
                         <span className="flex flex-col text-sm gap-2 w-full h-64 justify-center items-center text-gray-400">
                             <Cloud />
                             <p className="flex gap-3 max-sm:items-center max-sm:flex-col">
-                                <span className="text-gray-400 font-bold">
+                                <span className="text-gray-800 font-bold">
                                     Click to Upload
                                 </span>
                                 or
@@ -100,20 +100,20 @@ const UploadDropZone = () => {
                                     drag and drop
                                 </span>
                             </p>
-                            <p className="text-gray-400">
+                            <p className="text-gray-600">
                                 PDF (upto 4MB)
                             </p>
                             {
                                 acceptedFiles && acceptedFiles[0] ? (
-                                    <div className="flex justify-center items-center gap-2 border-2 rounded-sm p-2 border-black-200">
+                                    <div className="flex justify-center items-center gap-2 border-2 rounded-lg p-2 border-black-300 bg-white">
                                         <File
                                             size={24}
-                                            className="text-gray-400"
+                                            className="text-zinc-500"
                                         />
-                                        <span className="text-gray-400 font-bold">
+                                        <span className="text-zinc-500 font-bold">
                                             {acceptedFiles[0].name}
                                         </span>
-                                        <span className="text-gray-400">
+                                        <span className="text-zinc-500">
                                             {acceptedFiles[0].size} bytes
                                         </span>
                                     </div>
@@ -124,17 +124,24 @@ const UploadDropZone = () => {
                             {
                                 isUploading ? (
                                     <div className="w-full mt-4 max-w-xs">
-                                        <Progress value={uploadProgress} className="h-2 w-full" />
+                                        <Progress value={uploadProgress} className=" bg-gray h-2 w-full" />
                                     </div>
                                 ) : (
                                     uploadProgress === 100 ? (
                                         <span className="flex justify-center gap-1 items-center text-green-500 font-bold">
-                                            redirecting...
+                                            Redirecting...
                                             <Loader2 className="animate-spin" />
                                         </span>
                                     ) : null
                                 )
                             }
+
+                            <input
+                                {...getInputProps()}
+                                type="file"
+                                id="dropzone-file"
+                                className="hidden"
+                            />
                         </span>
                     </label>
                 </div>
