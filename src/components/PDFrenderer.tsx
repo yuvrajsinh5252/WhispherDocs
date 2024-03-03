@@ -36,7 +36,7 @@ export default function PDFrenderer({ url }: PDFRenedererProps) {
                 <div className='flex items-center gap-2 max-sm:gap-1'>
                     <Input
                         type='number'
-                        className='w-20 h-10 max-sm:w-10'
+                        className='w-20 h-10 max-sm:w-10 max-sm:h-7'
                         min={1} max={numPages}
                         value={pageNumber}
                         onChange={(e) => setPageNumber(parseInt(e.target.value))}
@@ -50,7 +50,7 @@ export default function PDFrenderer({ url }: PDFRenedererProps) {
                     <DropdownMenu>
                         <DropdownMenuTrigger className='flex items-center gap-2 text-lg' asChild>
                             <Button variant='ghost' aria-label='zoom' className='flex gap-2'>
-                                <Search className='h-5 w-5' />
+                                <Search className='h-4 w-4' />
                                 <span>{zoom * 100}%</span>
                                 <ChevronDown />
                             </Button>
