@@ -1,5 +1,6 @@
 import MaxWidthWrapper from "./MaxWidthWrapper";
 import Link from "next/link";
+import Img from "next/image";
 import { Button } from "./ui/button";
 import { LoginLink, LogoutLink, getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import {
@@ -22,6 +23,8 @@ const Navbar = async () => {
     const { getUser } = getKindeServerSession();
     const user = await getUser();
 
+    const image_url = user?.picture || 'https://example.com/default-profile.png';
+
     return (
         <nav className="sticky top-0 z-50 shadow-md dark:bg-slate-900">
             <MaxWidthWrapper className="flex items-center justify-between p-3 mx-auto capitalize">
@@ -34,7 +37,12 @@ const Navbar = async () => {
                 <div className="flex gap-2 justify-center items-center">
                     {
                         user ? (
-                            <img className="sm:visible lg:hidden rounded-full w-8 h-8 mx-2" src={user?.picture ?? ''} alt="Profile picture" />
+                            <Img className="sm:visible lg:hidden rounded-full mx-2"
+                                width={30}
+                                height={30}
+                                src={image_url}
+                                alt="Profile picture"
+                            />
                         ) : null
                     }
                     <Mobilenav user={user} />
@@ -52,7 +60,12 @@ const Navbar = async () => {
                                 user ?
                                     <DropdownMenu>
                                         <DropdownMenuTrigger>
-                                            <img className="rounded-full w-10 h-10 mx-2" src={user?.picture ?? ''} alt="Profile picture" />
+                                            <Img className="rounded-full mx-2"
+                                                width={40}
+                                                height={40}
+                                                src={image_url}
+                                                alt="Profile picture"
+                                            />
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
                                             <DropdownMenuLabel>My Account</DropdownMenuLabel>
