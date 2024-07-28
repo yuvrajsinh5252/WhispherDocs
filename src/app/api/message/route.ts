@@ -3,6 +3,9 @@ import { NextRequest } from "next/server";
 import { MessageValidator } from "@/lib/validator/MessageValidator";
 import { db } from "@/db";
 import { PineconeStore } from "@langchain/pinecone";
+import { PineconeClient } from "@/lib/pinecone";
+import { CohereEmbeddings } from "@langchain/cohere";
+import { CohereClient } from "cohere-ai";
 
 export const POST = async (req: NextRequest) => {
   const body = await req.json();
@@ -34,13 +37,12 @@ export const POST = async (req: NextRequest) => {
 
   // vectorize message
   const embeddings = new CohereEmbeddings({
-    apiKey: process.env.COHERE_API_KEY, // In Node.js defaults to process.env.COHERE_API_KEY
-    batchSize: 48, // Default value if omitted is 48. Max value is 96
+    apiKey: process.env.COHERE_API_KEY,
     model: "embed-english-v3.0",
   });
 
-  const pinecone = await pineconeClient();
-  const pineconeIndex = pinecone.Index("chatdoc");
+  const pinecone = await PineconeClient();
+  const pineconeIndex = pinecone.Index("cohere-pinecone-trec");
 
   const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
     pineconeIndex,
@@ -59,56 +61,18 @@ export const POST = async (req: NextRequest) => {
     take: 6,
   });
 
-  const formattedPrevMessages = prevMessages.map((message) => ({
-    role: message.isUserMessage ? ("user" as const) : ("assistant" as const),
-    content: message.text,
-  }));
-
-  const response = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo",
-    temperature: 0,
-    stream: true,
-    messages: [
-      {
-        role: "system",
-        content:
-          "Use the following pieces of context (or previous conversaton if needed) to answer the users question in markdown format.",
-      },
-      {
-        role: "user",
-        content: `Use the following pieces of context (or previous conversaton if needed) to answer the users question in markdown format. \nIf you don't know the answer, just say that you don't know, don't try to make up an answer.
-
-        \n----------------\n
-
-        PREVIOUS CONVERSATION:
-        ${formattedPrevMessages.map((message) => {
-          if (message.role === "user") return `User: ${message.content}\n`;
-          return `Assistant: ${message.content}\n`;
-        })}
-
-        \n----------------\n
-
-        CONTEXT:
-        ${results.map((r) => r.pageContent).join("\n\n")}
-
-        USER INPUT: ${message}`,
-      },
-    ],
+  const cohere = new CohereClient({
+    token: process.env.COHERE_API_KEY,
   });
 
-  const stream = OpenAIStream(response, {
-    async onCompletion(completions) {
-      await db.messages.create({
-        data: {
-          text: completions,
-          isUserMessage: false,
-          userId: user?.id,
-          fileId: fileId,
-        },
-      });
-    },
+  const response = await cohere.chatStream({
+    chatHistory: prevMessages.map((m) => ({
+      role: m.isUserMessage ? "USER" : "CHATBOT",
+      message: m.text,
+    })),
+    message: message,
+    // conversationId: file.id,
   });
 
   // returned the streamed response and let the client handle the streaming
-  return new StreamingTextResponse(stream);
 };

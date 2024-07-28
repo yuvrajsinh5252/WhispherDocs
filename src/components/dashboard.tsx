@@ -53,7 +53,7 @@ const DashboardComponent = () => {
                                                 <Link href={`/dashboard/${item.id}`}>
                                                     <div className="flex items-center px-6 gap-5 justify-start h-[82px]">
                                                         <FileText />
-                                                        <div className="w-[200px] text-sm">
+                                                        <div className="w-[250px] text-sm truncate">
                                                             {item.name}
                                                         </div>
                                                     </div>

@@ -22,7 +22,9 @@ const UploadDropZone = () => {
     const [isUploading, setIsUploading] = useState<boolean>(true);
     const [uploadProgress, setUploadProgress] = useState<number>(0);
 
-    const { startUpload } = useUploadThing("PDFUploader");
+    const { startUpload } = useUploadThing("PDFUploader", {
+        onUploadError: (error: Error) => void console.error(error),
+    });
     const { toast } = useToast();
 
     const router = useRouter();
@@ -113,7 +115,7 @@ const UploadDropZone = () => {
                                             size={24}
                                             className="text-zinc-500"
                                         />
-                                        <span className="text-zinc-500 font-bold">
+                                        <span className="text-zinc-500 font-bold truncate">
                                             {acceptedFiles[0].name}
                                         </span>
                                         <span className="text-zinc-500">
@@ -165,7 +167,7 @@ const UploadButton = () => {
             <DialogTrigger onClick={() => { setIsOpen(true) }} asChild>
                 <Button className="font-bold">Upload PDF</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="p-1">
                 <VisuallyHidden>
                     <DialogTitle>Edit profile</DialogTitle>
                     <DialogDescription>

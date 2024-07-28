@@ -61,8 +61,8 @@ const Navbar = async () => {
                                     <DropdownMenu>
                                         <DropdownMenuTrigger>
                                             <Img className="rounded-full mx-2"
-                                                width={40}
-                                                height={40}
+                                                width={35}
+                                                height={35}
                                                 src={image_url}
                                                 alt="Profile picture"
                                             />

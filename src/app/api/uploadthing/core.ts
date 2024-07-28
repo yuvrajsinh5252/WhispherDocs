@@ -40,11 +40,11 @@ export const ourFileRouter = {
 
         // vectorizing and indexing the entire pdf to pinecone
         const pinecone = PineconeClient();
-        const pineconeIndex = pinecone.Index("chatdoc");
+        const pineconeIndex = pinecone.Index("cohere-pinecone-trec");
 
         const embeddings = new CohereEmbeddings({
           apiKey: process.env.COHERE_API_KEY,
-          model: "embed-english-light-v3.0",
+          model: "embed-english-v3.0",
         });
 
         const pineconeStore = await PineconeStore.fromDocuments(
@@ -65,7 +65,8 @@ export const ourFileRouter = {
           data: { uploadStatus: "FAILED" },
           where: { id: createdFile.id },
         });
-        throw err;
+
+        console.error(err);
       }
 
       return {};
