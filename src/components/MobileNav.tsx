@@ -3,7 +3,7 @@
 import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import Link from "next/link";
 import { useState } from "react";
-import ThemeToggle from "./ThemeToggle";
+import { ModeToggle } from "./theme/theme-toggle";
 
 export default function Mobilenav(user: any) {
     const [open, setOpen] = useState(true);
@@ -34,7 +34,7 @@ export default function Mobilenav(user: any) {
                 }
             >
                 <div className="flex flex-col justify-center items-center gap-4 h-full">
-                    <ThemeToggle />
+                    <ModeToggle />
                     <Link className="text-[16.5px]" href="/pricing">
                         home
                     </Link>

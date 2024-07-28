@@ -13,7 +13,7 @@ interface PageProps {
 export default async function page({ params }: PageProps) {
     const { fileid } = params;
 
-    const user  = await getKindeServerSession().getUser();
+    const user = await getKindeServerSession().getUser();
 
     if (!user || !user.id) redirect(`/auth-callback?origin=/dashboard/${fileid}`);
 

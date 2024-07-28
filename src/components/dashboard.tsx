@@ -5,15 +5,19 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton'
 import { format } from 'date-fns'
 import { FileText, Ghost, Loader2, MessageSquareCode, Plus, Trash } from 'lucide-react'
 import { Button } from "./ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import UploadButton from "./UploadButton";
 import Link from "next/link";
 
 const DashboardComponent = () => {
     const utils = trpc.useUtils();
     const [deletingFile, setDeletingFile] = useState(String);
+    const [theme, setTheme] = useState("light");
 
-    let theme = localStorage.getItem("theme") || "light";
+    useEffect(() => {
+        const theme = localStorage.getItem("theme");
+        if (theme === "dark") setTheme("dark");
+    }, []);
 
     const { data: file, isLoading } = trpc.getUserFiles.useQuery();
     const { mutate: deleteFile } = trpc.deleteFile.useMutation({
@@ -32,15 +36,15 @@ const DashboardComponent = () => {
 
     return (
         <div className="divide-y-2">
-            <div className="flex max-sm:justify-around max-sm:px-0 justify-between px-10 py-10  items-center">
-                <h1 className="text-2xl font-bold max-sm:text-xl">My Files</h1>
+            <div className="flex max-sm:justify-around max-sm:px-0 justify-between px-8 py-8 items-center">
+                <h1 className="text-[20px] font-bold max-sm:text-xl">My Files</h1>
                 <UploadButton />
             </div>
             <div className="h-[calc(100vh-15.25rem)] flex gap-2 justify-center">
                 {
                     file && file.length != 0 ? (
                         <div className="w-full">
-                            <div className="flex flex-wrap gap-10 max-sm:justify-around mx-10 justify-normal py-10">
+                            <div className="flex flex-wrap gap-10 max-sm:justify-around justify-normal py-5">
                                 {
                                     file.map((item, index) => (
                                         <div key={index}
@@ -49,7 +53,7 @@ const DashboardComponent = () => {
                                                 <Link href={`/dashboard/${item.id}`}>
                                                     <div className="flex items-center px-6 gap-5 justify-start h-[82px]">
                                                         <FileText />
-                                                        <div className="w-[200px] truncate">
+                                                        <div className="w-[200px] text-sm">
                                                             {item.name}
                                                         </div>
                                                     </div>
@@ -92,15 +96,15 @@ const DashboardComponent = () => {
                             }
                         }>
                             <Skeleton style={
-                            {
-                                display: "flex",
-                                marginTop: "1.5rem",
-                                width: "58vw",
-                                height: "10vh",
+                                {
+                                    display: "flex",
+                                    marginTop: "1.5rem",
+                                    width: "58vw",
+                                    height: "10vh",
 
-                                minWidth: "350px",
-                            }
-                        } count={4}/>
+                                    minWidth: "350px",
+                                }
+                            } count={4} />
                         </SkeletonTheme>
                     ) : (
                         <div className="m-auto">

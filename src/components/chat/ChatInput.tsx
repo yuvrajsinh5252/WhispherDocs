@@ -9,7 +9,6 @@ interface ChatInputProps {
 }
 
 export default function ChatInput({ isDisabled }: ChatInputProps) {
-
     const {
         addMessage,
         message,

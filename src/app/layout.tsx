@@ -5,6 +5,7 @@ import { Providers } from '@/components/Providers'
 import 'react-loading-skeleton/dist/skeleton.css'
 import { Toaster } from '@/components/ui/toaster'
 import "simplebar-react/dist/simplebar.min.css";
+import { ThemeProvider } from '@/components/theme/theme-provider'
 
 export const metadata: Metadata = {
   title: 'WhisperDocs',
@@ -16,12 +17,17 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className='no-scrollbar'>
+    <html lang="en" suppressHydrationWarning className='no-scrollbar'>
       <Providers>
         <body className="font-poppins">
-          <Toaster />
-          <Navbar />
-          {children}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+          >
+            <Toaster />
+            <Navbar />
+            {children}
+          </ThemeProvider>
         </body>
       </Providers>
     </html>

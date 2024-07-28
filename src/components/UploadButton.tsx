@@ -4,7 +4,10 @@ import {
     Dialog,
     DialogContent,
     DialogTrigger,
+    DialogTitle,
+    DialogDescription,
 } from "@/components/ui/dialog"
+import { VisuallyHidden } from '@reach/visually-hidden';
 import { Button } from "./ui/button";
 import { useState } from "react";
 import DropZone from "react-dropzone";
@@ -92,7 +95,7 @@ const UploadDropZone = () => {
                         <span className="flex flex-col text-sm gap-2 w-full h-64 justify-center items-center text-gray-400">
                             <Cloud />
                             <p className="flex gap-3 max-sm:items-center max-sm:flex-col">
-                                <span className="text-gray-800 font-bold">
+                                <span className="text-foreground">
                                     Click to Upload
                                 </span>
                                 or
@@ -100,7 +103,7 @@ const UploadDropZone = () => {
                                     drag and drop
                                 </span>
                             </p>
-                            <p className="text-gray-600">
+                            <p className="text-gray-400">
                                 PDF (upto 4MB)
                             </p>
                             {
@@ -163,6 +166,12 @@ const UploadButton = () => {
                 <Button className="font-bold">Upload PDF</Button>
             </DialogTrigger>
             <DialogContent>
+                <VisuallyHidden>
+                    <DialogTitle>Edit profile</DialogTitle>
+                    <DialogDescription>
+                        Make changes to your profile here. Click save when you're done.
+                    </DialogDescription>
+                </VisuallyHidden>
                 <UploadDropZone />
             </DialogContent>
         </Dialog>
