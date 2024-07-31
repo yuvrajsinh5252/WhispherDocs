@@ -61,3 +61,5 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(({
         </div>
     )
 })
+
+Message.displayName = 'Message'

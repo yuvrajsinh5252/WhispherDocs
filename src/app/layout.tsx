@@ -6,10 +6,9 @@ import 'react-loading-skeleton/dist/skeleton.css'
 import { Toaster } from '@/components/ui/toaster'
 import "simplebar-react/dist/simplebar.min.css";
 import { ThemeProvider } from '@/components/theme/theme-provider'
+import { constructMetadata } from '@/lib/utils'
 
-export const metadata: Metadata = {
-  title: 'WhisperDocs',
-}
+export const metadata = constructMetadata();
 
 export default function RootLayout({
   children,

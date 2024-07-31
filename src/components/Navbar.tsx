@@ -51,7 +51,7 @@ const Navbar = async () => {
                 <div className="max-sm:hidden">
                     <div className="flex justify-around items-center divide-x-2">
                         <div className="flex gap-2 pr-2">
-                            <Link className={navigationMenuTriggerStyle()} href="/pricing">home</Link>
+                            <Link className={navigationMenuTriggerStyle()} href="/">home</Link>
                             <Link className={navigationMenuTriggerStyle()} href="/pricing">pricing</Link>
                         </div>
                         <div className="pl-2 flex justify-center items-center">
