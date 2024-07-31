@@ -29,9 +29,8 @@ export default function ChatContextProvider({ fileId, children }: Props) {
     const [message, setMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
-    const utils = trpc.useContext();
+    const utils = trpc.useUtils();
     const backUpMessages = useRef('');
-
 
     const { mutate: sendMessage } = useMutation({
         mutationFn: async ({ message }: { message: string }) => {
@@ -99,8 +98,7 @@ export default function ChatContextProvider({ fileId, children }: Props) {
             if (!stream) {
                 return toast({
                     title: 'There was a problem sending this message',
-                    description:
-                        'Please refresh this page and try again',
+                    description: 'Please refresh this page and try again',
                     variant: 'destructive',
                 })
             }
@@ -113,8 +111,7 @@ export default function ChatContextProvider({ fileId, children }: Props) {
             let accResponse = ''
 
             while (!done) {
-                const { value, done: doneReading } =
-                    await reader.read()
+                const { value, done: doneReading } = await reader.read()
                 done = doneReading
                 const chunkValue = decoder.decode(value)
 

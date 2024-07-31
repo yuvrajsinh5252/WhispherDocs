@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { ExtendedMessages } from "@/types/messages";
 import { Bot, UserRound } from "lucide-react";
+import { forwardRef } from "react";
 import ReactMarkdown from 'react-markdown'
 
 interface MessageProps {
@@ -8,22 +9,24 @@ interface MessageProps {
     isNextMessageSamePerson: boolean
 }
 
-export const Message = ({
+export const Message = forwardRef<HTMLDivElement, MessageProps>(({
     message,
     isNextMessageSamePerson
-}: MessageProps) => {
+}, ref) => {
     return (
-        <div className={cn('flex items-end', {
-            'justify-end': message.isUserMessage,
-        })}>
+        <div
+            ref={ref}
+            className={cn('flex items-end', {
+                'justify-end': message.isUserMessage,
+            })}>
             {!message.isUserMessage && (
                 <div className="mr-2 bg-gray-700 rounded-md p-1">
                     <Bot className="w-6 h-6 max-sm:w-5 max-sm:h-5 text-white" />
                 </div>
             )}
-            <div className={cn("max-w-[75%] max-sm:max-w-full rounded-lg inline-block", {
+            <div className={cn("max-w-[75%] max-sm:max-w-full rounded-lg inline-block text-white", {
                 'bg-blue-500 rounded-br-none': message.isUserMessage,
-                'bg-zinc-200 rounded-bl-none': !message.isUserMessage,
+                'bg-zinc-600 rounded-bl-none': !message.isUserMessage,
                 invisible: isNextMessageSamePerson,
             })}>
                 <div className={cn("p-2 max-sm:text-sm", {
@@ -32,9 +35,7 @@ export const Message = ({
                 })}>
                     {
                         typeof message.text === 'string' ? (
-                            <ReactMarkdown className={cn("prose max-sm:prose-sm", {
-                                'text-zinc-50': message.isUserMessage,
-                            })}>
+                            <ReactMarkdown className="prose max-sm:prose-sm text-zinc-50">
                                 {message.text}
                             </ReactMarkdown>
                         ) : (
@@ -43,9 +44,7 @@ export const Message = ({
                     }
                 </div>
                 <div className="flex justify-end m-2">
-                    <span className={cn("text-xs", {
-                        'text-zinc-50': message.isUserMessage,
-                    })}>
+                    <span className="text-xs text-zinc-50">
                         {new Date(message.createdAt).toLocaleTimeString('en-US', {
                             hour: 'numeric',
                             minute: 'numeric',
@@ -61,4 +60,4 @@ export const Message = ({
             )}
         </div>
     )
-}
+})

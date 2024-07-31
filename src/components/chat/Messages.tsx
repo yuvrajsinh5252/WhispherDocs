@@ -3,9 +3,9 @@ import { INFINITE_QUERRY_LIMIT } from "@/config/infiinte-querry";
 import { Loader2 } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
 import { Message } from "./Message";
-import { useContext } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { ChatContext } from "./ChatContext";
-
+import { useIntersection } from '@mantine/hooks';
 interface MessageProps {
     fileId: string;
 }
@@ -14,7 +14,7 @@ export default function Messages({ fileId }: MessageProps) {
 
     const { isLoading: isAithinking } = useContext(ChatContext)
 
-    const { data, isLoading } = trpc.getMessages.useInfiniteQuery({
+    const { data, isLoading, fetchNextPage } = trpc.getMessages.useInfiniteQuery({
         fileId,
         limit: INFINITE_QUERRY_LIMIT,
     }, {
@@ -39,6 +39,19 @@ export default function Messages({ fileId }: MessageProps) {
         ...(messages ?? []),
     ]
 
+    const lastMessageRef = useRef<HTMLDivElement>(null)
+
+    const { ref, entry } = useIntersection({
+        root: lastMessageRef.current,
+        threshold: 0,
+    })
+
+    useEffect(() => {
+        if (entry?.isIntersecting) {
+            fetchNextPage();
+        }
+    }, [entry, fetchNextPage]);
+
     return (
         <div className="m-2 max-sm:p-0 p-2 overflow-y-scroll scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch max-sm:h-[24rem] rounded-md h-full flex flex-col-reverse gap-2">
             {CombinedMessage && CombinedMessage.length > 0 ? (
@@ -47,16 +60,19 @@ export default function Messages({ fileId }: MessageProps) {
                     const isNextMessageSamePerson =
                         CombinedMessage[i - 1]?.isUserMessage === CombinedMessage[i]?.isUserMessage
 
-                    if (i == CombinedMessage.length - 1) return <Message
-                        message={message}
-                        isNextMessageSamePerson={isNextMessageSamePerson}
-                        key={message.id}
-                    />
-                    else return <Message
-                        message={message}
-                        isNextMessageSamePerson={isNextMessageSamePerson}
-                        key={message.id}
-                    />
+                    if (i == CombinedMessage.length - 1)
+                        return <Message
+                            ref={ref}
+                            message={message}
+                            isNextMessageSamePerson={isNextMessageSamePerson}
+                            key={message.id}
+                        />
+                    else
+                        return <Message
+                            message={message}
+                            isNextMessageSamePerson={isNextMessageSamePerson}
+                            key={message.id}
+                        />
                 })
             ) :
                 isLoading ? (
