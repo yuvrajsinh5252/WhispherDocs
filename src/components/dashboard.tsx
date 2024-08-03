@@ -48,7 +48,7 @@ const DashboardComponent = () => {
                                 {
                                     file.map((item, index) => (
                                         <div key={index}
-                                            className="border shadow dark:bg-gray-900 hover:shadow-lg rounded-lg w-[350px]">
+                                            className="border shadow dark:bg-gray-900 hover:shadow-lg rounded-lg w-[350px] max-sm:w-[300px]">
                                             <div className="divide-y divide-gray-200">
                                                 <Link href={`/dashboard/${item.id}`}>
                                                     <div className="flex items-center px-6 gap-5 justify-start h-[82px]">
@@ -66,14 +66,14 @@ const DashboardComponent = () => {
                                                         {format(new Date(item.createdAt), "MMM yyyy")}
                                                     </span>
                                                     <span className="text-xs">
-                                                        <a className="flex gap-1 w-full" href={item.url} target="_blank" rel="noreferrer">
+                                                        <a className="flex items-center pt-1 gap-2 text-xs w-[95px] truncate" href={item.url} target="_blank" rel="noreferrer">
                                                             <div>
                                                                 <MessageSquareCode size={20} />
                                                             </div>
-                                                            <div className="flex w-[100px] truncate">{item.name}</div>
+                                                            <div className="flex">{item.name}</div>
                                                         </a>
                                                     </span>
-                                                    <Button size="sm" className="w-full" variant="destructive"
+                                                    <Button size="default" variant="destructive"
                                                         onClick={() => { deleteFile({ id: item.id }) }}
                                                     >
                                                         {

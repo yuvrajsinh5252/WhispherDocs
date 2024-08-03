@@ -19,8 +19,8 @@ export default function ChatInput({ isDisabled }: ChatInputProps) {
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
     return (
-        <div className="flex items-center">
-            <div className="w-full mx-2 mb-2 relative">
+        <div className="flex items-center justify-center">
+            <div className="w-full mx-2 mb-2 max-sm:mb-1 relative">
                 <Textarea
                     placeholder="Enter your Question..."
                     autoFocus

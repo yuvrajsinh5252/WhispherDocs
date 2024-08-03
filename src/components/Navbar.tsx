@@ -26,10 +26,10 @@ const Navbar = async () => {
     const image_url = user?.picture || 'https://example.com/default-profile.png';
 
     return (
-        <nav className="sticky top-0 z-50 shadow-md dark:bg-slate-900">
+        <nav className="sticky top-0 z-50 shadow-md dark:bg-slate-900 bg-white">
             <MaxWidthWrapper className="flex items-center justify-between p-3 mx-auto capitalize">
                 <div>
-                    <Link href="/" className="text-2xl max-sm:text-2xl font-bold">
+                    <Link href="/" className="text-2xl max-sm:text-lg font-bold">
                         <span>whispherDocs</span>
                     </Link>
                 </div>

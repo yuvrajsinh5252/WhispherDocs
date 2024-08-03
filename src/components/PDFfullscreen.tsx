@@ -7,18 +7,18 @@ import { Document, Page } from "react-pdf";
 import { useToast } from "./ui/use-toast";
 import { useResizeDetector } from "react-resize-detector";
 
-export default function PDFfullscreen({url} : {url: string}) {
+export default function PDFfullscreen({ url }: { url: string }) {
     const [isOpen, setIsOpen] = useState(false);
-    const {toast} = useToast();
+    const { toast } = useToast();
     const [numPages, setNumPages] = useState(1);
     const { ref, width } = useResizeDetector();
 
     return (
         <Dialog
-            onOpenChange={(v) => {if (!v) setIsOpen(v)}}
+            onOpenChange={(v) => { if (!v) setIsOpen(v) }}
         >
             <DialogTrigger onClick={() => setIsOpen(true)} asChild>
-                <Button variant='ghost' aria-label='fullscreen'>
+                <Button variant='ghost' className="max-sm:p-0" aria-label='fullscreen'>
                     <Maximize className='h-5 w-5' />
                 </Button>
             </DialogTrigger>
@@ -26,36 +26,36 @@ export default function PDFfullscreen({url} : {url: string}) {
                 <SimpleBar
                     className="max-h-[calc(100vh-10rem)] mt-6"
                 >
-                <div ref={ref}>
-                    <Document
-                        file={url}
-                        className="rounded-lg max-h-full flex-col items-center flex justify-center"
-                        loading={
-                            <div className="flex justify-center items-center h-full">
-                                <Loader2 className="m-auto animate-spin" size={50} />
-                            </div>
-                        }
+                    <div ref={ref}>
+                        <Document
+                            file={url}
+                            className="rounded-lg max-h-full flex-col items-center flex justify-center"
+                            loading={
+                                <div className="flex justify-center items-center h-full">
+                                    <Loader2 className="m-auto animate-spin" size={50} />
+                                </div>
+                            }
 
-                        onLoadError={(error) => {
-                            toast({
-                                title: "Error Loading PDF",
-                                description: error.message,
-                                variant: "destructive",
-                            });
-                        }}
-                        onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-                    >
-                        {
-                            new Array(numPages).fill(0).map((_, i) => (
-                                <Page
-                                    key={i}
-                                    width={width ? width : 1}
-                                    pageNumber={i + 1}
-                                />
-                            ))
-                        }
-                    </Document>
-                </div>
+                            onLoadError={(error) => {
+                                toast({
+                                    title: "Error Loading PDF",
+                                    description: error.message,
+                                    variant: "destructive",
+                                });
+                            }}
+                            onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+                        >
+                            {
+                                new Array(numPages).fill(0).map((_, i) => (
+                                    <Page
+                                        key={i}
+                                        width={width ? width : 1}
+                                        pageNumber={i + 1}
+                                    />
+                                ))
+                            }
+                        </Document>
+                    </div>
                 </SimpleBar>
             </DialogContent>
         </Dialog>

@@ -32,11 +32,11 @@ export default function PDFrenderer({ url }: PDFRenedererProps) {
 
     return (
         <div>
-            <div className='flex border-b items-center justify-between p-2'>
-                <div className='flex items-center gap-2 max-sm:gap-1'>
+            <div className='flex border-b max-sm:h-[3.1rem] items-center justify-between p-2'>
+                <div className='flex items-center gap-2'>
                     <Input
                         type='number'
-                        className='w-20 h-10 max-sm:w-10 max-sm:h-7'
+                        className='w-16 h-10'
                         min={1} max={numPages}
                         value={pageNumber}
                         onChange={(e) => setPageNumber(parseInt(e.target.value))}
@@ -46,9 +46,9 @@ export default function PDFrenderer({ url }: PDFRenedererProps) {
                         <span>{numPages}</span>
                     </p>
                 </div>
-                <div className='flex gap-2 max-sm:gap-0'>
+                <div className='flex gap-2'>
                     <DropdownMenu>
-                        <DropdownMenuTrigger className='flex items-center gap-2 text-lg' asChild>
+                        <DropdownMenuTrigger className='flex items-center gap-2 text-lg max-sm:hidden' asChild>
                             <Button variant='ghost' aria-label='zoom' className='flex gap-2'>
                                 <Search className='h-4 w-4' />
                                 <span>{zoom * 100}%</span>
@@ -66,15 +66,15 @@ export default function PDFrenderer({ url }: PDFRenedererProps) {
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    <Button variant='ghost' aria-label='rotate 90 degrees'
+                    <Button variant='ghost' className='max-sm:p-0' aria-label='rotate 90 degrees'
                         onClick={() => setRotation(rotation + 90)}
                     >
                         <RotateCw className='h-5 w-5' />
                     </Button>
-                    <PDFfullscreen url={url}/>
+                    <PDFfullscreen url={url} />
                 </div>
             </div>
-            <SimpleBar className='h-screen' autoHide={false}>
+            <SimpleBar className='max-sm:hidden' autoHide={true}>
                 <div ref={ref}>
                     <Document
                         file={url}

@@ -53,7 +53,7 @@ export default function Messages({ fileId }: MessageProps) {
     }, [entry, fetchNextPage]);
 
     return (
-        <div className="m-2 max-sm:p-0 p-2 overflow-y-scroll scrollbar-thumb-blue scrollbar-track-blue-lighter scrollbar-w-2 max-sm:h-[24rem] rounded-md h-full flex flex-col-reverse gap-2">
+        <div className="m-2 max-sm:m-0 max-sm:mb-1 p-2 overflow-y-scroll scrollbar-thumb-blue scrollbar-track-blue-lighter scrollbar-w-2 rounded-md flex flex-col-reverse gap-2">
             {CombinedMessage && CombinedMessage.length > 0 ? (
                 CombinedMessage.map((message, i) => {
                     const isNextMessageSamePerson =
