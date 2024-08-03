@@ -55,9 +55,7 @@ export default function ChatContextProvider({ fileId, children }: Props) {
             setMessage('');
 
             await utils.getMessages.cancel();
-
             const previousMessages = utils.getMessages.getInfiniteData();
-            console.log("previousMessages", previousMessages);
 
             utils.getMessages.setInfiniteData(
                 { fileId, limit: INFINITE_QUERRY_LIMIT },

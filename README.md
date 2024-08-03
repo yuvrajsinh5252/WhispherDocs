@@ -2,26 +2,41 @@
 
 ### Simple way to get answers to your questions.
 
-### Technologies I have used
+## Getting Started
 
-- HTML
-- CSS
-- JavaScript
-- Node.js
-- Prisma ORM (for database)
-- PostgreSQL (Neon-Tech)
-- lucide-icons
-- Vercel (for deployment)
-- uploadthings (to the upload the pdf (simplified version of amazon s3))
-- react-pdf (to read the pdf)
-- react-dropzone (drag and drop feature)
-- shadcn-ui
-- trpc router
-- next.js
-- react
-- typescript
-- tailwindcss
-- kinde-auth (For authentication)
-- langchain ai (to get the language of the pdf)
-- openai (to get the answers to the questions from the pdf)
-- pinecone (vector database to store the pdf in vector format)
+Here are the instructions that will guide you to install and use the project.
+
+1. Clone the repo
+
+```sh
+git clone https://github.com/yuvrajsinh5252/WhispherDocs.git
+```
+
+2. Navigate into it and install bun packages
+
+```sh
+cd WhispherDocs
+bun install
+```
+
+3. Create a `.env` file in the root of the project and add the following environment variables:
+
+4. Start the development server:
+
+```sh
+bun run dev
+```
+
+5. Open your web browser and visit `http://localhost:3000` to see the application running.
+
+## Contributing
+
+We welcome contributions to improve this project. If you'd like to contribute, please follow these steps:
+
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix: `git checkout -b feature-name`.
+3. Make your changes and commit them: `git commit -m 'Description of changes'`.
+4. Push to your fork: `git push origin feature-name`.
+5. Create a pull request.
+
+Thank you for your interest in contributing to this project!

@@ -20,7 +20,7 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(({
                 'justify-end': message.isUserMessage,
             })}>
             {!message.isUserMessage && (
-                <div className="mr-2 bg-gray-700 rounded-md p-1">
+                <div className="mr-2 bg-gray-700 rounded-md p-1 max-sm:hidden">
                     <Bot className="w-6 h-6 max-sm:w-5 max-sm:h-5 text-white" />
                 </div>
             )}
@@ -43,7 +43,12 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(({
                         )
                     }
                 </div>
-                <div className="flex justify-end m-2">
+                <div className="flex max-sm:justify-between justify-end m-2">
+                    {!message.isUserMessage && (
+                        <div className="mr-2 bg-gray-700 rounded-md p-1 hidden max-sm:block">
+                            <Bot className="w-6 h-6 max-sm:w-5 max-sm:h-5 text-white" />
+                        </div>
+                    )}
                     <span className="text-xs text-zinc-50">
                         {new Date(message.createdAt).toLocaleTimeString('en-US', {
                             hour: 'numeric',
@@ -51,10 +56,16 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(({
                             hour12: false,
                         })}
                     </span>
+                    {(message.isUserMessage && !isNextMessageSamePerson) && (
+                        <div className="ml-2 p-1 bg-blue-700 rounded-md text-white hidden max-sm:block">
+                            <UserRound className="h-4 w-4" />
+                        </div>
+                    )}
                 </div>
+
             </div>
             {(message.isUserMessage && !isNextMessageSamePerson) && (
-                <div className="ml-2 p-1 bg-blue-500 rounded-md text-white">
+                <div className="ml-2 p-1 bg-blue-500 max-sm:hidden rounded-md text-white">
                     <UserRound className="w-6 h-6 max-sm:w-5 max-sm:h-5" />
                 </div>
             )}

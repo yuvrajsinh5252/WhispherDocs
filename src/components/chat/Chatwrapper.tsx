@@ -68,7 +68,7 @@ export default function Chatwrapper({ fileId }: ChatwrapperProps) {
 
     return (
         <ChatContextProvider fileId={fileId}>
-            <div className="flex h-full flex-col w-full">
+            <div className="flex h-full flex-col p-1 w-full">
                 <Messages fileId={fileId} />
                 <ChatInput isDisabled={false} />
             </div>
