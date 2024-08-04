@@ -44,7 +44,7 @@ const DashboardComponent = () => {
                 {
                     file && file.length != 0 ? (
                         <div className="w-full">
-                            <div className="flex flex-wrap gap-10 max-sm:justify-around justify-normal py-5">
+                            <div className="flex flex-wrap gap-8 max-sm:justify-around justify-normal py-5">
                                 {
                                     file.map((item, index) => (
                                         <div key={index}
