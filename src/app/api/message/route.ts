@@ -7,6 +7,9 @@ import { PineconeClient } from "@/lib/pinecone";
 import { CohereEmbeddings } from "@langchain/cohere";
 import { CohereClient } from "cohere-ai";
 
+export const maxDuration = 60; // This function can run for a maximum of 60 seconds
+export const dynamic = "force-dynamic";
+
 export const POST = async (req: NextRequest) => {
   const body = await req.json();
 
