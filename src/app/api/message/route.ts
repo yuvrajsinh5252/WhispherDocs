@@ -41,7 +41,7 @@ export const POST = async (req: NextRequest) => {
     model: "embed-english-v3.0",
   });
 
-  const pinecone = await PineconeClient();
+  const pinecone = PineconeClient();
   const pineconeIndex = pinecone.Index("cohere-pinecone-trec");
 
   const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
@@ -54,7 +54,7 @@ export const POST = async (req: NextRequest) => {
   const prevMessages = await db.messages.findMany({
     where: { fileId: file.id },
     orderBy: { createdAt: "asc" },
-    take: 6,
+    take: 2,
   });
 
   const cohere = new CohereClient({
@@ -73,11 +73,12 @@ export const POST = async (req: NextRequest) => {
       {
         role: "system",
         content:
-          "Use the following pieces of context (or previous conversaton if needed) to answer the users question in markdown format.",
+          "The user is asking question from the uploaded PDF and you are trying to answer using that content. Use the following pieces of context (or previous conversaton if needed) to answer the users question in markdown format.",
       },
       {
         role: "user",
-        content: `Use the following pieces of context (or previous conversaton if needed) to answer the users question in markdown format. \nIf you don't know the answer, just say that you don't know, don't try to make up an answer.
+        content: `Use the following pieces of context (or previous conversaton if needed) to answer the users question in markdown format. \nIf you don't know the answer, stick to the context provided and try to answer it naturally.
+        \n If the user asks the same question again, handle it gracefully and don't reapeat your answer.
         \n----------------\n
         PREVIOUS CONVERSATION:
         ${prevMessages.map((m) => m.text).join("\n\n")}
