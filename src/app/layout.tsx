@@ -17,8 +17,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning className='no-scrollbar'>
-      <Providers>
-        <body className="font-poppins">
+      <body className="font-poppins">
+        <Providers>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
@@ -27,8 +27,8 @@ export default function RootLayout({
             <Navbar />
             {children}
           </ThemeProvider>
-        </body>
-      </Providers>
+        </Providers>
+      </body>
     </html>
   )
 }

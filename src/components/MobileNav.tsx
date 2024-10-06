@@ -43,7 +43,7 @@ export default function Mobilenav(user: any) {
                         pricing
                     </Link>
                     {
-                        user ?
+                        user.user ?
                             <LogoutLink>
                                 Logout
                             </LogoutLink>
