@@ -5,22 +5,22 @@ import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import DashboardComponent from "@/components/dashboard";
 
 export default async function Dashboard() {
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+  const { getUser } = getKindeServerSession();
+  const user = await getUser();
 
-    if (!user || !user.email) redirect("/auth-callback?origin=dashboard");
+  if (!user || !user.email) redirect("/auth-callback?origin=dashboard");
 
-    const dbUser = await db.user.findFirst({
-        where: {
-            id: user.id,
-        },
-    });
+  const dbUser = await db.user.findFirst({
+    where: {
+      id: user.id,
+    },
+  });
 
-    if (!dbUser) redirect("/auth-callback?origin=dashboard");
+  if (!dbUser) redirect("/auth-callback?origin=dashboard");
 
-    return (
-        <MaxWidthWrapper>
-            <DashboardComponent />
-        </MaxWidthWrapper>
-    );
+  return (
+    <MaxWidthWrapper>
+      <DashboardComponent />
+    </MaxWidthWrapper>
+  );
 }
