@@ -49,7 +49,6 @@ export default function ChatContextProvider({ fileId, children }: Props) {
       return response.body;
     },
 
-    //  Dont know what is happening here
     onMutate: async ({ message }) => {
       backUpMessages.current = message;
       setMessage("");
@@ -151,7 +150,7 @@ export default function ChatContextProvider({ fileId, children }: Props) {
               variant: "default",
             });
           }
-        }, 120000);
+        }, 59000);
 
         while (!done) {
           clearChunkTimeout();

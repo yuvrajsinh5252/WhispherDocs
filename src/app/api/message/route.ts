@@ -7,7 +7,7 @@ import { PineconeClient } from "@/lib/pinecone";
 import { CohereEmbeddings } from "@langchain/cohere";
 import { CohereClient } from "cohere-ai";
 
-export const maxDuration = 120;
+export const maxDuration = 59;
 
 export const POST = async (req: NextRequest) => {
   const body = await req.json();
@@ -28,7 +28,6 @@ export const POST = async (req: NextRequest) => {
 
   if (!file) return new Response("Not Found", { status: 404 });
 
-  // Store the user message first
   await db.messages.create({
     data: {
       text: message,
@@ -39,7 +38,6 @@ export const POST = async (req: NextRequest) => {
   });
 
   try {
-    // vectorize message
     const embeddings = new CohereEmbeddings({
       apiKey: process.env.COHERE_API_KEY,
       model: "embed-english-v3.0",
