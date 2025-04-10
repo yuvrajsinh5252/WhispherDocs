@@ -18,6 +18,7 @@ import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { Button } from "./ui/button";
 import SimpleBar from "simplebar-react";
 import PDFfullscreen from "./PDFfullscreen";
+import { cn } from "@/lib/utils";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
@@ -42,14 +43,17 @@ export default function PDFrenderer({ url }: PDFRenedererProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex border-b items-center justify-between p-2 bg-white dark:bg-gray-900 sticky top-0 z-10">
+      <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 sticky top-0 z-10">
         <div className="flex items-center gap-1.5">
           <Button
             variant="ghost"
             size="sm"
             disabled={pageNumber <= 1}
             onClick={() => handlePageChange(pageNumber - 1)}
-            className="h-8 w-8 p-0"
+            className={cn(
+              "h-8 w-8 p-0 opacity-75 hover:opacity-100 transition-opacity",
+              pageNumber <= 1 && "opacity-40"
+            )}
           >
             <span className="sr-only">Previous page</span>
             <svg
@@ -68,29 +72,33 @@ export default function PDFrenderer({ url }: PDFRenedererProps) {
             </svg>
           </Button>
 
-          <Input
-            type="number"
-            className="w-14 h-8"
-            min={1}
-            max={numPages}
-            value={pageNumber}
-            onChange={(e) => setPageNumber(parseInt(e.target.value) || 1)}
-            onBlur={() => {
-              if (pageNumber < 1) setPageNumber(1);
-              if (pageNumber > numPages) setPageNumber(numPages);
-            }}
-          />
-
-          <p className="text-zinc-700 dark:text-white text-sm whitespace-nowrap">
-            / <span>{numPages}</span>
-          </p>
+          <div className="flex items-center gap-1.5">
+            <Input
+              type="number"
+              min={1}
+              max={numPages}
+              value={pageNumber}
+              onChange={(e) => setPageNumber(parseInt(e.target.value) || 1)}
+              onBlur={() => {
+                if (pageNumber < 1) setPageNumber(1);
+                if (pageNumber > numPages) setPageNumber(numPages);
+              }}
+              className="w-14 h-8 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <span className="text-sm text-gray-500 dark:text-gray-400 select-none">
+              / <span>{numPages}</span>
+            </span>
+          </div>
 
           <Button
             variant="ghost"
             size="sm"
             disabled={pageNumber >= numPages}
             onClick={() => handlePageChange(pageNumber + 1)}
-            className="h-8 w-8 p-0"
+            className={cn(
+              "h-8 w-8 p-0 opacity-75 hover:opacity-100 transition-opacity",
+              pageNumber >= numPages && "opacity-40"
+            )}
           >
             <span className="sr-only">Next page</span>
             <svg
@@ -110,29 +118,42 @@ export default function PDFrenderer({ url }: PDFRenedererProps) {
           </Button>
         </div>
 
-        <div className="flex gap-1.5">
+        <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-1.5 h-8">
-                <Search className="h-3.5 w-3.5" />
-                <span className="text-xs">{zoom * 100}%</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1.5 h-8 text-gray-600 dark:text-gray-300"
+              >
+                <Search className="h-3.5 w-3.5 opacity-50" />
+                <span className="text-xs font-medium">{zoom * 100}%</span>
                 <ChevronDown className="h-3 w-3 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onSelect={() => setZoom(0.5)}>
+            <DropdownMenuContent align="end" className="w-28">
+              <DropdownMenuItem
+                onSelect={() => setZoom(0.5)}
+                className="text-xs"
+              >
                 50%
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setZoom(0.75)}>
+              <DropdownMenuItem
+                onSelect={() => setZoom(0.75)}
+                className="text-xs"
+              >
                 75%
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setZoom(1)}>
+              <DropdownMenuItem onSelect={() => setZoom(1)} className="text-xs">
                 100%
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setZoom(1.5)}>
+              <DropdownMenuItem
+                onSelect={() => setZoom(1.5)}
+                className="text-xs"
+              >
                 150%
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setZoom(2)}>
+              <DropdownMenuItem onSelect={() => setZoom(2)} className="text-xs">
                 200%
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -145,23 +166,31 @@ export default function PDFrenderer({ url }: PDFRenedererProps) {
             onClick={() => setRotation((prev) => (prev + 90) % 360)}
           >
             <span className="sr-only">Rotate 90 degrees</span>
-            <RotateCw className="h-4 w-4" />
+            <RotateCw className="h-4 w-4 opacity-50 hover:opacity-100 transition-opacity" />
           </Button>
 
+          <div className="h-4 w-px bg-gray-200 dark:bg-gray-700" />
           <PDFfullscreen url={url} />
         </div>
       </div>
 
-      {/* Main PDF display area - scrollable for both desktop and mobile */}
       <div className="flex-1 w-full overflow-hidden">
-        <SimpleBar className="h-full w-full max-h-[calc(100vh-10rem)] sm:max-h-[calc(100vh-12rem)]">
-          <div ref={ref} className="flex justify-center">
+        <SimpleBar className="h-full max-h-[calc(100vh-10rem)] sm:max-h-[calc(100vh-12rem)]">
+          <div
+            ref={ref}
+            className="flex justify-center bg-gray-100/50 dark:bg-gray-800/50 min-h-full"
+          >
             <Document
               file={url}
               className="max-w-full"
               loading={
-                <div className="flex justify-center items-center h-[calc(100vh-15rem)]">
-                  <Loader2 className="animate-spin h-8 w-8 text-blue-500" />
+                <div className="flex justify-center items-center min-h-[calc(100vh-15rem)]">
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Loading PDF...
+                    </p>
+                  </div>
                 </div>
               }
               onLoadError={(error) => {
@@ -178,7 +207,7 @@ export default function PDFrenderer({ url }: PDFRenedererProps) {
                 width={width ? width * 0.9 : undefined}
                 scale={zoom}
                 rotate={rotation}
-                className="mx-auto"
+                className="mx-auto shadow-lg rounded-lg bg-white"
               />
             </Document>
           </div>

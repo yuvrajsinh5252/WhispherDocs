@@ -1,7 +1,7 @@
 import { trpc } from "@/app/_trpc/client";
 import { INFINITE_QUERRY_LIMIT } from "@/config/infiinte-querry";
 import { Loader2, MessagesSquare } from "lucide-react";
-import Skeleton from "react-loading-skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Message } from "./Message";
 import { useContext, useEffect, useRef } from "react";
 import { ChatContext } from "./ChatContext";
@@ -70,6 +70,65 @@ export default function Messages({ fileId }: MessageProps) {
     }
   }, [entry, fetchNextPage]);
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-4 p-4">
+        {Array(3)
+          .fill(0)
+          .map((_, i) => (
+            <div
+              key={i}
+              className={`flex items-start gap-4 ${
+                i % 2 === 0 ? "" : "justify-end"
+              }`}
+            >
+              <div
+                className={`flex gap-3 ${
+                  i % 2 === 0 ? "flex-row" : "flex-row-reverse"
+                }`}
+              >
+                {i % 2 === 0 && (
+                  <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800">
+                    <Skeleton className="h-6 w-6" />
+                  </div>
+                )}
+                <div
+                  className={`flex flex-col gap-2 ${
+                    i % 2 === 0 ? "items-start" : "items-end"
+                  }`}
+                >
+                  <div
+                    className={`rounded-lg px-4 py-2 max-w-md ${
+                      i % 2 === 0
+                        ? "bg-gray-100 dark:bg-gray-800"
+                        : "bg-blue-100 dark:bg-blue-900/20"
+                    }`}
+                  >
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-[250px]" />
+                      <Skeleton className="h-4 w-[200px]" />
+                    </div>
+                  </div>
+                  {i % 2 === 1 && (
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-3 w-16" />
+                      <Skeleton className="h-3 w-3 rounded-full" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                  )}
+                </div>
+                {i % 2 === 1 && (
+                  <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md bg-blue-100 dark:bg-blue-900/20">
+                    <Skeleton className="h-6 w-6" />
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col-reverse relative overflow-y-auto scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent scrollbar-w-2 scroll-smooth">
       {CombinedMessage && CombinedMessage.length > 0 ? (
@@ -97,45 +156,6 @@ export default function Messages({ fileId }: MessageProps) {
                 />
               );
           })}
-        </div>
-      ) : isLoading ? (
-        <div className="flex flex-col gap-2 p-3">
-          {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className={`flex items-center gap-2 ${
-                i % 2 === 0 ? "justify-start" : "justify-end"
-              }`}
-            >
-              {i % 2 === 0 && (
-                <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 shrink-0"></div>
-              )}
-              <div
-                className={`rounded-2xl px-3 py-2 ${
-                  i % 2 === 0
-                    ? "rounded-tl-none bg-gray-200 dark:bg-gray-700"
-                    : "rounded-tr-none bg-indigo-100 dark:bg-indigo-900"
-                }`}
-              >
-                <Skeleton
-                  count={1}
-                  width={i % 2 === 0 ? 180 : 120}
-                  height={14}
-                />
-                {i % 2 === 0 && (
-                  <Skeleton
-                    count={1}
-                    width={140}
-                    height={14}
-                    className="mt-1"
-                  />
-                )}
-              </div>
-              {i % 2 !== 0 && (
-                <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 shrink-0"></div>
-              )}
-            </div>
-          ))}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center h-full py-8 text-center px-4">

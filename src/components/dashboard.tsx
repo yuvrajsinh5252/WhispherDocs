@@ -1,17 +1,21 @@
 "use client";
 
 import { trpc } from "@/app/_trpc/client";
-import Skeleton from "react-loading-skeleton";
-import { format } from "date-fns";
+import { Skeleton } from "./ui/skeleton";
+import { formatDistanceToNow } from "date-fns";
+import { FaFilePdf } from "react-icons/fa6";
 import {
   FileText,
-  Ghost,
   Loader2,
   MessageSquare,
-  Plus,
   Search,
   Trash,
   Upload,
+  FileImage,
+  FileCode,
+  FileArchive,
+  SortAsc,
+  SortDesc,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
@@ -19,19 +23,44 @@ import UploadButton from "./UploadButton";
 import Link from "next/link";
 import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const DashboardComponent = () => {
   const utils = trpc.useUtils();
   const [deletingFile, setDeletingFile] = useState(String);
-  const [theme, setTheme] = useState("light");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"date" | "name" | "size">("date");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const { data: files, isLoading } = trpc.getUserFiles.useQuery();
+  const [fileSizes, setFileSizes] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    const theme = localStorage.getItem("theme");
-    if (theme === "dark") setTheme("dark");
-  }, []);
+    if (files) {
+      files.forEach(async (file) => {
+        try {
+          const response = await fetch(file.url, { method: "HEAD" });
+          const size = parseInt(response.headers.get("content-length") || "0");
+          setFileSizes((prev) => ({
+            ...prev,
+            [file.id]: size,
+          }));
+        } catch (error) {
+          console.error("Error fetching file size:", error);
+          setFileSizes((prev) => ({
+            ...prev,
+            [file.id]: 0,
+          }));
+        }
+      });
+    }
+  }, [files]);
 
-  const { data: files, isLoading } = trpc.getUserFiles.useQuery();
   const { mutate: deleteFile } = trpc.deleteFile.useMutation({
     onSuccess: () => {
       utils.getUserFiles.invalidate();
@@ -46,17 +75,65 @@ const DashboardComponent = () => {
     },
   });
 
-  // Filter files based on search query
-  const filteredFiles = files?.filter((file) =>
-    file.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const getFileIcon = (fileName: string) => {
+    const ext = fileName.split(".").pop()?.toLowerCase();
+    switch (ext) {
+      case "pdf":
+        return <FaFilePdf className="h-5 w-5 text-red-500" />;
+      case "jpg":
+      case "jpeg":
+      case "png":
+      case "gif":
+        return <FileImage className="h-5 w-5 text-purple-500" />;
+      case "zip":
+      case "rar":
+        return <FileArchive className="h-5 w-5 text-yellow-500" />;
+      case "js":
+      case "ts":
+      case "jsx":
+      case "tsx":
+        return <FileCode className="h-5 w-5 text-green-500" />;
+      default:
+        return <FileText className="h-5 w-5 text-blue-500" />;
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (!bytes || bytes === 0) return "Size unknown";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  const sortFiles = (files: any[]) => {
+    return [...files].sort((a, b) => {
+      let comparison = 0;
+      if (sortBy === "date") {
+        comparison =
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      } else if (sortBy === "name") {
+        comparison = a.name.localeCompare(b.name);
+      } else if (sortBy === "size") {
+        comparison = fileSizes[b.id] - fileSizes[a.id];
+      }
+      return sortOrder === "asc" ? comparison * -1 : comparison;
+    });
+  };
+
+  const filteredFiles = files
+    ? sortFiles(
+        files.filter((file) =>
+          file.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      )
+    : [];
 
   return (
-    <div className="max-w-7xl mx-auto py-6">
-      {/* Dashboard Header */}
+    <div className="max-w-7xl mx-auto py-14">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold">Your Documents</h1>
+          <h1 className="text-2xl font-bold">My Documents</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Upload, manage and chat with your documents
           </p>
@@ -64,25 +141,50 @@ const DashboardComponent = () => {
         <UploadButton />
       </div>
 
-      {/* Search Bar */}
-      <div className="relative mb-6">
-        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-          <Search className="h-4 w-4 text-gray-400" />
+      <div className="flex flex-row gap-4 mb-6">
+        <div className="relative flex-1">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <Search className="h-4 w-4 text-gray-400" />
+          </div>
+          <Input
+            type="search"
+            placeholder="Search documents..."
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
-        <Input
-          type="search"
-          placeholder="Search documents..."
-          className="pl-10"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+        <div className="flex items-center gap-2">
+          <Select onValueChange={(value) => setSortBy(value as any)}>
+            <SelectTrigger>
+              <SelectValue placeholder={sortBy} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date">Date</SelectItem>
+              <SelectItem value="name">Name</SelectItem>
+              <SelectItem value="size">Size</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+          >
+            {sortOrder === "asc" ? (
+              <SortAsc className="h-4 w-4" />
+            ) : (
+              <SortDesc className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Files List */}
       {files && files.length > 0 ? (
         <>
+          {console.log(files)}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredFiles?.map((file) => (
+            {filteredFiles.map((file) => (
               <div
                 key={file.id}
                 className={cn(
@@ -93,16 +195,21 @@ const DashboardComponent = () => {
                 <Link href={`/dashboard/${file.id}`}>
                   <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
                     <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <FileText className="h-5 w-5 text-blue-500" />
+                      {getFileIcon(file.name)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-sm truncate">
                         {file.name}
                       </h3>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Uploaded on{" "}
-                        {format(new Date(file.createdAt), "MMM d, yyyy")}
-                      </p>
+                      <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                        <span>{formatFileSize(fileSizes[file.id])}</span>
+                        <span>•</span>
+                        <span>
+                          {formatDistanceToNow(new Date(file.createdAt), {
+                            addSuffix: true,
+                          })}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </Link>
@@ -170,14 +277,27 @@ const DashboardComponent = () => {
                 key={i}
                 className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
               >
-                <div className="p-4">
-                  <Skeleton height={24} width={180} />
-                  <Skeleton height={16} width={120} className="mt-2" />
+                <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
+                  <div className="p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                    <Skeleton className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-3 w-16" />
+                      <Skeleton className="h-3 w-3 rounded-full" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                  </div>
                 </div>
-                <div className="border-t border-gray-100 dark:border-gray-700 p-4">
-                  <div className="flex items-center justify-between">
-                    <Skeleton height={18} width={80} />
-                    <Skeleton height={24} width={60} />
+                <div className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-6 w-6 rounded-md" />
+                    <Skeleton className="h-4 w-12" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-6 w-6 rounded-md" />
+                    <Skeleton className="h-6 w-6 rounded-md" />
                   </div>
                 </div>
               </div>
