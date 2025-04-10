@@ -34,41 +34,94 @@ export default function PDFrenderer({ url }: PDFRenedererProps) {
   const { toast } = useToast();
   const { ref, width } = useResizeDetector();
 
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= numPages) {
+      setPageNumber(newPage);
+    }
+  };
+
   return (
-    <div>
-      <div className="flex border-b max-sm:h-[3.1rem] items-center justify-between p-2">
-        <div className="flex items-center gap-2">
+    <div className="flex flex-col h-full">
+      <div className="flex border-b items-center justify-between p-2 bg-white dark:bg-gray-900 sticky top-0 z-10">
+        <div className="flex items-center gap-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={pageNumber <= 1}
+            onClick={() => handlePageChange(pageNumber - 1)}
+            className="h-8 w-8 p-0"
+          >
+            <span className="sr-only">Previous page</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4"
+            >
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+          </Button>
+
           <Input
             type="number"
-            className="w-16 h-10"
+            className="w-14 h-8"
             min={1}
             max={numPages}
             value={pageNumber}
-            onChange={(e) => setPageNumber(parseInt(e.target.value))}
+            onChange={(e) => setPageNumber(parseInt(e.target.value) || 1)}
+            onBlur={() => {
+              if (pageNumber < 1) setPageNumber(1);
+              if (pageNumber > numPages) setPageNumber(numPages);
+            }}
           />
-          <p className="text-zinc-700 dark:text-white text-sm space-x-1">
-            <span>/</span>
-            <span>{numPages}</span>
+
+          <p className="text-zinc-700 dark:text-white text-sm whitespace-nowrap">
+            / <span>{numPages}</span>
           </p>
-        </div>
-        <div className="flex gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              className="flex items-center gap-2 text-lg max-sm:hidden"
-              asChild
+
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={pageNumber >= numPages}
+            onClick={() => handlePageChange(pageNumber + 1)}
+            className="h-8 w-8 p-0"
+          >
+            <span className="sr-only">Next page</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4"
             >
-              <Button variant="ghost" aria-label="zoom" className="flex gap-2">
-                <Search className="h-4 w-4" />
-                <span>{zoom * 100}%</span>
-                <ChevronDown />
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </Button>
+        </div>
+
+        <div className="flex gap-1.5">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-1.5 h-8">
+                <Search className="h-3.5 w-3.5" />
+                <span className="text-xs">{zoom * 100}%</span>
+                <ChevronDown className="h-3 w-3 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem onSelect={() => setZoom(0.5)}>
                 50%
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setZoom(0.67)}>
-                67%
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => setZoom(0.75)}>
                 75%
@@ -82,51 +135,55 @@ export default function PDFrenderer({ url }: PDFRenedererProps) {
               <DropdownMenuItem onSelect={() => setZoom(2)}>
                 200%
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setZoom(2.5)}>
-                250%
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
           <Button
             variant="ghost"
-            className="max-sm:p-0"
-            aria-label="rotate 90 degrees"
-            onClick={() => setRotation(rotation + 90)}
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={() => setRotation((prev) => (prev + 90) % 360)}
           >
-            <RotateCw className="h-5 w-5" />
+            <span className="sr-only">Rotate 90 degrees</span>
+            <RotateCw className="h-4 w-4" />
           </Button>
+
           <PDFfullscreen url={url} />
         </div>
       </div>
-      <SimpleBar className="max-sm:hidden" autoHide={true}>
-        <div ref={ref}>
-          <Document
-            file={url}
-            className="rounded-lg items-center flex justify-center"
-            loading={
-              <div className="flex justify-center items-center h-[calc(100vh-10rem)]">
-                <Loader2 className="m-auto animate-spin" size={50} />
-              </div>
-            }
-            onLoadError={(error) => {
-              toast({
-                title: "Error Loading PDF",
-                description: error.message,
-                variant: "destructive",
-              });
-            }}
-            onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-          >
-            <Page
-              width={width}
-              pageNumber={pageNumber}
-              scale={zoom}
-              rotate={rotation}
-            />
-          </Document>
-        </div>
-      </SimpleBar>
+
+      {/* Main PDF display area - scrollable for both desktop and mobile */}
+      <div className="flex-1 w-full overflow-hidden">
+        <SimpleBar className="h-full w-full max-h-[calc(100vh-10rem)] sm:max-h-[calc(100vh-12rem)]">
+          <div ref={ref} className="flex justify-center">
+            <Document
+              file={url}
+              className="max-w-full"
+              loading={
+                <div className="flex justify-center items-center h-[calc(100vh-15rem)]">
+                  <Loader2 className="animate-spin h-8 w-8 text-blue-500" />
+                </div>
+              }
+              onLoadError={(error) => {
+                toast({
+                  title: "Error Loading PDF",
+                  description: error.message,
+                  variant: "destructive",
+                });
+              }}
+              onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+            >
+              <Page
+                pageNumber={pageNumber}
+                width={width ? width * 0.9 : undefined}
+                scale={zoom}
+                rotate={rotation}
+                className="mx-auto"
+              />
+            </Document>
+          </div>
+        </SimpleBar>
+      </div>
     </div>
   );
 }

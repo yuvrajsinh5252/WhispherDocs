@@ -2,75 +2,88 @@ import { cn } from "@/lib/utils";
 import { ExtendedMessages } from "@/types/messages";
 import { Bot, UserRound } from "lucide-react";
 import { forwardRef } from "react";
-import ReactMarkdown from 'react-markdown'
+import ReactMarkdown from "react-markdown";
+import { format } from "date-fns";
 
 interface MessageProps {
-    message: ExtendedMessages
-    isNextMessageSamePerson: boolean
+  message: ExtendedMessages;
+  isNextMessageSamePerson: boolean;
 }
 
-export const Message = forwardRef<HTMLDivElement, MessageProps>(({
-    message,
-    isNextMessageSamePerson
-}, ref) => {
+export const Message = forwardRef<HTMLDivElement, MessageProps>(
+  ({ message, isNextMessageSamePerson }, ref) => {
     return (
-        <div
-            ref={ref}
-            className={cn('flex items-end', {
-                'justify-end': message.isUserMessage,
-            })}>
-            {!message.isUserMessage && (
-                <div className="mr-2 bg-gray-700 rounded-md p-1 max-sm:hidden">
-                    <Bot className="w-6 h-6 max-sm:w-5 max-sm:h-5 text-white" />
-                </div>
-            )}
-            <div className={cn("max-w-[75%] max-sm:max-w-full rounded-lg inline-block text-white", {
-                'bg-blue-500 rounded-br-none': message.isUserMessage,
-                'bg-zinc-600 rounded-bl-none': !message.isUserMessage,
-                invisible: isNextMessageSamePerson,
-            })}>
-                <div className={cn("p-2 max-sm:text-sm", {
-                    'rounded-br-non': isNextMessageSamePerson,
-                    'rounded-bl-none': !isNextMessageSamePerson,
-                })}>
-                    {
-                        typeof message.text === 'string' ? (
-                            <ReactMarkdown className="prose max-sm:prose-sm text-zinc-50">
-                                {message.text}
-                            </ReactMarkdown>
-                        ) : (
-                            message.text
-                        )
-                    }
-                </div>
-                <div className="flex max-sm:justify-between justify-end m-2">
-                    {!message.isUserMessage && (
-                        <div className="mr-2 bg-gray-700 rounded-md p-1 hidden max-sm:block">
-                            <Bot className="w-6 h-6 max-sm:w-5 max-sm:h-5 text-white" />
-                        </div>
-                    )}
-                    <span className="text-xs text-zinc-50">
-                        {new Date(message.createdAt).toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: 'numeric',
-                            hour12: false,
-                        })}
-                    </span>
-                    {(message.isUserMessage && !isNextMessageSamePerson) && (
-                        <div className="ml-2 p-1 bg-blue-700 rounded-md text-white hidden max-sm:block">
-                            <UserRound className="h-4 w-4" />
-                        </div>
-                    )}
-                </div>
-
+      <div
+        ref={ref}
+        className={cn("flex items-end", {
+          "justify-end": message.isUserMessage,
+        })}
+      >
+        {/* AI Avatar */}
+        {!message.isUserMessage && !isNextMessageSamePerson && (
+          <div className="flex-shrink-0 mr-2">
+            <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+              <Bot className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
             </div>
-            {(message.isUserMessage && !isNextMessageSamePerson) && (
-                <div className="ml-2 p-1 bg-blue-500 max-sm:hidden rounded-md text-white">
-                    <UserRound className="w-6 h-6 max-sm:w-5 max-sm:h-5" />
-                </div>
-            )}
-        </div>
-    )
-})
+          </div>
+        )}
 
-Message.displayName = 'Message'
+        {/* Message spacing for sequential messages from same sender */}
+        {!message.isUserMessage && isNextMessageSamePerson && (
+          <div className="w-8 mr-2" />
+        )}
+
+        {/* Message Bubble */}
+        <div
+          className={cn(
+            "max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-2 shadow-sm",
+            {
+              "bg-indigo-600 text-white": message.isUserMessage,
+              "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100":
+                !message.isUserMessage,
+              "rounded-br-none":
+                message.isUserMessage && !isNextMessageSamePerson,
+              "rounded-bl-none":
+                !message.isUserMessage && !isNextMessageSamePerson,
+            }
+          )}
+        >
+          {/* Message Content */}
+          <div className="prose prose-sm dark:prose-invert max-w-none">
+            {typeof message.text === "string" ? (
+              <ReactMarkdown>{message.text}</ReactMarkdown>
+            ) : (
+              message.text
+            )}
+          </div>
+
+          {/* Message Timestamp */}
+          <div
+            className={cn(
+              "text-[10px] select-none mt-1 flex items-center",
+              message.isUserMessage ? "text-indigo-200" : "text-gray-500"
+            )}
+          >
+            {format(new Date(message.createdAt), "h:mm a")}
+          </div>
+        </div>
+
+        {/* User Avatar */}
+        {message.isUserMessage && !isNextMessageSamePerson && (
+          <div className="flex-shrink-0 ml-2">
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+              <UserRound className="h-5 w-5 text-white" />
+            </div>
+          </div>
+        )}
+
+        {/* Message spacing for sequential messages from same sender */}
+        {message.isUserMessage && isNextMessageSamePerson && (
+          <div className="w-8 ml-2" />
+        )}
+      </div>
+    );
+  }
+);
+
+Message.displayName = "Message";
