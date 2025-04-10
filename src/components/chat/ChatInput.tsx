@@ -23,13 +23,13 @@ export default function ChatInput({ isDisabled }: ChatInputProps) {
   };
 
   return (
-    <div className="relative w-full p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
+    <div className="relative w-full bg-white dark:bg-gray-900">
       <div className="relative rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/50 focus-within:border-indigo-500 bg-white dark:bg-gray-800 transition-all duration-300 hover:border-indigo-300 dark:hover:border-indigo-600">
         <Textarea
           placeholder="Ask a question about your document..."
           autoFocus
           rows={1}
-          maxRows={5}
+          maxRows={4}
           ref={textAreaRef}
           value={message}
           onChange={handleInputChange}
@@ -41,7 +41,7 @@ export default function ChatInput({ isDisabled }: ChatInputProps) {
           }}
           disabled={isLoading || isDisabled}
           className={cn(
-            "min-h-[60px] w-full resize-none border-0 bg-transparent py-4 pl-5 pr-14 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] leading-relaxed text-gray-900 dark:text-gray-100 dark:placeholder-gray-400 placeholder-gray-500 transition-colors duration-200",
+            "min-h-[44px] sm:min-h-[52px] w-full resize-none border-0 bg-transparent py-3 sm:py-4 pl-4 sm:pl-5 pr-12 sm:pr-14 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm sm:text-[15px] leading-relaxed text-gray-900 dark:text-gray-100 dark:placeholder-gray-400 placeholder-gray-500 transition-colors duration-200",
             isLoading && "text-gray-400 dark:text-gray-500",
             !isDisabled &&
               "hover:placeholder-gray-600 dark:hover:placeholder-gray-300"
