@@ -53,6 +53,10 @@ export const POST = async (req: NextRequest) => {
 
     const results = await vectorStore.similaritySearch(message, 4);
 
+    const hasRelevantContext = results.some(
+      (r) => r.pageContent.trim().length > 0
+    );
+
     const prevMessages = await db.messages.findMany({
       where: { fileId: file.id },
       orderBy: { createdAt: "desc" },
@@ -77,28 +81,46 @@ export const POST = async (req: NextRequest) => {
       messages: [
         {
           role: "system",
-          content:
-            "You are a helpful AI assistant that primarily answers questions based on PDF documents uploaded by the user. Your answers should be clear, concise, and directly reference the content from the document when possible. While your primary focus is on the document content, you can provide brief, general knowledge responses when the question is outside the document scope.",
+          content: `You are a document assistant that ONLY answers questions based on the content of the specific document uploaded by the user.
+
+          CRITICAL INSTRUCTIONS:
+          1. ONLY use information provided in the document context to answer questions.
+          2. If the user's question has no relation to the document or the query is generic (like greetings):
+            - Respond with a helpful message like "Hello! I'm your document assistant. How can I help you with the uploaded document today?"
+            - For other off-topic questions, say "I can only answer questions about the document you've uploaded. Could you please ask something related to the document content?"
+          3. NEVER provide information not contained in the document context.
+          4. NEVER reference personal information about any individual unless it's specifically mentioned in the document context.
+          5. NEVER refer to any specific name, company, or details not found in the document context.
+          6. NEVER make assumptions about who the user is or what documents they may have uploaded previously.
+          7. If the document context doesn't contain information to answer the question, clearly state "I don't see information about that in your uploaded document."`,
         },
         {
           role: "user",
-          content: `Answer the user's question primarily using information from the provided context. Format your response in markdown for better readability.
+          content: `Answer the user's question using ONLY the provided document context. Format your response in markdown for better readability.
 
           INSTRUCTIONS:
-          1. If the answer is found in the context, provide it clearly with relevant details
-          2. If the answer isn't in the context but is common knowledge, you may provide a brief, factual response
-          3. If uncertain about facts outside the document, indicate your uncertainty appropriately
-          4. Focus specifically on answering what was asked without unnecessary information
-          5. For follow-up questions:
-             - Refer to the previous conversation to understand the context
-             - If the follow-up refers to "this" or other vague terms, use the previous questions for context
-          6. Use bullet points, headings, or formatting when it helps clarify complex information
+          1. First, carefully evaluate if the provided document context is relevant to the user's question
+          2. If the context IS relevant:
+             - Answer based on the document context with specific references
+             - Cite the relevant parts of the document that support your answer
+          3. If the context is NOT relevant or doesn't contain the answer:
+             - Clearly state "I don't see information about that in your uploaded document."
+             - DO NOT provide general knowledge responses unrelated to the document
+          4. Only address what's specifically asked in the current question
+          5. Format your response appropriately with markdown for readability
+          6. For follow-up questions:
+             - Consider both the previous conversation and the document context
+             - Maintain consistency with previous answers
+          7. If the query is a simple greeting or off-topic from the document:
+             - Respond with a friendly greeting and redirect focus to the document
 
           RECENT CONVERSATION:
           ${formattedHistory}
 
-          CONTEXT FROM DOCUMENT:
+          Document context (only use this information if relevant to the user question):
           ${results.map((r) => r.pageContent).join("\n\n")}
+
+          Has relevant context from document: ${hasRelevantContext}
 
           USER QUESTION: ${message}`,
         },
@@ -113,7 +135,7 @@ export const POST = async (req: NextRequest) => {
           if (event.type === "citation-start") {
             controller.enqueue(`**Citations-start:**\n`);
           }
-          if (event.type === "citation-start") {
+          if (event.type === "citation-end") {
             controller.enqueue(`**Citations-end:**\n`);
           }
           if (event.type === "content-delta") {
@@ -123,14 +145,14 @@ export const POST = async (req: NextRequest) => {
         }
         controller.close();
 
-        // await db.messages.create({
-        //   data: {
-        //     text: finalMessage,
-        //     isUserMessage: false,
-        //     userId: user?.id,
-        //     fileId: fileId,
-        //   },
-        // });
+        await db.messages.create({
+          data: {
+            text: finalMessage,
+            isUserMessage: false,
+            userId: user?.id,
+            fileId: fileId,
+          },
+        });
       },
     });
 

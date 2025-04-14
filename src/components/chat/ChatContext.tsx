@@ -1,19 +1,17 @@
-"use client";
-
-import { createContext, useRef, useState } from "react";
+import { ReactNode, createContext, useRef, useState } from "react";
+import { useToast } from "../ui/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { trpc } from "@/app/_trpc/client";
-import { INFINITE_QUERRY_LIMIT } from "@/config/infiinte-querry";
-import { toast } from "../ui/use-toast";
+import { INFINITE_QUERY_LIMIT } from "@/config/infiinte-querry";
 
-type streamResponse = {
+type StreamResponse = {
   addMessage: () => void;
   message: string;
   handleInputChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
   isLoading: boolean;
 };
 
-export const ChatContext = createContext<streamResponse>({
+export const ChatContext = createContext<StreamResponse>({
   addMessage: () => {},
   message: "",
   handleInputChange: () => {},
@@ -22,19 +20,22 @@ export const ChatContext = createContext<streamResponse>({
 
 interface Props {
   fileId: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-export default function ChatContextProvider({ fileId, children }: Props) {
-  const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+export const ChatContextProvider = ({ fileId, children }: Props) => {
+  const [message, setMessage] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const utils = trpc.useUtils();
-  const backUpMessages = useRef("");
+  const utils = trpc.useContext();
+
+  const { toast } = useToast();
+
+  const backupMessage = useRef("");
 
   const { mutate: sendMessage } = useMutation({
     mutationFn: async ({ message }: { message: string }) => {
-      const response = await fetch(`/api/message`, {
+      const response = await fetch("/api/message", {
         method: "POST",
         body: JSON.stringify({
           fileId,
@@ -48,25 +49,31 @@ export default function ChatContextProvider({ fileId, children }: Props) {
 
       return response.body;
     },
-
     onMutate: async ({ message }) => {
-      backUpMessages.current = message;
+      backupMessage.current = message;
       setMessage("");
 
+      // step 1
       await utils.getMessages.cancel();
+
+      // step 2
       const previousMessages = utils.getMessages.getInfiniteData();
 
+      // step 3
       utils.getMessages.setInfiniteData(
-        { fileId, limit: INFINITE_QUERRY_LIMIT },
+        { fileId, limit: INFINITE_QUERY_LIMIT },
         (old) => {
-          if (!old)
+          if (!old) {
             return {
               pages: [],
               pageParams: [],
             };
+          }
+
           let newPages = [...old.pages];
 
           let latestPage = newPages[0]!;
+
           latestPage.messages = [
             {
               createdAt: new Date().toISOString(),
@@ -85,6 +92,7 @@ export default function ChatContextProvider({ fileId, children }: Props) {
           };
         }
       );
+
       setIsLoading(true);
 
       return {
@@ -92,7 +100,6 @@ export default function ChatContextProvider({ fileId, children }: Props) {
           previousMessages?.pages.flatMap((page) => page.messages) ?? [],
       };
     },
-
     onSuccess: async (stream) => {
       setIsLoading(false);
 
@@ -108,171 +115,69 @@ export default function ChatContextProvider({ fileId, children }: Props) {
       const decoder = new TextDecoder();
       let done = false;
 
+      // accumulated response
       let accResponse = "";
 
-      let streamTimeout: NodeJS.Timeout | null = null;
-      let chunkTimeout: NodeJS.Timeout | null = null;
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        const chunkValue = decoder.decode(value);
 
-      const clearStreamTimeout = () => {
-        if (streamTimeout) {
-          clearTimeout(streamTimeout);
-          streamTimeout = null;
-        }
-      };
+        accResponse += chunkValue;
 
-      const clearChunkTimeout = () => {
-        if (chunkTimeout) {
-          clearTimeout(chunkTimeout);
-          chunkTimeout = null;
-        }
-      };
+        // append chunk to the actual message
+        utils.getMessages.setInfiniteData(
+          { fileId, limit: INFINITE_QUERY_LIMIT },
+          (old) => {
+            if (!old) return { pages: [], pageParams: [] };
 
-      try {
-        streamTimeout = setTimeout(() => {
-          if (!done) {
-            done = true;
-            reader.cancel("Stream timeout exceeded").catch(console.error);
+            let isAiResponseCreated = old.pages.some((page) =>
+              page.messages.some((message) => message.id === "ai-response")
+            );
 
-            if (accResponse) {
-              accResponse +=
-                "\n\n*Note: Response was incomplete due to timeout.*";
+            let updatedPages = old.pages.map((page) => {
+              if (page === old.pages[0]) {
+                let updatedMessages;
 
-              utils.getMessages.setInfiniteData(
-                { fileId, limit: INFINITE_QUERRY_LIMIT },
-                updateMessagesCallback(accResponse)
-              );
-            }
+                if (!isAiResponseCreated) {
+                  updatedMessages = [
+                    {
+                      createdAt: new Date().toISOString(),
+                      id: "ai-response",
+                      text: accResponse,
+                      isUserMessage: false,
+                    },
+                    ...page.messages,
+                  ];
+                } else {
+                  updatedMessages = page.messages.map((message) => {
+                    if (message.id === "ai-response") {
+                      return {
+                        ...message,
+                        text: accResponse,
+                      };
+                    }
+                    return message;
+                  });
+                }
 
-            toast({
-              title: "Response timeout",
-              description:
-                "The response took too long. You may see a partial response.",
-              variant: "default",
+                return {
+                  ...page,
+                  messages: updatedMessages,
+                };
+              }
+
+              return page;
             });
+
+            return { ...old, pages: updatedPages };
           }
-        }, 59000);
-
-        while (!done) {
-          clearChunkTimeout();
-
-          const { value, done: doneReading } = await reader.read();
-          done = doneReading;
-
-          clearChunkTimeout();
-
-          if (done) {
-            clearStreamTimeout();
-            break;
-          }
-
-          const chunkValue = decoder.decode(value);
-          accResponse += chunkValue;
-
-          clearStreamTimeout();
-          streamTimeout = setTimeout(() => {
-            if (!done) {
-              done = true;
-              reader.cancel("Stream timeout exceeded").catch(console.error);
-
-              if (accResponse) {
-                accResponse +=
-                  "\n\n*Note: Response was incomplete due to timeout.*";
-
-                utils.getMessages.setInfiniteData(
-                  { fileId, limit: INFINITE_QUERRY_LIMIT },
-                  updateMessagesCallback(accResponse)
-                );
-              }
-
-              toast({
-                title: "Response timeout",
-                description:
-                  "The response took too long. You may see a partial response.",
-                variant: "default",
-              });
-            }
-          }, 30000);
-          utils.getMessages.setInfiniteData(
-            { fileId, limit: INFINITE_QUERRY_LIMIT },
-            updateMessagesCallback(accResponse)
-          );
-        }
-      } catch (error) {
-        console.error("Error during streaming:", error);
-        clearStreamTimeout();
-        clearChunkTimeout();
-
-        if (accResponse) {
-          accResponse +=
-            "\n\n*Note: An error occurred while streaming the response.*";
-
-          utils.getMessages.setInfiniteData(
-            { fileId, limit: INFINITE_QUERRY_LIMIT },
-            updateMessagesCallback(accResponse)
-          );
-        }
-
-        toast({
-          title: "Streaming error",
-          description:
-            "There was a problem with the response. You may see a partial result.",
-          variant: "destructive",
-        });
-      } finally {
-        clearStreamTimeout();
-        clearChunkTimeout();
-      }
-
-      function updateMessagesCallback(currentResponse: string) {
-        return (old: any) => {
-          if (!old) return { pages: [], pageParams: [] };
-
-          let isAiResponseCreated = old.pages.some((page: any) =>
-            page.messages.some((message: any) => message.id === "ai-response")
-          );
-
-          let updatedPages = old.pages.map((page: any) => {
-            if (page === old.pages[0]) {
-              let updatedMessages;
-
-              if (!isAiResponseCreated) {
-                updatedMessages = [
-                  {
-                    createdAt: new Date().toISOString(),
-                    id: "ai-response",
-                    text: currentResponse,
-                    isUserMessage: false,
-                  },
-                  ...page.messages,
-                ];
-              } else {
-                updatedMessages = page.messages.map((message: any) => {
-                  if (message.id === "ai-response") {
-                    return {
-                      ...message,
-                      text: currentResponse,
-                    };
-                  }
-                  return message;
-                });
-              }
-
-              return {
-                ...page,
-                messages: updatedMessages,
-              };
-            }
-
-            return page;
-          });
-
-          return { ...old, pages: updatedPages };
-        };
+        );
       }
     },
 
     onError: (_, __, context) => {
-      setMessage(backUpMessages.current);
+      setMessage(backupMessage.current);
       utils.getMessages.setData(
         { fileId },
         { messages: context?.previousMessages ?? [] }
@@ -285,8 +190,8 @@ export default function ChatContextProvider({ fileId, children }: Props) {
     },
   });
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(event.target.value);
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
   };
 
   const addMessage = () => sendMessage({ message });
@@ -303,4 +208,4 @@ export default function ChatContextProvider({ fileId, children }: Props) {
       {children}
     </ChatContext.Provider>
   );
-}
+};

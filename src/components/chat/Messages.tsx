@@ -1,6 +1,6 @@
 import { trpc } from "@/app/_trpc/client";
-import { INFINITE_QUERRY_LIMIT } from "@/config/infiinte-querry";
-import { Loader2, MessagesSquare } from "lucide-react";
+import { INFINITE_QUERY_LIMIT } from "@/config/infiinte-querry";
+import { MessagesSquare } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Message } from "./Message";
 import { useContext, useEffect, useRef } from "react";
@@ -17,7 +17,7 @@ export default function Messages({ fileId }: MessageProps) {
   const { data, isLoading, fetchNextPage } = trpc.getMessages.useInfiniteQuery(
     {
       fileId,
-      limit: INFINITE_QUERRY_LIMIT,
+      limit: INFINITE_QUERY_LIMIT,
     },
     {
       getNextPageParam: (lastPage) => lastPage?.nextCursor,
@@ -129,33 +129,31 @@ export default function Messages({ fileId }: MessageProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col-reverse relative overflow-y-auto scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent scrollbar-w-2 scroll-smooth">
+    <div className="flex-1 flex flex-col-reverse relative overflow-y-auto scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 px-1 gap-2 scrollbar-track-transparent scrollbar-w-2 scroll-smooth scrolling-touch">
       {CombinedMessage && CombinedMessage.length > 0 ? (
-        <div className="flex flex-col-reverse gap-3 px-3 pb-3">
-          {CombinedMessage.map((message, i) => {
-            const isNextMessageSamePerson =
-              CombinedMessage[i - 1]?.isUserMessage ===
-              CombinedMessage[i]?.isUserMessage;
+        CombinedMessage.map((message, i) => {
+          const isNextMessageSamePerson =
+            CombinedMessage[i - 1]?.isUserMessage ===
+            CombinedMessage[i]?.isUserMessage;
 
-            if (i === CombinedMessage.length - 1)
-              return (
-                <Message
-                  ref={ref}
-                  message={message}
-                  isNextMessageSamePerson={isNextMessageSamePerson}
-                  key={message.id}
-                />
-              );
-            else
-              return (
-                <Message
-                  message={message}
-                  isNextMessageSamePerson={isNextMessageSamePerson}
-                  key={message.id}
-                />
-              );
-          })}
-        </div>
+          if (i === CombinedMessage.length - 1)
+            return (
+              <Message
+                ref={ref}
+                message={message}
+                isNextMessageSamePerson={isNextMessageSamePerson}
+                key={message.id}
+              />
+            );
+          else
+            return (
+              <Message
+                message={message}
+                isNextMessageSamePerson={isNextMessageSamePerson}
+                key={message.id}
+              />
+            );
+        })
       ) : (
         <div className="flex flex-col items-center justify-center h-full py-8 text-center px-4">
           <div className="h-16 w-16 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center mb-4">

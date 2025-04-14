@@ -6,7 +6,7 @@ import Messages from "./Messages";
 import { ChevronLeft, Loader2, MessageSquare, XCircle } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants } from "../ui/button";
-import ChatContextProvider from "./ChatContext";
+import { ChatContextProvider } from "./ChatContext";
 
 interface ChatwrapperProps {
   fileId: string;
