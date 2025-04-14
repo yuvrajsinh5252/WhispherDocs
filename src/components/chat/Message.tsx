@@ -19,7 +19,6 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
           "justify-end": message.isUserMessage,
         })}
       >
-        {/* AI Avatar */}
         {!message.isUserMessage && !isNextMessageSamePerson && (
           <div className="flex-shrink-0 mr-2">
             <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
@@ -28,12 +27,10 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
           </div>
         )}
 
-        {/* Message spacing for sequential messages from same sender */}
         {!message.isUserMessage && isNextMessageSamePerson && (
           <div className="w-8 mr-2" />
         )}
 
-        {/* Message Bubble */}
         <div
           className={cn(
             "max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-2 shadow-sm",
@@ -48,7 +45,6 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
             }
           )}
         >
-          {/* Message Content */}
           <div className="prose prose-sm dark:prose-invert max-w-none">
             {typeof message.text === "string" ? (
               <ReactMarkdown>{message.text}</ReactMarkdown>
@@ -57,7 +53,6 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
             )}
           </div>
 
-          {/* Message Timestamp */}
           <div
             className={cn(
               "text-[10px] select-none mt-1 flex items-center",
@@ -68,7 +63,6 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
           </div>
         </div>
 
-        {/* User Avatar */}
         {message.isUserMessage && !isNextMessageSamePerson && (
           <div className="flex-shrink-0 ml-2">
             <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
@@ -77,7 +71,6 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
           </div>
         )}
 
-        {/* Message spacing for sequential messages from same sender */}
         {message.isUserMessage && isNextMessageSamePerson && (
           <div className="w-8 ml-2" />
         )}

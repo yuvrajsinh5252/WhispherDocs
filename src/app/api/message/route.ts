@@ -5,7 +5,7 @@ import { db } from "@/db";
 import { PineconeStore } from "@langchain/pinecone";
 import { PineconeClient } from "@/lib/pinecone";
 import { CohereEmbeddings } from "@langchain/cohere";
-import { CohereClient } from "cohere-ai";
+import { CohereClientV2 } from "cohere-ai";
 
 export const maxDuration = 59;
 
@@ -55,39 +55,52 @@ export const POST = async (req: NextRequest) => {
 
     const prevMessages = await db.messages.findMany({
       where: { fileId: file.id },
-      orderBy: { createdAt: "asc" },
-      take: 2,
+      orderBy: { createdAt: "desc" },
+      take: 4,
     });
 
-    const cohere = new CohereClient({
+    const formattedHistory = prevMessages
+      .reverse()
+      .map((m) => `${m.isUserMessage ? "Human" : "Assistant"}: ${m.text}`)
+      .join("\n\n");
+
+    const cohere = new CohereClientV2({
       token: process.env.COHERE_API_KEY,
     });
 
     const response = await cohere.chatStream({
-      model: "command-r-plus",
-      temperature: 0,
-      message: message,
-      chatHistory: prevMessages.map((m) => ({
-        role: m.isUserMessage ? "USER" : "CHATBOT",
-        message: m.text,
-      })),
-      documents: [
+      model: "command-a-03-2025",
+      temperature: 0.2,
+      citationOptions: {
+        mode: "FAST",
+      },
+      messages: [
         {
           role: "system",
           content:
-            "The user is asking question from the uploaded PDF and you are trying to answer using that content. Use the following pieces of context (or previous conversaton if needed) to answer the users question in markdown format.",
+            "You are a helpful AI assistant that primarily answers questions based on PDF documents uploaded by the user. Your answers should be clear, concise, and directly reference the content from the document when possible. While your primary focus is on the document content, you can provide brief, general knowledge responses when the question is outside the document scope.",
         },
         {
           role: "user",
-          content: `Use the following pieces of context (or previous conversaton if needed) to answer the users question in markdown format. \nIf you don't know the answer, stick to the context provided and try to answer it naturally.
-          \n If the user asks the same question again, handle it gracefully and don't reapeat your answer.
-          \n----------------\n
-          PREVIOUS CONVERSATION:
-          ${prevMessages.map((m) => m.text).join("\n\n")}
-          \n----------------\n
-          CONTEXT:
+          content: `Answer the user's question primarily using information from the provided context. Format your response in markdown for better readability.
+
+          INSTRUCTIONS:
+          1. If the answer is found in the context, provide it clearly with relevant details
+          2. If the answer isn't in the context but is common knowledge, you may provide a brief, factual response
+          3. If uncertain about facts outside the document, indicate your uncertainty appropriately
+          4. Focus specifically on answering what was asked without unnecessary information
+          5. For follow-up questions:
+             - Refer to the previous conversation to understand the context
+             - If the follow-up refers to "this" or other vague terms, use the previous questions for context
+          6. Use bullet points, headings, or formatting when it helps clarify complex information
+
+          RECENT CONVERSATION:
+          ${formattedHistory}
+
+          CONTEXT FROM DOCUMENT:
           ${results.map((r) => r.pageContent).join("\n\n")}
-          USER INPUT: ${message}`,
+
+          USER QUESTION: ${message}`,
         },
       ],
     });
@@ -95,44 +108,29 @@ export const POST = async (req: NextRequest) => {
     const stream = new ReadableStream({
       async start(controller) {
         let finalMessage = "";
-        let isCompleted = false;
 
-        try {
-          for await (const event of response) {
-            if (event.eventType === "text-generation") {
-              controller.enqueue(event.text);
-              finalMessage += event.text;
-            }
+        for await (const event of response) {
+          if (event.type === "citation-start") {
+            controller.enqueue(`**Citations-start:**\n`);
           }
-          isCompleted = true;
-        } catch (error) {
-          console.error("Streaming error:", error);
-          if (finalMessage) {
-            controller.enqueue(
-              "\n\n*Note: Response may be incomplete due to timeout.*"
-            );
-          } else {
-            controller.enqueue(
-              "Sorry, there was an error generating a response. Please try again with a shorter query."
-            );
+          if (event.type === "citation-start") {
+            controller.enqueue(`**Citations-end:**\n`);
           }
-        } finally {
-          controller.close();
-
-          if (finalMessage) {
-            await db.messages.create({
-              data: {
-                text: isCompleted
-                  ? finalMessage
-                  : finalMessage +
-                    "\n\n*Note: Response may be incomplete due to timeout.*",
-                isUserMessage: false,
-                userId: user?.id,
-                fileId: fileId,
-              },
-            });
+          if (event.type === "content-delta") {
+            controller.enqueue(event.delta?.message?.content?.text);
+            finalMessage += event.delta?.message?.content?.text;
           }
         }
+        controller.close();
+
+        // await db.messages.create({
+        //   data: {
+        //     text: finalMessage,
+        //     isUserMessage: false,
+        //     userId: user?.id,
+        //     fileId: fileId,
+        //   },
+        // });
       },
     });
 

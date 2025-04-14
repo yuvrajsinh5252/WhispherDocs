@@ -10,8 +10,6 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@ai-sdk/cohere": "^0.0.25",
-    "@google/generative-ai": "^0.16.1",
     "@kinde-oss/kinde-auth-nextjs": "^2.4.6",
     "@langchain/cohere": "^0.2.2",
     "@langchain/pinecone": "^0.0.1",
@@ -36,7 +34,6 @@
     "@trpc/server": "next",
     "@types/pdf-parse": "^1.1.4",
     "@uploadthing/react": "^6.8.0",
-    "ai": "^3.4.33",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",

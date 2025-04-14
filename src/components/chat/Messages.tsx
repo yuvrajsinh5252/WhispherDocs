@@ -13,7 +13,6 @@ interface MessageProps {
 
 export default function Messages({ fileId }: MessageProps) {
   const { isLoading: isAithinking } = useContext(ChatContext);
-  const theme = localStorage.getItem("theme") ?? "light";
 
   const { data, isLoading, fetchNextPage } = trpc.getMessages.useInfiniteQuery(
     {

@@ -154,9 +154,6 @@ export default function ChatContextProvider({ fileId, children }: Props) {
 
         while (!done) {
           clearChunkTimeout();
-          chunkTimeout = setTimeout(() => {
-            console.log("Chunk read timeout - stream might be stuck");
-          }, 30000);
 
           const { value, done: doneReading } = await reader.read();
           done = doneReading;
