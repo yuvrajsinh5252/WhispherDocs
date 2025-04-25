@@ -169,6 +169,15 @@ export const POST = async (req: NextRequest) => {
       },
     });
 
+    await db.messages.deleteMany({
+      where: {
+        userId: user?.id,
+        fileId: fileId,
+        isUserMessage: true,
+        text: message,
+      },
+    });
+
     return new Response(
       JSON.stringify({ error: "Failed to process request" }),
       { status: 500, headers: { "Content-Type": "application/json" } }

@@ -129,6 +129,9 @@ export default function PDFrenderer({ url }: PDFRendererProps) {
               <DropdownMenuItem onSelect={() => setZoom(0.75)}>
                 75%
               </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setZoom(1.25)}>
+                125%
+              </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => setZoom(1)}>
                 100%
               </DropdownMenuItem>
@@ -166,19 +169,13 @@ export default function PDFrenderer({ url }: PDFRendererProps) {
       </div>
 
       <div className="flex-1 w-full max-h-screen overflow-hidden">
-        <SimpleBar
-          autoHide={false}
-          className="h-full max-h-[calc(100vh-10rem)]"
-        >
-          <div
-            ref={ref}
-            className="min-h-full flex justify-center bg-gray-100/50 dark:bg-gray-800/50"
-          >
+        <SimpleBar autoHide={false} className="h-full">
+          <div ref={ref} className="min-h-full flex justify-center pt-5">
             <Document
               file={url}
               className="max-w-full"
               loading={
-                <div className="flex justify-center items-center min-h-[600px]">
+                <div className="flex justify-center items-center min-h-[800px]">
                   <div className="flex flex-col items-center gap-2">
                     <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
                     <p className="text-sm text-gray-500 dark:text-gray-400">
