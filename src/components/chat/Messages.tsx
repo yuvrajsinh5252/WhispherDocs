@@ -7,22 +7,49 @@ import { useContext, useEffect, useRef } from "react";
 import { ChatContext } from "./ChatContext";
 import { useIntersection } from "@mantine/hooks";
 
+const LoadingDots = ({
+  className = "bg-indigo-400",
+}: {
+  className?: string;
+}) => (
+  <div className="flex space-x-1.5 py-0.5">
+    <div
+      className={`h-2.5 w-2.5 ${className} rounded-full animate-bounce shadow-sm`}
+      style={{ animationDelay: "0ms" }}
+    />
+    <div
+      className={`h-2.5 w-2.5 ${className} rounded-full animate-bounce shadow-sm`}
+      style={{ animationDelay: "200ms" }}
+    />
+    <div
+      className={`h-2.5 w-2.5 ${className} rounded-full animate-bounce shadow-sm`}
+      style={{ animationDelay: "400ms" }}
+    />
+  </div>
+);
+
 interface MessageProps {
   fileId: string;
 }
 
 export default function Messages({ fileId }: MessageProps) {
-  const { isLoading: isAithinking } = useContext(ChatContext);
+  const { isLoading: isAiThinking } = useContext(ChatContext);
 
-  const { data, isLoading, fetchNextPage } = trpc.getMessages.useInfiniteQuery(
-    {
-      fileId,
-      limit: INFINITE_QUERY_LIMIT,
-    },
-    {
-      getNextPageParam: (lastPage) => lastPage?.nextCursor,
-    }
-  );
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const prevMessagesLengthRef = useRef<number>(0);
+  const loadingMoreRef = useRef<boolean>(false);
+
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    trpc.getMessages.useInfiniteQuery(
+      {
+        fileId,
+        limit: INFINITE_QUERY_LIMIT,
+      },
+      {
+        getNextPageParam: (lastPage) => lastPage?.nextCursor,
+        refetchOnWindowFocus: false,
+      }
+    );
 
   const messages = data?.pages.flatMap((page) => page.messages);
 
@@ -31,47 +58,101 @@ export default function Messages({ fileId }: MessageProps) {
     id: "loading-message",
     isUserMessage: false,
     text: (
-      <div className="flex items-center gap-2">
-        <div className="flex space-x-1">
-          <div
-            className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce"
-            style={{ animationDelay: "0ms" }}
-          ></div>
-          <div
-            className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce"
-            style={{ animationDelay: "200ms" }}
-          ></div>
-          <div
-            className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce"
-            style={{ animationDelay: "400ms" }}
-          ></div>
-        </div>
-        <span className="text-xs text-gray-500">AI is thinking</span>
+      <div className="flex items-center justify-start space-x-2">
+        <LoadingDots />
+        <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+          AI is thinking
+        </span>
       </div>
     ),
   };
 
-  const CombinedMessage = [
-    ...(isAithinking ? [loadingMessage] : []),
+  const allMessages = [
+    ...(isAiThinking ? [loadingMessage] : []),
     ...(messages ?? []),
   ];
 
-  const lastMessageRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<{
+    endElementRef: HTMLDivElement | null;
+    lastMessageId: string | null;
+    isFirstRender: boolean;
+  }>({
+    endElementRef: null,
+    lastMessageId: null,
+    isFirstRender: true,
+  });
 
   const { ref, entry } = useIntersection({
-    root: lastMessageRef.current,
+    root: null,
     threshold: 1,
   });
 
   useEffect(() => {
-    if (entry?.isIntersecting) {
+    const currentLatestMessageId = messages?.[0]?.id;
+
+    // Case: First meaningful render with messages - scroll to bottom
+    if (messages?.length && scrollRef.current.isFirstRender) {
+      scrollRef.current.endElementRef?.scrollIntoView({ behavior: "auto" });
+      scrollRef.current.isFirstRender = false;
+      scrollRef.current.lastMessageId = currentLatestMessageId ?? null;
+      return;
+    }
+
+    // Case: New message received and AI is thinking
+    if (
+      currentLatestMessageId !== scrollRef.current.lastMessageId &&
+      isAiThinking
+    ) {
+      scrollRef.current.endElementRef?.scrollIntoView({ behavior: "smooth" });
+      scrollRef.current.lastMessageId = currentLatestMessageId ?? null;
+    }
+  }, [messages, isAiThinking]);
+
+  useEffect(() => {
+    if (!messages) return;
+
+    const messagesLength = messages.length;
+    const container = messagesContainerRef.current;
+
+    if (
+      loadingMoreRef.current &&
+      messagesLength > prevMessagesLengthRef.current &&
+      container
+    ) {
+      const newMessagesCount = messagesLength - prevMessagesLengthRef.current;
+
+      if (newMessagesCount > 0) {
+        const messageElements = container.querySelectorAll("[data-message]");
+        if (messageElements.length > 0) {
+          const newMessageElement =
+            messageElements[messageElements.length - newMessagesCount];
+          if (newMessageElement) {
+            newMessageElement.scrollIntoView({
+              block: "start",
+              behavior: "auto",
+            });
+          }
+        }
+      }
+
+      loadingMoreRef.current = false;
+    }
+
+    prevMessagesLengthRef.current = messagesLength;
+  }, [messages]);
+
+  useEffect(() => {
+    if (entry?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+      // Set loading flag before fetching next page
+      loadingMoreRef.current = true;
+      prevMessagesLengthRef.current = messages?.length || 0;
       fetchNextPage();
     }
-  }, [entry, fetchNextPage]);
+  }, [entry, fetchNextPage, hasNextPage, isFetchingNextPage, messages?.length]);
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-4 p-4">
+      <div className="flex flex-col gap-4 p-4 sm:p-6 animate-in fade-in duration-500">
         {Array(3)
           .fill(0)
           .map((_, i) => (
@@ -87,8 +168,8 @@ export default function Messages({ fileId }: MessageProps) {
                 }`}
               >
                 {i % 2 === 0 && (
-                  <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800">
-                    <Skeleton className="h-6 w-6" />
+                  <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 select-none items-center justify-center rounded-full bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-indigo-900/30 dark:to-indigo-700/20 shadow-sm border border-indigo-200/50 dark:border-indigo-700/30">
+                    <Skeleton className="h-6 w-6 rounded-full" />
                   </div>
                 )}
                 <div
@@ -97,28 +178,39 @@ export default function Messages({ fileId }: MessageProps) {
                   }`}
                 >
                   <div
-                    className={`rounded-lg px-4 py-2 max-w-md ${
+                    className={`rounded-2xl px-3.5 py-2.5 sm:px-5 sm:py-3 max-w-md backdrop-blur-sm shadow-md ${
                       i % 2 === 0
-                        ? "bg-gray-100 dark:bg-gray-800"
-                        : "bg-blue-100 dark:bg-blue-900/20"
+                        ? "bg-white/90 dark:bg-gray-800/70 border border-gray-100/50 dark:border-gray-700/50"
+                        : "bg-gradient-to-br from-indigo-500/90 to-violet-600/90 border border-white/10"
                     }`}
                   >
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-[250px]" />
-                      <Skeleton className="h-4 w-[200px]" />
+                    <div className="space-y-2.5">
+                      <Skeleton
+                        className={`h-4 w-[250px] ${
+                          i % 2 === 1 ? "bg-white/30" : ""
+                        }`}
+                      />
+                      <Skeleton
+                        className={`h-4 w-[200px] ${
+                          i % 2 === 1 ? "bg-white/30" : ""
+                        }`}
+                      />
+                      <Skeleton
+                        className={`h-4 w-[150px] ${
+                          i % 2 === 1 ? "bg-white/30" : ""
+                        }`}
+                      />
                     </div>
                   </div>
                   {i % 2 === 1 && (
                     <div className="flex items-center gap-2">
-                      <Skeleton className="h-3 w-16" />
-                      <Skeleton className="h-3 w-3 rounded-full" />
-                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-3 w-16 bg-indigo-200/40 dark:bg-indigo-700/40" />
                     </div>
                   )}
                 </div>
                 {i % 2 === 1 && (
-                  <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md bg-blue-100 dark:bg-blue-900/20">
-                    <Skeleton className="h-6 w-6" />
+                  <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 select-none items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 shadow-md ring-2 ring-indigo-400/30 dark:ring-indigo-300/20">
+                    <Skeleton className="h-6 w-6 rounded-full bg-white/30" />
                   </div>
                 )}
               </div>
@@ -129,38 +221,57 @@ export default function Messages({ fileId }: MessageProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col-reverse relative overflow-y-auto scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 px-1 gap-2 scrollbar-track-transparent scrollbar-w-2 scroll-smooth scrolling-touch">
-      {CombinedMessage && CombinedMessage.length > 0 ? (
-        CombinedMessage.map((message, i) => {
-          const isNextMessageSamePerson =
-            CombinedMessage[i - 1]?.isUserMessage ===
-            CombinedMessage[i]?.isUserMessage;
+    <div
+      ref={messagesContainerRef}
+      className="flex-1 flex flex-col-reverse relative overflow-y-auto px-3 sm:px-4 gap-1 sm:gap-2 scroll-smooth scrolling-touch"
+      style={{
+        scrollbarWidth: "thin",
+        scrollbarColor: "rgba(156, 163, 175, 0.5) transparent",
+      }}
+    >
+      {allMessages && allMessages.length > 0 ? (
+        <>
+          <div
+            ref={(el) => {
+              scrollRef.current.endElementRef = el;
+            }}
+            className="h-1"
+          />
 
-          if (i === CombinedMessage.length - 1)
-            return (
-              <Message
-                ref={ref}
-                message={message}
-                isNextMessageSamePerson={isNextMessageSamePerson}
-                key={message.id}
-              />
-            );
-          else
+          {allMessages.map((message, i) => {
+            const isNextMessageSamePerson =
+              allMessages[i - 1]?.isUserMessage ===
+              allMessages[i]?.isUserMessage;
+
             return (
               <Message
                 message={message}
                 isNextMessageSamePerson={isNextMessageSamePerson}
                 key={message.id}
+                data-message
               />
             );
-        })
+          })}
+
+          {isFetchingNextPage && (
+            <div className="flex justify-center py-3 animate-in fade-in duration-300">
+              <div className="bg-white/80 dark:bg-gray-800/80 px-4 py-2 rounded-full shadow-sm border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm">
+                <LoadingDots className="bg-indigo-500 dark:bg-indigo-400" />
+              </div>
+            </div>
+          )}
+
+          <div ref={ref} className="h-5 w-full opacity-0" aria-hidden="true" />
+        </>
       ) : (
-        <div className="flex flex-col items-center justify-center h-full py-8 text-center px-4">
-          <div className="h-16 w-16 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center mb-4">
-            <MessagesSquare className="h-8 w-8 text-indigo-500" />
+        <div className="flex flex-col items-center justify-center h-full py-8 text-center px-4 animate-in fade-in duration-700">
+          <div className="h-16 w-16 rounded-full bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-indigo-900/40 dark:to-indigo-700/30 flex items-center justify-center mb-5 shadow-md border border-indigo-200/50 dark:border-indigo-700/30 ring-8 ring-indigo-50/20 dark:ring-indigo-900/10">
+            <MessagesSquare className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
           </div>
-          <h3 className="font-medium text-lg">Start the conversation</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-sm">
+          <h3 className="font-medium text-lg text-gray-900 dark:text-gray-100">
+            Start the conversation
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 max-w-sm leading-relaxed">
             Ask questions about your document to get instant, accurate answers
           </p>
         </div>

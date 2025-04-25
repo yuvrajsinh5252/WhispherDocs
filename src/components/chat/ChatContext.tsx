@@ -57,12 +57,15 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
       await utils.getMessages.cancel();
 
       // step 2
-      const previousMessages = utils.getMessages.getInfiniteData();
+      const previousMessages = utils.getMessages.getInfiniteData({
+        fileId,
+        limit: INFINITE_QUERY_LIMIT,
+      });
 
       // step 3
       utils.getMessages.setInfiniteData(
         { fileId, limit: INFINITE_QUERY_LIMIT },
-        (old) => {
+        (old: any) => {
           if (!old) {
             return {
               pages: [],
@@ -72,7 +75,27 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
 
           let newPages = [...old.pages];
 
-          let latestPage = newPages[0]!;
+          if (newPages.length === 0) {
+            // If there are no pages, create a new one
+            return {
+              ...old,
+              pages: [
+                {
+                  messages: [
+                    {
+                      createdAt: new Date().toISOString(),
+                      id: crypto.randomUUID(),
+                      text: message,
+                      isUserMessage: true,
+                    },
+                  ],
+                  nextCursor: null,
+                },
+              ],
+            };
+          }
+
+          let latestPage = { ...newPages[0] };
 
           latestPage.messages = [
             {
@@ -128,15 +151,34 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
         // append chunk to the actual message
         utils.getMessages.setInfiniteData(
           { fileId, limit: INFINITE_QUERY_LIMIT },
-          (old) => {
+          (old: any) => {
             if (!old) return { pages: [], pageParams: [] };
 
-            let isAiResponseCreated = old.pages.some((page) =>
-              page.messages.some((message) => message.id === "ai-response")
+            if (old.pages.length === 0) {
+              return {
+                ...old,
+                pages: [
+                  {
+                    messages: [
+                      {
+                        createdAt: new Date().toISOString(),
+                        id: "ai-response",
+                        text: accResponse,
+                        isUserMessage: false,
+                      },
+                    ],
+                    nextCursor: null,
+                  },
+                ],
+              };
+            }
+
+            let isAiResponseCreated = old.pages.some((page: any) =>
+              page.messages.some((message: any) => message.id === "ai-response")
             );
 
-            let updatedPages = old.pages.map((page) => {
-              if (page === old.pages[0]) {
+            let updatedPages = old.pages.map((page: any, pageIndex: number) => {
+              if (pageIndex === 0) {
                 let updatedMessages;
 
                 if (!isAiResponseCreated) {
@@ -150,7 +192,7 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
                     ...page.messages,
                   ];
                 } else {
-                  updatedMessages = page.messages.map((message) => {
+                  updatedMessages = page.messages.map((message: any) => {
                     if (message.id === "ai-response") {
                       return {
                         ...message,
