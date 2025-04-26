@@ -112,25 +112,26 @@ export default function Home() {
                     <div className="flex items-start">
                       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 max-w-[80%]">
                         <p className="text-sm">
-                          How many pages does this document have?
+                          What is the main topic of this document?
                         </p>
                       </div>
                     </div>
                     <div className="flex items-start justify-end">
                       <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 max-w-[80%]">
                         <p className="text-sm">
-                          The document has 24 pages in total.
+                          The main topic is climate change impacts on urban
+                          infrastructure, with emphasis on adaptation strategies
+                          for city planners.
                         </p>
-                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                          Source: Page 1
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 max-w-[80%]">
-                        <p className="text-sm">
-                          What is the main topic of this document?
-                        </p>
+                        <div className="text-xs text-blue-600 dark:text-blue-400 mt-2 border-t border-blue-100 dark:border-blue-800 pt-1">
+                          <p className="flex items-center">
+                            <span className="font-medium">Citation:</span>
+                            <span className="ml-1">
+                              Pages 3-4, Section &quot;Introduction to Climate
+                              Adaptation&quot;
+                            </span>
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -191,9 +192,8 @@ export default function Home() {
             </div>
             <h3 className="font-bold text-lg mb-2">Cited Sources</h3>
             <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-              {/* Every answer includes citations to the source material, so you
-              know exactly where the information comes from. */}
-              Comming Soon
+              Every answer includes citations to the source material, so you
+              know exactly where the information comes from.
             </p>
           </div>
         </motion.div>
