@@ -1,0 +1,100 @@
+import type { Citation } from "@/types/citation";
+
+export async function processCitationsInStream(
+  response: AsyncIterable<any>,
+  controller: ReadableStreamDefaultController,
+  fileName: string
+): Promise<string> {
+  let finalMessage = "";
+  let currentCitation: Citation | null = null;
+  let citationIndex = 1;
+  let citations: Citation[] = [];
+  const citationSources = new Map<string, number>();
+  let textBuffer = "";
+  let pendingCitations: Citation[] = [];
+
+  for await (const event of response) {
+    if (event.type === "content-delta") {
+      const textContent = event.delta?.message?.content?.text || "";
+      textBuffer += textContent;
+      finalMessage += textContent;
+      controller.enqueue(textContent);
+
+      if (textBuffer.endsWith("\n\n") && pendingCitations.length > 0) {
+        const citationNumbers = pendingCitations
+          .map((c) => `[${c.index}]`)
+          .join("");
+
+        const replacedText = citationNumbers + "\n\n";
+        finalMessage = finalMessage.slice(0, -2) + replacedText;
+        controller.enqueue("\b\b" + citationNumbers + "\n\n");
+
+        pendingCitations = [];
+      }
+    }
+
+    if (event.type === "citation-start") {
+      const citationData = event.delta || {};
+      const pageNumber = event.delta?.message?.citations?.sources?.[0]?.id;
+
+      const docPage = `${fileName}:${pageNumber || "unknown"}`;
+      let existingIndex = citationSources.get(docPage);
+
+      if (existingIndex === undefined) {
+        existingIndex = citationIndex++;
+        citationSources.set(docPage, existingIndex);
+      }
+
+      currentCitation = {
+        index: existingIndex,
+        text: citationData.message?.citations?.text || "",
+        start: citationData.message?.citations?.start,
+        end: citationData.message?.citations?.end,
+        type: citationData.message?.citations?.type,
+        sources: Array.isArray(citationData.message?.citations?.sources)
+          ? citationData.message?.citations?.sources.map((source: any) => {
+              return source;
+            })
+          : [],
+        document: fileName,
+        page: pageNumber ? pageNumber[pageNumber.length - 1] : undefined,
+      };
+
+      if (!citations.some((c) => c.index === existingIndex)) {
+        citations.push(currentCitation);
+      }
+
+      if (!pendingCitations.some((c) => c.index === existingIndex)) {
+        pendingCitations.push(currentCitation);
+      }
+    } else if (event.type === "citation-end") {
+      currentCitation = null;
+    }
+  }
+
+  if (pendingCitations.length > 0) {
+    const citationNumbers = pendingCitations
+      .map((c) => `[${c.index}]`)
+      .join("");
+
+    finalMessage += " " + citationNumbers;
+    controller.enqueue(" " + citationNumbers);
+  }
+
+  if (citations.length > 0) {
+    const footnotesSection = "\n\n---\n\n**Sources:**\n\n";
+    controller.enqueue(footnotesSection);
+    finalMessage += footnotesSection;
+
+    citations
+      .sort((a, b) => a.index - b.index)
+      .forEach((citation) => {
+        const pageInfo = citation.page ? ` (Page ${citation.page})` : "";
+        const footnote = `[${citation.index}] ${citation.document}${pageInfo}\n`;
+        controller.enqueue(footnote);
+        finalMessage += footnote;
+      });
+  }
+
+  return finalMessage;
+}

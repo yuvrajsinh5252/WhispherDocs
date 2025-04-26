@@ -6,6 +6,8 @@ import { PineconeStore } from "@langchain/pinecone";
 import { PineconeClient } from "@/lib/pinecone";
 import { CohereEmbeddings } from "@langchain/cohere";
 import { CohereClientV2 } from "cohere-ai";
+import { processCitationsInStream } from "@/lib/citationProcessor";
+import { V2ChatStreamRequest } from "cohere-ai/api";
 
 export const maxDuration = 59;
 
@@ -53,10 +55,6 @@ export const POST = async (req: NextRequest) => {
 
     const results = await vectorStore.similaritySearch(message, 4);
 
-    const hasRelevantContext = results.some(
-      (r) => r.pageContent.trim().length > 0
-    );
-
     const prevMessages = await db.messages.findMany({
       where: { fileId: file.id },
       orderBy: { createdAt: "desc" },
@@ -72,87 +70,145 @@ export const POST = async (req: NextRequest) => {
       token: process.env.COHERE_API_KEY,
     });
 
-    const response = await cohere.chatStream({
+    const queryClassification = await cohere.chat({
       model: "command-a-03-2025",
-      temperature: 0.2,
-      citationOptions: {
-        mode: "FAST",
-      },
+      temperature: 0.0,
       messages: [
         {
           role: "system",
-          content: `You are a document assistant that ONLY answers questions based on the content of the specific document uploaded by the user.
+          content: `You are a query classifier. Analyze the user's query and determine if it:
+        1. Requires document-specific knowledge (DOCUMENT_SPECIFIC)
+        2. Is a simple general question that doesn't need document context (GENERAL_QUERY)
 
-          CRITICAL INSTRUCTIONS:
-          1. ONLY use information provided in the document context to answer questions.
-          2. If the user's question has no relation to the document or the query is generic (like greetings):
-            - Respond with a helpful message like "Hello! I'm your document assistant. How can I help you with the uploaded document today?"
-            - For other off-topic questions, say "I can only answer questions about the document you've uploaded. Could you please ask something related to the document content?"
-          3. NEVER provide information not contained in the document context.
-          4. NEVER reference personal information about any individual unless it's specifically mentioned in the document context.
-          5. NEVER refer to any specific name, company, or details not found in the document context.
-          6. NEVER make assumptions about who the user is or what documents they may have uploaded previously.
-          7. If the document context doesn't contain information to answer the question, clearly state "I don't see information about that in your uploaded document."`,
+        Consider the document search results when making your decision. If the search results seem
+        relevant to the query, it's likely DOCUMENT_SPECIFIC. If the search results don't contain
+        relevant information, it may be GENERAL_QUERY.
+
+        Return ONLY "DOCUMENT_SPECIFIC" or "GENERAL_QUERY" as your answer with no additional text.`,
         },
         {
           role: "user",
-          content: `Answer the user's question using ONLY the provided document context. Format your response in markdown for better readability.
+          content: `Classify this query: "${message}"
 
-          INSTRUCTIONS:
-          1. First, carefully evaluate if the provided document context is relevant to the user's question
-          2. If the context IS relevant:
-             - Answer based on the document context with specific references
-             - Cite the relevant parts of the document that support your answer
-          3. If the context is NOT relevant or doesn't contain the answer:
-             - Clearly state "I don't see information about that in your uploaded document."
-             - DO NOT provide general knowledge responses unrelated to the document
-          4. Only address what's specifically asked in the current question
-          5. Format your response appropriately with markdown for readability
-          6. For follow-up questions:
-             - Consider both the previous conversation and the document context
-             - Maintain consistency with previous answers
-          7. If the query is a simple greeting or off-topic from the document:
-             - Respond with a friendly greeting and redirect focus to the document
-
-          RECENT CONVERSATION:
-          ${formattedHistory}
-
-          Document context (only use this information if relevant to the user question):
-          ${results.map((r) => r.pageContent).join("\n\n")}
-
-          Has relevant context from document: ${hasRelevantContext}
-
-          USER QUESTION: ${message}`,
+        Document search results:
+        ${results
+          .map(
+            (r, i) => `[Result ${i + 1}]: ${r.pageContent.substring(0, 200)}...`
+          )
+          .join("\n\n")}`,
         },
       ],
     });
 
+    const responseType =
+      queryClassification.message?.content?.[0]?.text || "DOCUMENT_SPECIFIC";
+    const needsDocumentContext = responseType === "DOCUMENT_SPECIFIC";
+
+    const documentChunks = results.map((result, index) => {
+      return {
+        id: `doc-${index + 1}`,
+        data: { text: result.pageContent },
+        ...(result.metadata && {
+          metadata: {
+            ...result.metadata,
+            source: file.name,
+          },
+        }),
+      };
+    });
+
+    const chatConfig: V2ChatStreamRequest = {
+      model: "command-a-03-2025",
+      temperature: 0.2,
+      messages: [
+        {
+          role: "system",
+          content: `You are a helpful document assistant that primarily answers questions about the user's uploaded document.
+
+          INSTRUCTIONS:
+          1. Your primary function is to help users understand their document content.
+          2. Prioritize information from the document when answering specific questions about its content.
+          3. For requests like "summarize this document", "extract key points", or "describe this image", provide helpful responses based on the document.
+          4. Handle conversational queries naturally while keeping focus on helping with the document.
+          5. When asked about topics not covered in the document, you can:
+             - Briefly answer general knowledge questions related to the document's domain
+             - For completely unrelated questions, gently redirect to document-related assistance
+          6. Format responses with markdown for better readability when appropriate.
+          7. Be concise but comprehensive in your answers.`,
+        },
+        {
+          role: "user",
+          content: needsDocumentContext
+            ? `Answer the user's question in a helpful and informative way.
+
+          INSTRUCTIONS:
+          1. First, determine the type of request:
+             - Document content question (e.g., "What does page 3 say about X?")
+             - Document operation request (e.g., "Summarize this PDF", "Extract key points")
+             - General conversation related to document domain
+             - Completely unrelated question
+
+          2. For document content questions:
+             - Use the provided context if relevant
+             - If the context doesn't contain the answer, check if it's likely elsewhere in the document
+             - Be honest when information isn't in the document
+
+          3. For document operation requests:
+             - For summaries: Provide a comprehensive overview of main points
+             - For key points: Extract and organize important information
+             - For images: Describe visible content in the document if mentioned
+
+          4. Format responses appropriately with markdown for readability
+
+          5. For follow-up questions, maintain context from the conversation history
+
+          RECENT CONVERSATION:
+          ${formattedHistory}
+
+          Document context (use when relevant to the user's question):
+          ${results.map((r) => r.pageContent).join("\n\n")}
+
+          USER QUESTION: ${message}`
+            : `Answer the user's general question without referring to document context.
+
+          RECENT CONVERSATION:
+          ${formattedHistory}
+
+          USER QUESTION: ${message}`,
+        },
+      ],
+    };
+
+    if (needsDocumentContext) {
+      chatConfig.documents = documentChunks;
+      chatConfig.citationOptions = { mode: "FAST" };
+    }
+
+    const response = await cohere.chatStream(chatConfig);
+
     const stream = new ReadableStream({
       async start(controller) {
-        let finalMessage = "";
+        try {
+          const finalMessage = await processCitationsInStream(
+            response,
+            controller,
+            file.name
+          );
 
-        for await (const event of response) {
-          if (event.type === "citation-start") {
-            controller.enqueue(`**Citations-start:**\n`);
-          }
-          if (event.type === "citation-end") {
-            controller.enqueue(`**Citations-end:**\n`);
-          }
-          if (event.type === "content-delta") {
-            controller.enqueue(event.delta?.message?.content?.text);
-            finalMessage += event.delta?.message?.content?.text;
-          }
+          await db.messages.create({
+            data: {
+              text: finalMessage,
+              isUserMessage: false,
+              userId: user?.id,
+              fileId: fileId,
+            },
+          });
+
+          controller.close();
+        } catch (error) {
+          console.error("Error processing citations:", error);
+          controller.error(error);
         }
-        controller.close();
-
-        await db.messages.create({
-          data: {
-            text: finalMessage,
-            isUserMessage: false,
-            userId: user?.id,
-            fileId: fileId,
-          },
-        });
       },
     });
 
