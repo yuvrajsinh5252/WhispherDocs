@@ -27,7 +27,6 @@ import {
 import { Button } from "@/components/ui/button";
 import SimpleBar from "simplebar-react";
 import PDFfullscreen from "./PDFfullscreen";
-import { useScreenSize } from "@/hooks/useScreenSize";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
@@ -60,20 +59,20 @@ export default function PDFrenderer({ url }: PDFRendererProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-1.5 border-b border-gray-200 dark:border-gray-700 p-2">
-        <div className="flex items-center justify-center gap-1.5">
+      <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-2 py-1.5">
+        <div className="flex items-center space-x-1.5">
           <Button
             variant="ghost"
             size="sm"
             disabled={pageNumber <= 1}
             onClick={() => handlePageChange(pageNumber - 1)}
-            className="h-8 w-8 p-0"
+            className="h-7 w-7 p-0"
             aria-label="Previous page"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center space-x-1">
             <Input
               type="number"
               min={1}
@@ -84,9 +83,9 @@ export default function PDFrenderer({ url }: PDFRendererProps) {
                 if (pageNumber < 1) setPageNumber(1);
                 if (pageNumber > numPages) setPageNumber(numPages);
               }}
-              className="w-14 h-8 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className="w-12 h-7 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
-            <span className="text-sm text-gray-500 dark:text-gray-400 select-none">
+            <span className="text-xs text-gray-500 dark:text-gray-400 select-none">
               / {numPages}
             </span>
           </div>
@@ -96,30 +95,33 @@ export default function PDFrenderer({ url }: PDFRendererProps) {
             size="sm"
             disabled={pageNumber >= numPages}
             onClick={() => handlePageChange(pageNumber + 1)}
-            className="h-8 w-8 p-0"
+            className="h-7 w-7 p-0"
             aria-label="Next page"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
 
-        <div className="flex items-center justify-center sm:ml-auto gap-0.5 sm:gap-2">
+        <div className="flex items-center space-x-1">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => handleZoom(-0.25)}
-            className="h-8 w-8 p-0"
+            className="h-7 w-7 p-0"
             aria-label="Zoom out"
           >
-            <ZoomOut className="h-4 w-4" />
+            <ZoomOut className="h-3.5 w-3.5" />
           </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-1.5 h-8">
-                <Search className="h-3.5 w-3.5 opacity-50" />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 max-sm:hidden px-1.5 text-xs flex items-center"
+              >
                 <span>{Math.round(zoom * 100)}%</span>
-                <ChevronDown className="h-3 w-3 opacity-50" />
+                <ChevronDown className="h-3 w-3 ml-0.5 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -129,11 +131,11 @@ export default function PDFrenderer({ url }: PDFRendererProps) {
               <DropdownMenuItem onSelect={() => setZoom(0.75)}>
                 75%
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setZoom(1.25)}>
-                125%
-              </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => setZoom(1)}>
                 100%
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setZoom(1.25)}>
+                125%
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => setZoom(1.5)}>
                 150%
@@ -148,20 +150,20 @@ export default function PDFrenderer({ url }: PDFRendererProps) {
             variant="ghost"
             size="sm"
             onClick={() => handleZoom(0.25)}
-            className="h-8 w-8 p-0"
+            className="h-7 w-7 p-0"
             aria-label="Zoom in"
           >
-            <ZoomIn className="h-4 w-4" />
+            <ZoomIn className="h-3.5 w-3.5" />
           </Button>
 
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setRotation((prev) => (prev + 90) % 360)}
-            className="h-8 w-8 p-0"
+            className="h-7 w-7 p-0 max-sm:hidden"
             aria-label="Rotate 90 degrees"
           >
-            <RotateCw className="h-4 w-4" />
+            <RotateCw className="h-3.5 w-3.5" />
           </Button>
 
           <PDFfullscreen url={url} />

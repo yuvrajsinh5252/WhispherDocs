@@ -138,7 +138,6 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
       const decoder = new TextDecoder();
       let done = false;
 
-      // accumulated response
       let accResponse = "";
 
       while (!done) {
@@ -148,7 +147,6 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
 
         accResponse += chunkValue;
 
-        // append chunk to the actual message
         utils.getMessages.setInfiniteData(
           { fileId, limit: INFINITE_QUERY_LIMIT },
           (old: any) => {
@@ -216,6 +214,35 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
           }
         );
       }
+
+      utils.getMessages.setInfiniteData(
+        { fileId, limit: INFINITE_QUERY_LIMIT },
+        (old: any) => {
+          if (!old) return { pages: [], pageParams: [] };
+
+          let updatedPages = old.pages.map((page: any, pageIndex: number) => {
+            if (pageIndex === 0) {
+              let updatedMessages = page.messages.map((message: any) => {
+                if (message.id === "ai-response") {
+                  return {
+                    ...message,
+                    id: crypto.randomUUID(),
+                  };
+                }
+                return message;
+              });
+
+              return {
+                ...page,
+                messages: updatedMessages,
+              };
+            }
+            return page;
+          });
+
+          return { ...old, pages: updatedPages };
+        }
+      );
     },
 
     onError: (_, __, context) => {
@@ -228,7 +255,9 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
     onSettled: async () => {
       setIsLoading(false);
 
-      await utils.getMessages.invalidate({ fileId });
+      setTimeout(async () => {
+        await utils.getMessages.invalidate({ fileId });
+      }, 500);
     },
   });
 

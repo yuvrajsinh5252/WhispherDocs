@@ -223,7 +223,7 @@ export default function Messages({ fileId }: MessageProps) {
   return (
     <div
       ref={messagesContainerRef}
-      className="flex-1 flex flex-col-reverse relative overflow-y-auto px-3 sm:px-4 gap-1 sm:gap-2 scroll-smooth scrolling-touch"
+      className="flex-1 flex flex-col-reverse relative px-3 sm:px-4 gap-1 sm:gap-2 scroll-smooth scrolling-touch"
       style={{
         scrollbarWidth: "thin",
         scrollbarColor: "rgba(156, 163, 175, 0.5) transparent",
@@ -264,7 +264,7 @@ export default function Messages({ fileId }: MessageProps) {
           <div ref={ref} className="h-5 w-full opacity-0" aria-hidden="true" />
         </>
       ) : (
-        <div className="flex flex-col items-center justify-center h-full py-8 text-center px-4 animate-in fade-in duration-700">
+        <div className="flex flex-col items-center justify-center h-full py-8 text-center px-4">
           <div className="h-16 w-16 rounded-full bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-indigo-900/40 dark:to-indigo-700/30 flex items-center justify-center mb-5 shadow-md border border-indigo-200/50 dark:border-indigo-700/30 ring-8 ring-indigo-50/20 dark:ring-indigo-900/10">
             <MessagesSquare className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
           </div>
