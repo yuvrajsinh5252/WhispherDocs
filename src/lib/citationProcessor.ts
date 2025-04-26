@@ -20,24 +20,20 @@ export async function processCitationsInStream(
       finalMessage += textContent;
       controller.enqueue(textContent);
 
-      if (textBuffer.endsWith("\n\n") && pendingCitations.length > 0) {
-        const citationNumbers = pendingCitations
-          .map((c) => `[${c.index}]`)
-          .join("");
-
-        const replacedText = citationNumbers + "\n\n";
-        finalMessage = finalMessage.slice(0, -2) + replacedText;
-        controller.enqueue("\b\b" + citationNumbers + "\n\n");
-
+      if (textBuffer.endsWith("\n\n")) {
         pendingCitations = [];
       }
     }
 
     if (event.type === "citation-start") {
       const citationData = event.delta || {};
-      const pageNumber = event.delta?.message?.citations?.sources?.[0]?.id;
+      const source = event.delta?.message?.citations?.sources?.[0];
+      const actualPageNumber = source?.metadata?.page_number;
+      const pageId = source?.id;
 
-      const docPage = `${fileName}:${pageNumber || "unknown"}`;
+      const pageIdentifier =
+        actualPageNumber !== undefined ? actualPageNumber : pageId;
+      const docPage = `${fileName}:${pageIdentifier || "unknown"}`;
       let existingIndex = citationSources.get(docPage);
 
       if (existingIndex === undefined) {
@@ -57,7 +53,12 @@ export async function processCitationsInStream(
             })
           : [],
         document: fileName,
-        page: pageNumber ? pageNumber[pageNumber.length - 1] : undefined,
+        page:
+          actualPageNumber !== undefined
+            ? String(actualPageNumber)
+            : pageId
+            ? pageId[pageId.length - 1]
+            : undefined,
       };
 
       if (!citations.some((c) => c.index === existingIndex)) {
@@ -72,17 +73,8 @@ export async function processCitationsInStream(
     }
   }
 
-  if (pendingCitations.length > 0) {
-    const citationNumbers = pendingCitations
-      .map((c) => `[${c.index}]`)
-      .join("");
-
-    finalMessage += " " + citationNumbers;
-    controller.enqueue(" " + citationNumbers);
-  }
-
   if (citations.length > 0) {
-    const footnotesSection = "\n\n---\n\n**Sources:**\n\n";
+    const footnotesSection = "\n\n---\n\n### Sources\n\n";
     controller.enqueue(footnotesSection);
     finalMessage += footnotesSection;
 
@@ -90,7 +82,7 @@ export async function processCitationsInStream(
       .sort((a, b) => a.index - b.index)
       .forEach((citation) => {
         const pageInfo = citation.page ? ` (Page ${citation.page})` : "";
-        const footnote = `[${citation.index}] ${citation.document}${pageInfo}\n`;
+        const footnote = `${citation.index}. *${citation.document}*${pageInfo}\n`;
         controller.enqueue(footnote);
         finalMessage += footnote;
       });

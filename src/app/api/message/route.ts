@@ -77,14 +77,24 @@ export const POST = async (req: NextRequest) => {
         {
           role: "system",
           content: `You are a query classifier. Analyze the user's query and determine if it:
-        1. Requires document-specific knowledge (DOCUMENT_SPECIFIC)
-        2. Is a simple general question that doesn't need document context (GENERAL_QUERY)
+          1. Requires document-specific knowledge (DOCUMENT_SPECIFIC)
+          2. Is a simple general question that doesn't need document context (GENERAL_QUERY)
 
-        Consider the document search results when making your decision. If the search results seem
-        relevant to the query, it's likely DOCUMENT_SPECIFIC. If the search results don't contain
-        relevant information, it may be GENERAL_QUERY.
+          ALWAYS classify these types of queries as DOCUMENT_SPECIFIC:
+          - Questions about document content (e.g., "What does the document say about X?")
+          - Requests for summarization (e.g., "Summarize this document", "Give me a summary", "TLDR", "key takeaways")
+          - Requests for key point extraction (e.g., "What are the main points?", "Extract key information")
+          - Analysis requests (e.g., "Analyze this document", "What's important here", "Highlight the key parts")
+          - Explanation requests (e.g., "Explain this document", "What does this mean?")
+          - Any query that references "this document", "the document", "the text", "the content", etc.
 
-        Return ONLY "DOCUMENT_SPECIFIC" or "GENERAL_QUERY" as your answer with no additional text.`,
+          Consider the document search results when making your decision. If the search results seem
+          relevant to the query, it's likely DOCUMENT_SPECIFIC. If the search results don't contain
+          relevant information AND the query is a simple general question unrelated to documents, classify it as GENERAL_QUERY.
+
+          When in doubt, classify as DOCUMENT_SPECIFIC to ensure users get document context.
+
+          Return ONLY "DOCUMENT_SPECIFIC" or "GENERAL_QUERY" as your answer with no additional text.`,
         },
         {
           role: "user",
@@ -154,8 +164,9 @@ export const POST = async (req: NextRequest) => {
              - Be honest when information isn't in the document
 
           3. For document operation requests:
-             - For summaries: Provide a comprehensive overview of main points
-             - For key points: Extract and organize important information
+             - For summaries: Provide a comprehensive overview based on all available document chunks, even if they only represent parts of the document. Don't say "I can't summarize" unless there's truly no content
+             - For key points: Extract and organize important information from all available document chunks
+             - For document analysis: Consider all provided chunks as representative of the document's content
              - For images: Describe visible content in the document if mentioned
 
           4. Format responses appropriately with markdown for readability
