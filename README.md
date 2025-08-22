@@ -1,6 +1,8 @@
 # WhispherDocs
 
-### Simple way to get answers to your questions.
+### 📝 Chat with your PDFs, find answers instantly.  
+
+WhispherDocs makes your documents searchable and interactive just upload a PDF, ask your questions in natural language, and get instant, accurate answers with page-level references. Perfect for those who want insights without endless scrolling.
 
 ## Getting Started
 
