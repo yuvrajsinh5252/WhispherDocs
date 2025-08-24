@@ -3,6 +3,14 @@
 import { redirect, useSearchParams } from "next/navigation";
 import { trpc } from "../_trpc/client";
 import { Suspense } from "react";
+import { constructMetadata } from "@/lib/utils";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = constructMetadata({
+  title: "Authenticating",
+  description: "Please wait while we authenticate your account.",
+  noIndex: true,
+});
 
 export default function AuthCallBack() {
   return (

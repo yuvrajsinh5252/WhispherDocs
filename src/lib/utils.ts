@@ -12,41 +12,210 @@ export function absoluteUrl(path: string) {
   return `http://localhost:${process.env.PORT ?? 3000}${path}`;
 }
 
+export const SEO_CONFIG = {
+  siteName: "WhispherDocs",
+  siteUrl: "https://whispher-docs.vercel.app",
+  defaultTitle: "WhispherDocs - Chat with Your Documents Intelligently",
+  defaultDescription:
+    "Get instant, accurate answers from your PDFs using advanced AI technology. Upload documents and chat naturally with your content.",
+  defaultImage: "/thumbnail.png",
+  twitterHandle: "@yuvrajsinh099",
+  keywords: [
+    "PDF chat",
+    "document AI",
+    "PDF analysis",
+    "AI document reader",
+    "intelligent document search",
+    "PDF question answering",
+    "document intelligence",
+    "AI-powered PDF reader",
+  ],
+  authors: [{ name: "WhispherDocs Team" }],
+  creator: "WhispherDocs",
+  publisher: "WhispherDocs",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+} as const;
+
 export function constructMetadata({
-  title = "WhispherDocs",
-  description = "Enjoy the best of the web with WhisperDocs and get best knowledge out of pdf files.",
-  image = "/thumbnail.png",
+  title,
+  description,
+  image,
   icons = "/favicon.ico",
   noIndex = false,
+  keywords,
+  canonical,
+  type = "website",
+  publishedTime,
+  modifiedTime,
+  authors,
+  section,
+  tags,
 }: {
   title?: string;
   description?: string;
   image?: string;
   icons?: string;
   noIndex?: boolean;
+  keywords?: string[];
+  canonical?: string;
+  type?: "website" | "article";
+  publishedTime?: string;
+  modifiedTime?: string;
+  authors?: Array<{ name: string }>;
+  section?: string;
+  tags?: string[];
 } = {}): Metadata {
-  return {
-    title,
-    description,
+  const pageTitle = title
+    ? `${title} | ${SEO_CONFIG.siteName}`
+    : SEO_CONFIG.defaultTitle;
+  const pageDescription = description || SEO_CONFIG.defaultDescription;
+  const pageImage = image || SEO_CONFIG.defaultImage;
+  const pageKeywords = keywords || SEO_CONFIG.keywords;
+
+  const metadata: Metadata = {
+    title: pageTitle,
+    description: pageDescription,
+    keywords: pageKeywords.join(", "),
+    authors: authors || [...SEO_CONFIG.authors],
+    creator: SEO_CONFIG.creator,
+    publisher: SEO_CONFIG.publisher,
+    formatDetection: SEO_CONFIG.formatDetection,
+    metadataBase: new URL(SEO_CONFIG.siteUrl),
+    alternates: {
+      canonical: canonical,
+    },
     openGraph: {
-      title,
-      description,
-      images: [{ url: image }],
+      type,
+      title: pageTitle,
+      description: pageDescription,
+      images: [
+        {
+          url: pageImage,
+          width: 1200,
+          height: 630,
+          alt: pageTitle,
+        },
+      ],
+      siteName: SEO_CONFIG.siteName,
+      locale: "en_US",
+      ...(publishedTime && { publishedTime }),
+      ...(modifiedTime && { modifiedTime }),
+      ...(authors && { authors: authors.map((a) => a.name) }),
+      ...(section && { section }),
+      ...(tags && { tags }),
     },
     twitter: {
       card: "summary_large_image",
-      title,
-      description,
-      images: [image],
-      creator: "@yuvrajsinh",
+      title: pageTitle,
+      description: pageDescription,
+      images: [pageImage],
+      creator: SEO_CONFIG.twitterHandle,
+      site: SEO_CONFIG.twitterHandle,
     },
-    icons,
-    metadataBase: new URL("http://localhost:3000/"),
-    ...(noIndex && {
+    icons: {
+      icon: icons,
+      apple: "/favicon.ico",
+    },
+    ...(!noIndex && {
       robots: {
-        index: false,
-        follow: false,
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          "max-video-preview": -1,
+          "max-image-preview": "large",
+          "max-snippet": -1,
+        },
       },
     }),
+    verification: {
+      google: "6AlGTN6eLoflhRhp6xeB3ajmvAZpO26ia7zOxbN21CY",
+    },
   };
+
+  return metadata;
+}
+
+export function generateJsonLd(
+  type: "website" | "article" | "organization" = "website",
+  additionalData?: Record<string, any>
+) {
+  const baseData = {
+    "@context": "https://schema.org",
+    "@type":
+      type === "website"
+        ? "WebSite"
+        : type === "article"
+        ? "Article"
+        : "Organization",
+  };
+
+  switch (type) {
+    case "website":
+      return {
+        ...baseData,
+        name: SEO_CONFIG.siteName,
+        url: SEO_CONFIG.siteUrl,
+        description: SEO_CONFIG.defaultDescription,
+        potentialAction: {
+          "@type": "SearchAction",
+          target: `${SEO_CONFIG.siteUrl}/search?q={search_term_string}`,
+          "query-input": "required name=search_term_string",
+        },
+        sameAs: [
+          `https://twitter.com/${SEO_CONFIG.twitterHandle.replace("@", "")}`,
+        ],
+      };
+
+    case "organization":
+      return {
+        ...baseData,
+        name: SEO_CONFIG.siteName,
+        url: SEO_CONFIG.siteUrl,
+        logo: `${SEO_CONFIG.siteUrl}/thumbnail.png`,
+        description: SEO_CONFIG.defaultDescription,
+        sameAs: [
+          `https://twitter.com/${SEO_CONFIG.twitterHandle.replace("@", "")}`,
+        ],
+      };
+
+    case "article":
+      return {
+        ...baseData,
+        headline: additionalData?.title || SEO_CONFIG.defaultTitle,
+        description:
+          additionalData?.description || SEO_CONFIG.defaultDescription,
+        image: [
+          `${SEO_CONFIG.siteUrl}${
+            additionalData?.image || SEO_CONFIG.defaultImage
+          }`,
+        ],
+        datePublished: additionalData?.publishedTime,
+        dateModified: additionalData?.modifiedTime,
+        author: {
+          "@type": "Person",
+          name: additionalData?.author || SEO_CONFIG.authors[0].name,
+        },
+        publisher: {
+          "@type": "Organization",
+          name: SEO_CONFIG.siteName,
+          logo: {
+            "@type": "ImageObject",
+            url: `${SEO_CONFIG.siteUrl}/thumbnail.png`,
+          },
+        },
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": additionalData?.canonical || SEO_CONFIG.siteUrl,
+        },
+      };
+
+    default:
+      return baseData;
+  }
 }
