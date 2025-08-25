@@ -11,6 +11,9 @@ import {
   Search,
   Upload,
   Zap,
+  Settings,
+  Brain,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -31,11 +34,11 @@ export default function Home() {
             initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{
-              duration: 0.4,
+              duration: 0.2,
               ease: [0.25, 0.46, 0.45, 0.94],
               type: "spring",
-              stiffness: 400,
-              damping: 25,
+              stiffness: 600,
+              damping: 30,
             }}
             className="mb-6 px-6 py-2.5 flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100/50 dark:border-blue-800/50 shadow-sm hover:shadow-md transition-shadow duration-200"
           >
@@ -48,15 +51,15 @@ export default function Home() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.15 }}
             className="flex flex-col justify-center items-center max-w-3xl mx-auto"
           >
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                duration: 0.6,
-                delay: 0.2,
+                duration: 0.3,
+                delay: 0.05,
                 ease: [0.25, 0.46, 0.45, 0.94],
               }}
               className="flex flex-col mb-10 relative"
@@ -66,8 +69,8 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{
-                  duration: 0.7,
-                  delay: 0.3,
+                  duration: 0.4,
+                  delay: 0.1,
                   ease: [0.25, 0.46, 0.45, 0.94],
                 }}
               >
@@ -78,8 +81,8 @@ export default function Home() {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{
-                  duration: 0.5,
-                  delay: 0.4,
+                  duration: 0.3,
+                  delay: 0.15,
                   ease: [0.25, 0.46, 0.45, 0.94],
                 }}
               >
@@ -92,8 +95,8 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                duration: 0.5,
-                delay: 0.5,
+                duration: 0.3,
+                delay: 0.2,
                 ease: [0.25, 0.46, 0.45, 0.94],
               }}
               className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full max-w-md"
@@ -126,8 +129,8 @@ export default function Home() {
           initial={{ opacity: 0, y: 40, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{
-            duration: 0.6,
-            delay: 0.7,
+            duration: 0.4,
+            delay: 0.3,
             ease: [0.25, 0.46, 0.45, 0.94],
           }}
           className="mt-20 w-full max-w-5xl"
@@ -209,8 +212,8 @@ export default function Home() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
-            duration: 0.5,
-            delay: 0.9,
+            duration: 0.3,
+            delay: 0.4,
             ease: [0.25, 0.46, 0.45, 0.94],
           }}
           className="mt-24 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8"
@@ -246,8 +249,8 @@ export default function Home() {
               initial={{ opacity: 0, y: 20, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{
-                duration: 0.4,
-                delay: 1.0 + feature.delay,
+                duration: 0.3,
+                delay: 0.5 + feature.delay * 0.05,
                 ease: [0.25, 0.46, 0.45, 0.94],
               }}
               whileHover={{
@@ -280,8 +283,8 @@ export default function Home() {
           initial={{ opacity: 0, y: 30, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{
-            duration: 0.6,
-            delay: 1.4,
+            duration: 0.4,
+            delay: 0.9,
             ease: [0.25, 0.46, 0.45, 0.94],
           }}
           className="mt-24 w-full max-w-4xl bg-gradient-to-b from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-900/50 rounded-2xl p-8 border border-gray-200 dark:border-gray-800 shadow-xl hover:shadow-2xl transition-shadow duration-300"
@@ -291,8 +294,8 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
-              duration: 0.5,
-              delay: 1.5,
+              duration: 0.3,
+              delay: 0.95,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
           >
@@ -331,8 +334,8 @@ export default function Home() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{
-                  duration: 0.4,
-                  delay: 1.6 + benefit.delay,
+                  duration: 0.3,
+                  delay: 1.0 + benefit.delay * 0.03,
                   ease: [0.25, 0.46, 0.45, 0.94],
                 }}
                 className="flex items-start gap-3 group"
@@ -358,11 +361,97 @@ export default function Home() {
         </motion.div>
 
         <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: 0.3,
+            delay: 0.7,
+            ease: [0.25, 0.46, 0.45, 0.94],
+          }}
+          className="mt-16 w-full max-w-5xl"
+        >
+          <motion.h2
+            className="text-2xl font-bold mb-8 text-center bg-gradient-to-r from-gray-900 to-gray-600 dark:from-gray-100 dark:to-gray-400 bg-clip-text text-transparent"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.3,
+              delay: 0.75,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
+          >
+            Advanced AI Capabilities
+          </motion.h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {[
+              {
+                icon: Settings,
+                color: "indigo",
+                title: "Model Selection",
+                description:
+                  "Choose from multiple AI models optimized for different document types and analysis needs.",
+                delay: 0.1,
+              },
+              {
+                icon: Brain,
+                color: "pink",
+                title: "Reasoning Models",
+                description:
+                  "Advanced reasoning capabilities for complex document analysis, inference, and logical connections.",
+                delay: 0.2,
+              },
+              {
+                icon: Globe,
+                color: "emerald",
+                title: "Multilingual Support",
+                description:
+                  "Chat with documents in multiple languages, breaking down language barriers for global accessibility.",
+                delay: 0.3,
+              },
+            ].map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{
+                  duration: 0.3,
+                  delay: 0.8 + feature.delay * 0.05,
+                  ease: [0.25, 0.46, 0.45, 0.94],
+                }}
+                whileHover={{
+                  y: -5,
+                  scale: 1.02,
+                  transition: { duration: 0.2 },
+                }}
+                className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 hover:shadow-xl hover:border-indigo-200 dark:hover:border-indigo-800 transition-all duration-300 group cursor-pointer"
+              >
+                <motion.div
+                  className={`p-3 bg-${feature.color}-100 dark:bg-${feature.color}-900/20 rounded-xl w-fit mb-4 group-hover:scale-110 transition-transform duration-200`}
+                  whileHover={{ rotate: [0, -5, 5, 0] }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <feature.icon
+                    className={`h-6 w-6 text-${feature.color}-600 dark:text-${feature.color}-400`}
+                  />
+                </motion.div>
+                <h3 className="font-bold text-lg mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                  {feature.description}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        <motion.div
           initial={{ opacity: 0, y: 40, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{
-            duration: 0.6,
-            delay: 2.0,
+            duration: 0.4,
+            delay: 1.1,
             ease: [0.25, 0.46, 0.45, 0.94],
           }}
           whileHover={{
@@ -378,8 +467,8 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
-              duration: 0.5,
-              delay: 2.1,
+              duration: 0.3,
+              delay: 1.15,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
           >
@@ -390,8 +479,8 @@ export default function Home() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
-              duration: 0.5,
-              delay: 2.2,
+              duration: 0.3,
+              delay: 1.2,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
           >
@@ -403,8 +492,8 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
-              duration: 0.5,
-              delay: 2.3,
+              duration: 0.3,
+              delay: 1.25,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
           >

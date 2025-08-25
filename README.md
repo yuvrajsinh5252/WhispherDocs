@@ -1,8 +1,16 @@
 # WhispherDocs
 
-### 📝 Chat with your PDFs, find answers instantly.  
+### 📝 Chat with your PDFs, find answers instantly.
 
 WhispherDocs makes your documents searchable and interactive just upload a PDF, ask your questions in natural language, and get instant, accurate answers with page-level references. Perfect for those who want insights without endless scrolling.
+
+## ✨ Key Features
+
+- **Model Selection**: Choose from multiple AI models to best suit your document analysis needs
+- **Reasoning Model Support**: Advanced reasoning capabilities for complex document analysis and inference
+- **Multilingual Support**: Chat with documents in multiple languages for global accessibility
+- **Instant Citations**: Get precise page-level references with every answer
+- **Natural Language Processing**: Ask questions in plain English and get contextual responses
 
 ## Getting Started
 
