@@ -14,6 +14,16 @@ const nextConfig = {
       },
     ],
   },
+  experimental: {
+    serverComponentsExternalPackages: ["@prisma/client", "prisma"],
+  },
+  // Ensure compatibility with Vercel Edge Runtime
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
 };
 
 module.exports = nextConfig;
