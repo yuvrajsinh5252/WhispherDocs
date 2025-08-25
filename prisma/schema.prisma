@@ -48,8 +48,10 @@ model File {
 }
 
 model Messages {
-  id   String @id @default(cuid())
-  text String @db.Text()
+  id          String  @id @default(cuid())
+  text        String  @db.Text()
+  thinking    String? @db.Text()
+  hasThinking Boolean @default(false)
 
   isUserMessage Boolean
 

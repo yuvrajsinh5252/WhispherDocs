@@ -51,6 +51,7 @@ export async function saveAssistantMessage(
       data: {
         text,
         thinking,
+        hasThinking: !!thinking && thinking.trim().length > 0,
         isUserMessage: false,
         userId,
         fileId,
@@ -75,6 +76,7 @@ export async function handleErrorAndCleanup(
     await db.messages.create({
       data: {
         text: ERROR_MESSAGES.PROCESSING_ERROR,
+        hasThinking: false,
         isUserMessage: false,
         userId: userId,
         fileId: fileId,

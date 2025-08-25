@@ -33,7 +33,7 @@ interface MessageProps {
 }
 
 export default function Messages({ fileId }: MessageProps) {
-  const { isLoading: isAiThinking } = useContext(ChatContext);
+  const { isLoading: isAiThinking, selectedModel } = useContext(ChatContext);
 
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const prevMessagesLengthRef = useRef<number>(0);
@@ -57,11 +57,12 @@ export default function Messages({ fileId }: MessageProps) {
     createdAt: new Date().toISOString(),
     id: "loading-message",
     isUserMessage: false,
+    hasThinking: false,
     text: (
-      <div className="flex items-center justify-start space-x-2">
+      <div className="flex items-center justify-start space-x-3">
         <LoadingDots />
         <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-          AI is thinking
+          Processing...
         </span>
       </div>
     ),
@@ -247,6 +248,7 @@ export default function Messages({ fileId }: MessageProps) {
               <Message
                 message={message}
                 isNextMessageSamePerson={isNextMessageSamePerson}
+                selectedModel={selectedModel}
                 key={message.id}
                 data-message
               />

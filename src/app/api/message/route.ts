@@ -94,19 +94,7 @@ export const POST = async (req: NextRequest) => {
           const result = await processCitationsInStream(
             response,
             controller,
-            file.name,
-            (thinking) => {
-              try {
-                const thinkingUpdate =
-                  JSON.stringify({
-                    type: "thinking",
-                    content: thinking,
-                  }) + "\n";
-                controller.enqueue(thinkingUpdate);
-              } catch (error) {
-                console.error("Error sending thinking update:", error);
-              }
-            }
+            file.name
           );
 
           const messageSaved = await saveAssistantMessage(

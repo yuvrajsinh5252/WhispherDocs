@@ -138,6 +138,7 @@ export const appRouter = router({
           text: true,
           createdAt: true,
           isUserMessage: true,
+          hasThinking: true,
         },
       });
 
@@ -148,6 +149,29 @@ export const appRouter = router({
       }
 
       return { messages, nextCursor };
+    }),
+
+  getMessageThinking: adminProcedure
+    .input(z.object({ messageId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const { userId } = ctx;
+      const { messageId } = input;
+
+      const message = await db.messages.findFirst({
+        where: {
+          id: messageId,
+          userId,
+        },
+        select: {
+          thinking: true,
+        },
+      });
+
+      if (!message) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      return { thinking: message.thinking };
     }),
 });
 
