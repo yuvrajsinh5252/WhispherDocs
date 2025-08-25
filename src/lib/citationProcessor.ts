@@ -4,21 +4,36 @@ export async function processCitationsInStream(
   response: AsyncIterable<any>,
   controller: ReadableStreamDefaultController,
   fileName: string
-): Promise<string> {
+): Promise<{ finalMessage: string; thinking?: string }> {
   let finalMessage = "";
   let currentCitation: Citation | null = null;
   let citationIndex = 1;
   let citations: Citation[] = [];
-  const citationSources = new Map<string, number>();
   let textBuffer = "";
+  const citationSources = new Map<string, number>();
   let pendingCitations: Citation[] = [];
+  let thinkingBuffer = "";
 
   for await (const event of response) {
+    console.log(`event_type: ${event.type}`);
+
     if (event.type === "content-delta") {
-      const textContent = event.delta?.message?.content?.text || "";
-      textBuffer += textContent;
-      finalMessage += textContent;
-      controller.enqueue(textContent);
+      if (event.delta.message.content.thinking) {
+        const thinkingContent = event.delta.message.content.thinking;
+        thinkingBuffer += thinkingContent;
+
+        const thinkingChunk =
+          JSON.stringify({
+            type: "thinking",
+            content: thinkingContent,
+          }) + "\n";
+        controller.enqueue(thinkingChunk);
+      } else {
+        const textContent = event.delta?.message?.content?.text || "";
+        textBuffer += textContent;
+        finalMessage += textContent;
+        controller.enqueue(textContent);
+      }
 
       if (textBuffer.endsWith("\n\n")) {
         pendingCitations = [];
@@ -88,5 +103,8 @@ export async function processCitationsInStream(
       });
   }
 
-  return finalMessage;
+  return {
+    finalMessage,
+    thinking: thinkingBuffer,
+  };
 }

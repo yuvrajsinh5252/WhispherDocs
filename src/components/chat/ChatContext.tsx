@@ -9,6 +9,7 @@ type StreamResponse = {
   message: string;
   handleInputChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
   isLoading: boolean;
+  selectedModel?: string;
 };
 
 export const ChatContext = createContext<StreamResponse>({
@@ -21,16 +22,19 @@ export const ChatContext = createContext<StreamResponse>({
 interface Props {
   fileId: string;
   children: ReactNode;
+  selectedModel?: string;
 }
 
-export const ChatContextProvider = ({ fileId, children }: Props) => {
+export const ChatContextProvider = ({
+  fileId,
+  children,
+  selectedModel,
+}: Props) => {
   const [message, setMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const utils = trpc.useContext();
-
   const { toast } = useToast();
-
   const backupMessage = useRef("");
 
   const { mutate: sendMessage } = useMutation({
@@ -40,6 +44,7 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
         body: JSON.stringify({
           fileId,
           message,
+          model: selectedModel,
         }),
       });
 
@@ -52,17 +57,15 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
     onMutate: async ({ message }) => {
       backupMessage.current = message;
       setMessage("");
+      setIsLoading(true);
 
-      // step 1
       await utils.getMessages.cancel();
 
-      // step 2
       const previousMessages = utils.getMessages.getInfiniteData({
         fileId,
         limit: INFINITE_QUERY_LIMIT,
       });
 
-      // step 3
       utils.getMessages.setInfiniteData(
         { fileId, limit: INFINITE_QUERY_LIMIT },
         (old: any) => {
@@ -76,7 +79,6 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
           let newPages = [...old.pages];
 
           if (newPages.length === 0) {
-            // If there are no pages, create a new one
             return {
               ...old,
               pages: [
@@ -116,8 +118,6 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
         }
       );
 
-      setIsLoading(true);
-
       return {
         previousMessages:
           previousMessages?.pages.flatMap((page) => page.messages) ?? [],
@@ -137,15 +137,61 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
       const reader = stream.getReader();
       const decoder = new TextDecoder();
       let done = false;
-
       let accResponse = "";
+      let accThinking = "";
 
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
         const chunkValue = decoder.decode(value);
 
-        accResponse += chunkValue;
+        if (chunkValue.includes('"type":"thinking"')) {
+          const lines = chunkValue.split("\n");
+          for (const line of lines) {
+            if (line.trim() && line.includes('"type":"thinking"')) {
+              try {
+                const thinkingData = JSON.parse(line);
+                if (thinkingData.type === "thinking") {
+                  accThinking += thinkingData.content || "";
+
+                  utils.getMessages.setInfiniteData(
+                    { fileId, limit: INFINITE_QUERY_LIMIT },
+                    (old: any) => {
+                      if (!old) return { pages: [], pageParams: [] };
+
+                      return {
+                        ...old,
+                        pages: old.pages.map((page: any, pageIndex: number) => {
+                          if (pageIndex === 0) {
+                            return {
+                              ...page,
+                              messages: page.messages.map((message: any) => {
+                                if (message.id === "ai-response") {
+                                  return {
+                                    ...message,
+                                    thinking: accThinking,
+                                  };
+                                }
+                                return message;
+                              }),
+                            };
+                          }
+                          return page;
+                        }),
+                      };
+                    }
+                  );
+                }
+              } catch (e) {
+                accResponse += line;
+              }
+            } else if (line.trim()) {
+              accResponse += line;
+            }
+          }
+        } else {
+          accResponse += chunkValue;
+        }
 
         utils.getMessages.setInfiniteData(
           { fileId, limit: INFINITE_QUERY_LIMIT },
@@ -162,6 +208,7 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
                         createdAt: new Date().toISOString(),
                         id: "ai-response",
                         text: accResponse,
+                        thinking: accThinking || undefined,
                         isUserMessage: false,
                       },
                     ],
@@ -185,6 +232,7 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
                       createdAt: new Date().toISOString(),
                       id: "ai-response",
                       text: accResponse,
+                      thinking: accThinking || undefined,
                       isUserMessage: false,
                     },
                     ...page.messages,
@@ -195,6 +243,7 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
                       return {
                         ...message,
                         text: accResponse,
+                        thinking: accThinking || undefined,
                       };
                     }
                     return message;
@@ -257,7 +306,7 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
 
       setTimeout(async () => {
         await utils.getMessages.invalidate({ fileId });
-      }, 500);
+      }, 1000);
     },
   });
 
@@ -274,6 +323,7 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
         message,
         handleInputChange,
         isLoading,
+        selectedModel,
       }}
     >
       {children}

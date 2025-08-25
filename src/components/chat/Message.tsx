@@ -1,17 +1,87 @@
 import { cn } from "@/lib/utils";
 import { ExtendedMessages } from "@/types/messages";
-import { Bot, UserRound } from "lucide-react";
-import { forwardRef } from "react";
+import { Bot, UserRound, Brain, ChevronDown, ChevronRight } from "lucide-react";
+import { forwardRef, useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { format } from "date-fns";
+import { trpc } from "@/app/_trpc/client";
 
 interface MessageProps {
   message: ExtendedMessages;
   isNextMessageSamePerson: boolean;
+  selectedModel?: string;
 }
 
 export const Message = forwardRef<HTMLDivElement, MessageProps>(
   ({ message, isNextMessageSamePerson }, ref) => {
+    const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
+    const [fetchedThinking, setFetchedThinking] = useState<string | null>(null);
+    const [messageToFetch, setMessageToFetch] = useState<string | null>(null);
+
+    const isCompletedMessage =
+      message.id !== "ai-response" && !message.isUserMessage;
+    const isStreamingMessage =
+      message.id === "ai-response" && !message.isUserMessage;
+    const hasThinkingContent = message.thinking || fetchedThinking;
+    const shouldAutoExpandThinking = isStreamingMessage && message.thinking;
+
+    const { data: thinkingData, isLoading: isFetchingThinking } =
+      trpc.getMessageThinking.useQuery(
+        { messageId: messageToFetch! },
+        { enabled: !!messageToFetch }
+      );
+
+    useEffect(() => {
+      if (thinkingData && messageToFetch) {
+        setFetchedThinking(thinkingData.thinking || null);
+        setMessageToFetch(null);
+        if (thinkingData.thinking) {
+          setIsThinkingExpanded(true);
+        }
+      }
+    }, [thinkingData, messageToFetch]);
+
+    const handleToggleThinking = () => {
+      if (shouldAutoExpandThinking) return;
+
+      if (!isThinkingExpanded && !fetchedThinking && isCompletedMessage) {
+        setMessageToFetch(message.id);
+      }
+      setIsThinkingExpanded(!isThinkingExpanded);
+    };
+
+    const shouldShowThinkingToggle =
+      (isStreamingMessage && hasThinkingContent) ||
+      (isCompletedMessage && (message.hasThinking || hasThinkingContent));
+
+    const shouldShowThinking =
+      shouldAutoExpandThinking || (isThinkingExpanded && hasThinkingContent);
+
+    const ThinkingContent = ({
+      content,
+      isStreaming,
+    }: {
+      content: string;
+      isStreaming?: boolean;
+    }) => (
+      <div className="mt-3 border-t border-gray-200 dark:border-gray-700 pt-3">
+        <div className="bg-gradient-to-r from-indigo-50/50 to-blue-50/50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-lg p-3 border-l-2 border-indigo-400 dark:border-indigo-500">
+          <div className="flex items-center gap-2 mb-2">
+            <Brain className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+            <div className="text-xs font-medium text-indigo-800 dark:text-indigo-200">
+              Reasoning Process
+              {isStreaming && (
+                <span className="ml-2 inline-flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
+              )}
+            </div>
+          </div>
+          <div className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap">
+            {content}
+          </div>
+        </div>
+      </div>
+    );
+
     return (
       <div
         ref={ref}
@@ -34,7 +104,7 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
 
         <div
           className={cn(
-            " sm:max-w-[75%] rounded-2xl px-3.5 py-2.5 sm:px-5 sm:py-3 transition-all hover:shadow-lg",
+            "sm:max-w-[75%] rounded-2xl px-3.5 py-2.5 sm:px-5 sm:py-3 transition-all hover:shadow-lg",
             {
               "bg-gradient-to-br from-indigo-500/90 to-violet-600/90 text-white backdrop-blur-sm border border-white/20 dark:border-white/10 shadow-md hover:shadow-indigo-500/20 dark:hover:shadow-indigo-400/10":
                 message.isUserMessage,
@@ -63,6 +133,41 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
             )}
           </div>
 
+          {shouldAutoExpandThinking && message.thinking && (
+            <ThinkingContent content={message.thinking} isStreaming />
+          )}
+
+          {!message.isUserMessage &&
+            shouldShowThinkingToggle &&
+            !shouldAutoExpandThinking && (
+              <>
+                <button
+                  onClick={handleToggleThinking}
+                  className="flex items-center gap-2 mt-3 text-xs text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors"
+                  disabled={isFetchingThinking}
+                >
+                  {isThinkingExpanded ? (
+                    <ChevronDown className="h-3 w-3" />
+                  ) : (
+                    <ChevronRight className="h-3 w-3" />
+                  )}
+                  <Brain className="h-3 w-3" />
+                  <span>
+                    {isFetchingThinking
+                      ? "Loading reasoning..."
+                      : "View reasoning process"}
+                  </span>
+                </button>
+
+                {isThinkingExpanded &&
+                  (message.thinking || fetchedThinking) && (
+                    <ThinkingContent
+                      content={message.thinking || fetchedThinking || ""}
+                    />
+                  )}
+              </>
+            )}
+
           <div
             className={cn(
               "text-xs select-none mt-1 flex items-center font-light gap-1",
@@ -72,10 +177,9 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
             )}
           >
             <div
-              className={
-                "flex-shrink-0 mr-2 sm:hidden " +
-                (message.isUserMessage ? "hidden" : "")
-              }
+              className={cn("flex-shrink-0 mr-2 sm:hidden", {
+                hidden: message.isUserMessage,
+              })}
             >
               <div className="h-4 w-4 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-indigo-100 to-blue-200 dark:from-indigo-800/50 dark:to-indigo-600/30 flex items-center justify-center shadow-md border border-indigo-200/50 dark:border-indigo-600/30">
                 <Bot className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600 dark:text-indigo-200" />

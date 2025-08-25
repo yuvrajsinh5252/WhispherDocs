@@ -3,10 +3,12 @@
 import { trpc } from "@/app/_trpc/client";
 import ChatInput from "./ChatInput";
 import Messages from "./Messages";
+import { ModelSelector, AIModel } from "./ModelSelector";
 import { ChevronLeft, Loader2, MessageSquare, XCircle } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants } from "../ui/button";
 import { ChatContextProvider } from "./ChatContext";
+import { useState, useEffect } from "react";
 
 interface ChatwrapperProps {
   fileId: string;
@@ -14,6 +16,26 @@ interface ChatwrapperProps {
 
 export default function Chatwrapper({ fileId }: ChatwrapperProps) {
   const { data, isLoading } = trpc.getFileUploadStatus.useQuery({ fileId });
+  const [selectedModel, setSelectedModel] = useState<AIModel>(
+    "command-a-reasoning-08-2025"
+  );
+
+  useEffect(() => {
+    const savedModel = localStorage.getItem(
+      "whisperdocs-selected-model"
+    ) as AIModel;
+    if (
+      savedModel &&
+      (savedModel === "command-a-reasoning-08-2025" || savedModel === "aya")
+    ) {
+      setSelectedModel(savedModel);
+    }
+  }, []);
+
+  const handleModelChange = (model: AIModel) => {
+    setSelectedModel(model);
+    localStorage.setItem("whisperdocs-selected-model", model);
+  };
 
   if (isLoading) {
     return (
@@ -87,35 +109,46 @@ export default function Chatwrapper({ fileId }: ChatwrapperProps) {
   }
 
   return (
-    <ChatContextProvider fileId={fileId}>
+    <ChatContextProvider fileId={fileId} selectedModel={selectedModel}>
       <div className="relative flex h-full flex-col justify-between bg-gradient-to-b from-white to-gray-50/90 dark:from-gray-900 dark:to-gray-900/90 rounded-lg overflow-hidden backdrop-blur-sm shadow-xl border border-gray-200/80 dark:border-gray-700/80">
-        <div className="sticky top-0 left-0 right-0 h-14 sm:h-16 z-10 flex items-center px-3 sm:px-6">
-          <div className="w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl shadow-sm py-2.5 px-4 flex items-center gap-2.5">
-            <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-900/50 dark:to-indigo-700/30 flex items-center justify-center shadow-sm">
-              <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-indigo-600 dark:text-indigo-400" />
-            </div>
-            <span className="font-medium text-sm sm:text-base text-gray-900 dark:text-gray-100">
-              Chat with your document
-            </span>
+        <div className="sticky top-0 left-0 right-0 z-10 flex flex-col px-3 sm:px-6">
+          <div className="h-14 sm:h-16 flex items-center">
+            <div className="w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl shadow-sm py-2.5 px-4 flex items-center gap-2.5">
+              <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-900/50 dark:to-indigo-700/30 flex items-center justify-center shadow-sm">
+                <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <span className="font-medium text-sm sm:text-base text-gray-900 dark:text-gray-100">
+                Chat with your document
+              </span>
 
-            <div className="ml-auto">
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                <span className="sr-only">Back</span>
-              </Link>
+              <div className="ml-auto">
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="sr-only">Back</span>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto pt-4 pb-[140px] sm:pb-[180px]">
+        <div className="flex-1 overflow-y-auto pt-4 pb-[200px] sm:pb-[240px]">
           <Messages fileId={fileId} />
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white/95 dark:from-gray-900 dark:via-gray-900/95 to-transparent pt-16 pb-5 px-3 sm:px-6">
-          <ChatInput isDisabled={false} />
+          <div className="flex flex-col gap-4 max-w-3xl mx-auto">
+            <div className="flex justify-center">
+              <ModelSelector
+                selectedModel={selectedModel}
+                onModelChange={handleModelChange}
+                className="w-auto"
+              />
+            </div>
+            <ChatInput isDisabled={false} />
+          </div>
         </div>
       </div>
     </ChatContextProvider>
