@@ -1,7 +1,7 @@
-import z from "zod";
-import { GROQ_MODELS } from "@/lib/message-api/constants";
+import { z } from "zod";
+import { ALL_MODELS } from "@/lib/message-api/constants";
 
-const modelIds = Object.keys(GROQ_MODELS) as [string, ...string[]];
+const modelIds = Object.keys(ALL_MODELS) as [string, ...string[]];
 
 export const MessageValidator = z.object({
   fileId: z.string(),

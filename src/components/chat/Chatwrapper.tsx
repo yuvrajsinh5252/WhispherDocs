@@ -3,12 +3,17 @@
 import { trpc } from "@/app/_trpc/client";
 import ChatInput from "./ChatInput";
 import Messages from "./Messages";
-import { ModelSelector, AIModel } from "./ModelSelector";
+import { ModelSelector } from "./ModelSelector";
 import { ChevronLeft, Loader2, MessageSquare, XCircle } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants } from "../ui/button";
 import { ChatContextProvider } from "./ChatContext";
 import { useState, useEffect } from "react";
+import {
+  type ModelId,
+  ALL_MODELS,
+  DEFAULT_MODEL,
+} from "@/lib/message-api/constants";
 
 interface ChatwrapperProps {
   fileId: string;
@@ -16,23 +21,18 @@ interface ChatwrapperProps {
 
 export default function Chatwrapper({ fileId }: ChatwrapperProps) {
   const { data, isLoading } = trpc.getFileUploadStatus.useQuery({ fileId });
-  const [selectedModel, setSelectedModel] = useState<AIModel>(
-    "command-a-reasoning-08-2025"
-  );
+  const [selectedModel, setSelectedModel] = useState<ModelId>(DEFAULT_MODEL);
 
   useEffect(() => {
     const savedModel = localStorage.getItem(
       "whisperdocs-selected-model"
-    ) as AIModel;
-    if (
-      savedModel &&
-      (savedModel === "command-a-reasoning-08-2025" || savedModel === "aya")
-    ) {
+    ) as ModelId;
+    if (savedModel && savedModel in ALL_MODELS) {
       setSelectedModel(savedModel);
     }
   }, []);
 
-  const handleModelChange = (model: AIModel) => {
+  const handleModelChange = (model: ModelId) => {
     setSelectedModel(model);
     localStorage.setItem("whisperdocs-selected-model", model);
   };

@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Cpu, Languages, Check, Zap, Brain, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { GROQ_MODELS, type ModelId } from "@/lib/message-api/constants";
+import { ALL_MODELS, type ModelId } from "@/lib/message-api/constants";
 import { useState } from "react";
 
 interface ModelSelectorProps {
@@ -33,7 +33,7 @@ const getModelIcon = (config: any): React.ComponentType<any> => {
   return Cpu;
 };
 
-const models: SimpleModel[] = Object.entries(GROQ_MODELS).map(
+const allModels: SimpleModel[] = Object.entries(ALL_MODELS).map(
   ([id, config]) => ({
     id: id as ModelId,
     name: config.name,
@@ -49,8 +49,39 @@ const models: SimpleModel[] = Object.entries(GROQ_MODELS).map(
   })
 );
 
-const groqModels = models.filter((m) => m.provider === "groq");
-const cohereModels = models.filter((m) => m.provider === "cohere");
+const modelsByProvider = allModels.reduce((acc, model) => {
+  if (!acc[model.provider]) {
+    acc[model.provider] = [];
+  }
+  acc[model.provider].push(model);
+  return acc;
+}, {} as Record<string, SimpleModel[]>);
+
+const getProviderInfo = (provider: string) => {
+  switch (provider) {
+    case "groq":
+      return {
+        icon: Zap,
+        name: "Groq Models",
+        badge: "(Recommended)",
+        color: "text-yellow-500",
+      };
+    case "cohere":
+      return {
+        icon: Cpu,
+        name: "Cohere Models",
+        badge: "",
+        color: "text-indigo-500",
+      };
+    default:
+      return {
+        icon: Cpu,
+        name: `${provider.charAt(0).toUpperCase() + provider.slice(1)} Models`,
+        badge: "",
+        color: "text-gray-500",
+      };
+  }
+};
 
 export function ModelSelector({
   selectedModel,
@@ -58,7 +89,7 @@ export function ModelSelector({
   className,
 }: ModelSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const selectedModelData = models.find((m) => m.id === selectedModel);
+  const selectedModelData = allModels.find((m) => m.id === selectedModel);
 
   const ModelItem = ({ model }: { model: SimpleModel }) => {
     const Icon = model.icon;
@@ -145,38 +176,33 @@ export function ModelSelector({
           </DialogHeader>
 
           <div className="space-y-6 overflow-y-auto">
-            {groqModels.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-yellow-500" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    Groq Models
-                  </h3>
-                  <span className="text-sm text-gray-500">(Recommended)</span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {groqModels.map((model) => (
-                    <ModelItem key={model.id} model={model} />
-                  ))}
-                </div>
-              </div>
-            )}
+            {Object.entries(modelsByProvider).map(([provider, models]) => {
+              const providerInfo = getProviderInfo(provider);
+              const ProviderIcon = providerInfo.icon;
 
-            {cohereModels.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Cpu className="h-4 w-4 text-indigo-500" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    Cohere Models
-                  </h3>
+              return (
+                <div key={provider} className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <ProviderIcon
+                      className={cn("h-4 w-4", providerInfo.color)}
+                    />
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      {providerInfo.name}
+                    </h3>
+                    {providerInfo.badge && (
+                      <span className="text-sm text-gray-500">
+                        {providerInfo.badge}
+                      </span>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {models.map((model) => (
+                      <ModelItem key={model.id} model={model} />
+                    ))}
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {cohereModels.map((model) => (
-                    <ModelItem key={model.id} model={model} />
-                  ))}
-                </div>
-              </div>
-            )}
+              );
+            })}
           </div>
         </DialogContent>
       </Dialog>

@@ -1,7 +1,5 @@
 import { NextRequest } from "next/server";
 import { MessageValidator } from "@/lib/validator/MessageValidator";
-import { CohereClientV2 } from "cohere-ai";
-import { processCitationsInStream } from "@/lib/citationProcessor";
 import {
   validateEnvironment,
   authenticateUser,
@@ -10,7 +8,6 @@ import {
 import {
   saveUserMessage,
   getMessageHistory,
-  saveAssistantMessage,
   handleErrorAndCleanup,
 } from "@/lib/message-api/messages";
 import {
@@ -18,8 +15,13 @@ import {
   classifyQuery,
   prepareDocumentChunks,
 } from "@/lib/message-api/document-search";
-import { createChatConfig } from "@/lib/message-api/chat-config";
-import { DEFAULT_MODEL } from "@/lib/message-api/constants";
+import {
+  DEFAULT_MODEL,
+  ALL_MODELS,
+  type ModelId,
+} from "@/lib/message-api/constants";
+import { handleGroqRequest } from "@/services/groq/handler";
+import { handleCohereRequest } from "@/services/cohere/handler";
 
 export const maxDuration = 59;
 
@@ -46,12 +48,12 @@ export const POST = async (req: NextRequest) => {
   const { user, error: authError } = await authenticateUser();
   if (authError) return authError;
 
-  let fileId: string, message: string, selectedModel: string;
+  let fileId: string, message: string, selectedModel: ModelId;
   try {
     const parsed = MessageValidator.parse(body);
     fileId = parsed.fileId;
     message = parsed.message;
-    selectedModel = parsed.model || DEFAULT_MODEL;
+    selectedModel = (parsed.model as ModelId) || DEFAULT_MODEL;
   } catch (error) {
     console.error("Invalid request data:", error);
     return new Response(JSON.stringify({ error: "Invalid request data" }), {
@@ -71,56 +73,38 @@ export const POST = async (req: NextRequest) => {
   try {
     const searchResults = await searchDocumentContext(message, file.id);
     const formattedHistory = await getMessageHistory(file.id);
-    const cohere = new CohereClientV2({ token: process.env.COHERE_API_KEY });
+
     const needsDocumentContext = await classifyQuery(
       message,
       searchResults,
-      cohere
+      selectedModel
     );
+
     const documentChunks = prepareDocumentChunks(searchResults, file.name);
-    const chatConfig = createChatConfig(
-      selectedModel,
-      needsDocumentContext,
-      formattedHistory,
-      searchResults,
-      message,
-      documentChunks
-    );
-    const response = await cohere.chatStream(chatConfig);
+    const modelConfig = ALL_MODELS[selectedModel];
 
-    const stream = new ReadableStream({
-      async start(controller) {
-        try {
-          const result = await processCitationsInStream(
-            response,
-            controller,
-            file.name
-          );
-
-          const messageSaved = await saveAssistantMessage(
-            result.finalMessage,
-            result.thinking || "",
-            user.id,
-            fileId
-          );
-
-          if (!messageSaved) {
-            console.error("Failed to save assistant message");
-          }
-
-          controller.close();
-        } catch (error) {
-          console.error("Error processing citations:", error);
-          try {
-            controller.error(error);
-          } catch (controllerError) {
-            console.error("Error closing controller:", controllerError);
-          }
-        }
-      },
-    });
-
-    return new Response(stream);
+    if (modelConfig.provider === "groq") {
+      return await handleGroqRequest({
+        selectedModel: selectedModel as any,
+        needsDocumentContext,
+        formattedHistory,
+        searchResults,
+        message,
+        file,
+        userId: user.id,
+      });
+    } else {
+      return await handleCohereRequest({
+        selectedModel: selectedModel as any,
+        needsDocumentContext,
+        formattedHistory,
+        searchResults,
+        message,
+        documentChunks,
+        file,
+        userId: user.id,
+      });
+    }
   } catch (error) {
     return await handleErrorAndCleanup(error, user.id, fileId, message);
   }
