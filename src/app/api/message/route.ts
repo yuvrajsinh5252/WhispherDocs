@@ -1,327 +1,139 @@
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { NextRequest } from "next/server";
 import { MessageValidator } from "@/lib/validator/MessageValidator";
-import { db } from "@/db";
-import { PineconeStore } from "@langchain/pinecone";
-import { PineconeClient } from "@/lib/pinecone";
-import { CohereEmbeddings } from "@langchain/cohere";
 import { CohereClientV2 } from "cohere-ai";
 import { processCitationsInStream } from "@/lib/citationProcessor";
-import { V2ChatStreamRequest } from "cohere-ai/api";
+import {
+  validateEnvironment,
+  authenticateUser,
+  validateAndGetFile,
+} from "@/lib/message-api/auth";
+import {
+  saveUserMessage,
+  getMessageHistory,
+  saveAssistantMessage,
+  handleErrorAndCleanup,
+} from "@/lib/message-api/messages";
+import {
+  searchDocumentContext,
+  classifyQuery,
+  prepareDocumentChunks,
+} from "@/lib/message-api/document-search";
+import { createChatConfig } from "@/lib/message-api/chat-config";
+import { DEFAULT_MODEL } from "@/lib/message-api/constants";
 
 export const maxDuration = 59;
 
 export const POST = async (req: NextRequest) => {
-  const body = await req.json();
+  if (!validateEnvironment()) {
+    console.error("Missing required environment variables");
+    return new Response(
+      JSON.stringify({ error: "Server configuration error" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
 
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  let body;
+  try {
+    body = await req.json();
+  } catch (error) {
+    console.error("Invalid JSON in request body:", error);
+    return new Response(JSON.stringify({ error: "Invalid request format" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
-  if (!user?.id) return new Response("Unauthorized", { status: 401 });
+  const { user, error: authError } = await authenticateUser();
+  if (authError) return authError;
 
-  const {
-    fileId,
-    message,
-    model: selectedModel,
-  } = MessageValidator.parse(body);
+  let fileId: string, message: string, selectedModel: string;
+  try {
+    const parsed = MessageValidator.parse(body);
+    fileId = parsed.fileId;
+    message = parsed.message;
+    selectedModel = parsed.model || DEFAULT_MODEL;
+  } catch (error) {
+    console.error("Invalid request data:", error);
+    return new Response(JSON.stringify({ error: "Invalid request data" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
-  const file = await db.file.findFirst({
-    where: {
-      id: fileId,
-      userId: user?.id,
-    },
-  });
+  const { file, error: fileError } = await validateAndGetFile(fileId, user.id);
+  if (fileError) return fileError;
 
-  if (!file) return new Response("Not Found", { status: 404 });
-
-  await db.messages.create({
-    data: {
-      text: message,
-      isUserMessage: true,
-      userId: user?.id,
-      fileId: fileId,
-    },
-  });
+  const messageSaved = await saveUserMessage(message, user.id, fileId);
+  if (!messageSaved) {
+    console.error("Failed to save user message");
+  }
 
   try {
-    const embeddings = new CohereEmbeddings({
-      apiKey: process.env.COHERE_API_KEY,
-      model: "embed-multilingual-v3.0",
-    });
-
-    const pinecone = PineconeClient();
-    const pineconeIndex = pinecone.Index("cohere-pinecone-trec");
-
-    const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
-      pineconeIndex,
-      namespace: file.id,
-    });
-
-    const results = await vectorStore.similaritySearch(message, 4);
-
-    const prevMessages = await db.messages.findMany({
-      where: { fileId: file.id },
-      orderBy: { createdAt: "desc" },
-      take: 4,
-    });
-
-    const formattedHistory = prevMessages
-      .reverse()
-      .map((m) => `${m.isUserMessage ? "Human" : "Assistant"}: ${m.text}`)
-      .join("\n\n");
-
-    const cohere = new CohereClientV2({
-      token: process.env.COHERE_API_KEY,
-    });
-
-    const queryClassification = await cohere.chat({
-      model: "command-a-03-2025",
-      temperature: 0.0,
-      messages: [
-        {
-          role: "system",
-          content: `You are a query classifier. Analyze the user's query and determine if it:
-          1. Requires document-specific knowledge (DOCUMENT_SPECIFIC)
-          2. Is a simple general question that doesn't need document context (GENERAL_QUERY)
-
-          ALWAYS classify these types of queries as DOCUMENT_SPECIFIC:
-          - Questions about document content (e.g., "What does the document say about X?")
-          - Requests for summarization (e.g., "Summarize this document", "Give me a summary", "TLDR", "key takeaways")
-          - Requests for key point extraction (e.g., "What are the main points?", "Extract key information")
-          - Analysis requests (e.g., "Analyze this document", "What's important here", "Highlight the key parts")
-          - Explanation requests (e.g., "Explain this document", "What does this mean?")
-          - Any query that references "this document", "the document", "the text", "the content", etc.
-
-          Consider the document search results when making your decision. If the search results seem
-          relevant to the query, it's likely DOCUMENT_SPECIFIC. If the search results don't contain
-          relevant information AND the query is a simple general question unrelated to documents, classify it as GENERAL_QUERY.
-
-          When in doubt, classify as DOCUMENT_SPECIFIC to ensure users get document context.
-
-          Return ONLY "DOCUMENT_SPECIFIC" or "GENERAL_QUERY" as your answer with no additional text.`,
-        },
-        {
-          role: "user",
-          content: `Classify this query: "${message}"
-
-        Document search results:
-        ${results
-          .map(
-            (r, i) => `[Result ${i + 1}]: ${r.pageContent.substring(0, 200)}...`
-          )
-          .join("\n\n")}`,
-        },
-      ],
-    });
-
-    const responseType =
-      queryClassification.message?.content?.[0]?.text || "DOCUMENT_SPECIFIC";
-    const needsDocumentContext = responseType === "DOCUMENT_SPECIFIC";
-
-    const documentChunks = results.map((result, index) => {
-      return {
-        id: `doc-${index + 1}`,
-        data: { text: result.pageContent },
-        ...(result.metadata && {
-          metadata: {
-            ...result.metadata,
-            source: file.name,
-          },
-        }),
-      };
-    });
-
-    const chatConfig: V2ChatStreamRequest = {
-      model: selectedModel,
-      temperature: 0.2,
-      ...(selectedModel === "command-a-reasoning-08-2025" && {
-        thinking: {
-          type: "enabled" as const,
-          token_budget: 1000,
-        },
-      }),
-      messages: [
-        {
-          role: "system",
-          content: `You are a helpful document assistant powered by ${
-            selectedModel === "aya" ? "Aya" : "Command A Reasoning"
-          } with advanced ${
-            selectedModel === "aya" ? "multilingual" : "reasoning"
-          } capabilities.
-
-          INSTRUCTIONS:
-          1. Your primary function is to help users understand their document content.
-          2. Prioritize information from the document when answering specific questions about its content.
-          3. For requests like "summarize this document", "extract key points", or "describe this image", provide helpful responses based on the document.
-          4. Handle conversational queries naturally while keeping focus on helping with the document.
-          5. When asked about topics not covered in the document, you can:
-             - Briefly answer general knowledge questions related to the document's domain
-             - For completely unrelated questions, gently redirect to document-related assistance
-          6. Format responses with markdown for better readability when appropriate.
-          7. Be concise but comprehensive in your answers.
-
-          ${
-            selectedModel === "aya"
-              ? `MULTILINGUAL CAPABILITIES:
-            - Detect and respond in the user's preferred language
-            - Handle documents in multiple languages naturally
-            - Provide culturally appropriate responses
-            - Understand cross-language references and context`
-              : `ADVANCED REASONING CAPABILITIES:
-            - Use multi-step logical analysis for complex questions
-            - Provide confidence levels for analytical conclusions
-            - Show clear thinking process in responses
-            - Offer strategic insights and recommendations`
-          }`,
-        },
-        {
-          role: "user",
-          content: needsDocumentContext
-            ? `Answer the user's question in a helpful and informative way using your ${
-                selectedModel === "aya"
-                  ? "multilingual and culturally-aware"
-                  : "advanced reasoning"
-              } capabilities.
-
-          INSTRUCTIONS:
-          1. First, determine the type of request:
-             - Document content question (e.g., "What does page 3 say about X?")
-             - Document operation request (e.g., "Summarize this PDF", "Extract key points")
-             - General conversation related to document domain
-             - Completely unrelated question
-
-          2. For document content questions:
-             - Use the provided context if relevant
-             - If the context doesn't contain the answer, check if it's likely elsewhere in the document
-             - Be honest when information isn't in the document
-
-          3. For document operation requests:
-             - For summaries: Provide a comprehensive overview based on all available document chunks, even if they only represent parts of the document. Don't say "I can't summarize" unless there's truly no content
-             - For key points: Extract and organize important information from all available document chunks
-             - For document analysis: Consider all provided chunks as representative of the document's content
-             - For images: Describe visible content in the document if mentioned
-
-          4. Format responses appropriately with markdown for readability
-
-          5. For follow-up questions, maintain context from the conversation history
-
-          ${
-            selectedModel === "aya"
-              ? `MULTILINGUAL APPROACH:
-          - Respond in the user's language when appropriate
-          - Consider cultural context in your analysis
-          - Handle multilingual documents naturally
-          - Provide culturally sensitive interpretations`
-              : `REASONING APPROACH:
-          - Show your analytical thinking process
-          - Provide confidence levels for complex conclusions
-          - Break down complex problems step-by-step
-          - Offer strategic insights and recommendations`
-          }
-
-          RECENT CONVERSATION:
-          ${formattedHistory}
-
-          Document context (use when relevant to the user's question):
-          ${results.map((r) => r.pageContent).join("\n\n")}
-
-          USER QUESTION: ${message}`
-            : `Answer the user's general question using your ${
-                selectedModel === "aya"
-                  ? "multilingual and culturally-aware"
-                  : "advanced reasoning"
-              } capabilities.
-
-          ${
-            selectedModel === "aya"
-              ? `MULTILINGUAL APPROACH:
-          - Respond in the user's language when appropriate
-          - Consider cultural context in your response
-          - Provide culturally sensitive answers`
-              : `REASONING APPROACH:
-          - Show clear analytical thinking
-          - Provide confidence levels when making claims
-          - Structure complex responses logically`
-          }
-
-          RECENT CONVERSATION:
-          ${formattedHistory}
-
-          USER QUESTION: ${message}`,
-        },
-      ],
-    };
-
-    if (needsDocumentContext) {
-      chatConfig.documents = documentChunks;
-      chatConfig.citationOptions = { mode: "FAST" };
-    }
-
+    const searchResults = await searchDocumentContext(message, file.id);
+    const formattedHistory = await getMessageHistory(file.id);
+    const cohere = new CohereClientV2({ token: process.env.COHERE_API_KEY });
+    const needsDocumentContext = await classifyQuery(
+      message,
+      searchResults,
+      cohere
+    );
+    const documentChunks = prepareDocumentChunks(searchResults, file.name);
+    const chatConfig = createChatConfig(
+      selectedModel,
+      needsDocumentContext,
+      formattedHistory,
+      searchResults,
+      message,
+      documentChunks
+    );
     const response = await cohere.chatStream(chatConfig);
 
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          let currentThinking = "";
-
           const result = await processCitationsInStream(
             response,
             controller,
             file.name,
             (thinking) => {
-              const thinkingUpdate =
-                JSON.stringify({
-                  type: "thinking",
-                  content: thinking,
-                }) + "\n";
-              controller.enqueue(thinkingUpdate);
-              currentThinking = thinking;
+              try {
+                const thinkingUpdate =
+                  JSON.stringify({
+                    type: "thinking",
+                    content: thinking,
+                  }) + "\n";
+                controller.enqueue(thinkingUpdate);
+              } catch (error) {
+                console.error("Error sending thinking update:", error);
+              }
             }
           );
 
-          await db.messages.create({
-            data: {
-              text: result.finalMessage,
-              thinking: result.thinking,
-              isUserMessage: false,
-              userId: user?.id,
-              fileId: fileId,
-            },
-          });
+          const messageSaved = await saveAssistantMessage(
+            result.finalMessage,
+            result.thinking || "",
+            user.id,
+            fileId
+          );
+
+          if (!messageSaved) {
+            console.error("Failed to save assistant message");
+          }
 
           controller.close();
         } catch (error) {
           console.error("Error processing citations:", error);
-          controller.error(error);
+          try {
+            controller.error(error);
+          } catch (controllerError) {
+            console.error("Error closing controller:", controllerError);
+          }
         }
       },
     });
 
     return new Response(stream);
   } catch (error) {
-    console.error("API route error:", error);
-
-    await db.messages.create({
-      data: {
-        text: "Sorry, I encountered an error processing your request. Please try again with a shorter query.",
-        isUserMessage: false,
-        userId: user?.id,
-        fileId: fileId,
-      },
-    });
-
-    await db.messages.deleteMany({
-      where: {
-        userId: user?.id,
-        fileId: fileId,
-        isUserMessage: true,
-        text: message,
-      },
-    });
-
-    return new Response(
-      JSON.stringify({ error: "Failed to process request" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return await handleErrorAndCleanup(error, user.id, fileId, message);
   }
 };
