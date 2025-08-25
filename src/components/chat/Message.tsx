@@ -64,19 +64,13 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
       content: string;
       isStreaming?: boolean;
     }) => (
-      <div className="mt-3 border-t border-gray-200 dark:border-gray-700 pt-3">
-        <div className="bg-gradient-to-r from-indigo-50/50 to-blue-50/50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-lg p-3 border-l-2 border-indigo-400 dark:border-indigo-500">
-          <div className="flex items-center gap-2 mb-2">
-            <Brain className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-            <div className="text-xs font-medium text-indigo-800 dark:text-indigo-200">
-              Reasoning Process
-              {isStreaming && (
-                <span className="ml-2 inline-flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
-              )}
-            </div>
-          </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap">
+      <div className="mb-3 pb-3 border-b border-gray-200/50 dark:border-gray-700/50">
+        <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-md p-2 border border-gray-200/30 dark:border-gray-700/30">
+          <div className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed max-h-32 overflow-y-auto whitespace-pre-wrap">
             {content}
+            {isStreaming && (
+              <span className="ml-1 inline-flex h-1.5 w-1.5 rounded-full bg-gray-500 animate-pulse"></span>
+            )}
           </div>
         </div>
       </div>
@@ -117,6 +111,33 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
             }
           )}
         >
+          {/* Show toggle button for completed messages with thinking - at the top */}
+          {!message.isUserMessage &&
+            shouldShowThinkingToggle &&
+            !shouldAutoExpandThinking && (
+              <button
+                onClick={handleToggleThinking}
+                className="flex items-center gap-1.5 mb-3 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                disabled={isFetchingThinking}
+              >
+                {isThinkingExpanded ? (
+                  <ChevronDown className="h-3 w-3" />
+                ) : (
+                  <ChevronRight className="h-3 w-3" />
+                )}
+                <Brain className="h-3 w-3" />
+                <span>{isFetchingThinking ? "Loading..." : "Reasoning"}</span>
+              </button>
+            )}
+
+          {/* Show reasoning content when expanded - below the toggle button */}
+          {shouldShowThinking && (
+            <ThinkingContent
+              content={message.thinking || fetchedThinking || ""}
+              isStreaming={!!shouldAutoExpandThinking}
+            />
+          )}
+
           <div
             className={cn(
               "prose prose-sm dark:prose-invert max-w-none",
@@ -132,41 +153,6 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
               message.text
             )}
           </div>
-
-          {shouldAutoExpandThinking && message.thinking && (
-            <ThinkingContent content={message.thinking} isStreaming />
-          )}
-
-          {!message.isUserMessage &&
-            shouldShowThinkingToggle &&
-            !shouldAutoExpandThinking && (
-              <>
-                <button
-                  onClick={handleToggleThinking}
-                  className="flex items-center gap-2 mt-3 text-xs text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors"
-                  disabled={isFetchingThinking}
-                >
-                  {isThinkingExpanded ? (
-                    <ChevronDown className="h-3 w-3" />
-                  ) : (
-                    <ChevronRight className="h-3 w-3" />
-                  )}
-                  <Brain className="h-3 w-3" />
-                  <span>
-                    {isFetchingThinking
-                      ? "Loading reasoning..."
-                      : "View reasoning process"}
-                  </span>
-                </button>
-
-                {isThinkingExpanded &&
-                  (message.thinking || fetchedThinking) && (
-                    <ThinkingContent
-                      content={message.thinking || fetchedThinking || ""}
-                    />
-                  )}
-              </>
-            )}
 
           <div
             className={cn(
