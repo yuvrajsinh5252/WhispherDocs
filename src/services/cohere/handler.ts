@@ -1,5 +1,5 @@
 import { CohereClientV2 } from "cohere-ai";
-import { processCitationsInStream } from "../../lib/citationProcessor";
+import { processCitationsInStream } from "./citationProcessor";
 import { createChatConfig } from "../../lib/message-api/chat-config";
 import { saveAssistantMessage } from "../../lib/message-api/messages";
 import { type CohereModelId } from "./constants";

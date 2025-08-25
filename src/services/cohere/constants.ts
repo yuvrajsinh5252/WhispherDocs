@@ -7,9 +7,10 @@ export const COHERE_MODELS = {
     supportsReasoning: true,
     provider: "cohere",
   },
-  aya: {
-    name: "Aya",
-    description: "Multilingual model with cultural awareness",
+  "c4ai-aya-expanse-32b": {
+    name: "Aya Expanse",
+    description:
+      "Aya Expanse is a 32B multilingual model with monolingual-level performance in 23 languages.",
     maxTokens: 128000,
     supportsCitations: true,
     supportsReasoning: false,

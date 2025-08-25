@@ -15,8 +15,6 @@ export async function processCitationsInStream(
   let thinkingBuffer = "";
 
   for await (const event of response) {
-    console.log(`event_type: ${event.type}`);
-
     if (event.type === "content-delta") {
       if (event.delta.message.content.thinking) {
         const thinkingContent = event.delta.message.content.thinking;
