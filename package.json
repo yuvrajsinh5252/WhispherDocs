@@ -12,6 +12,7 @@
     "db:migrate": "prisma migrate deploy"
   },
   "dependencies": {
+    "@ai-sdk/groq": "^2.0.14",
     "@kinde-oss/kinde-auth-nextjs": "^2.4.6",
     "@langchain/cohere": "^0.2.2",
     "@langchain/pinecone": "^0.0.1",
@@ -36,6 +37,7 @@
     "@trpc/server": "next",
     "@types/pdf-parse": "^1.1.4",
     "@uploadthing/react": "^6.8.0",
+    "ai": "^5.0.23",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
@@ -63,7 +65,7 @@
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "uploadthing": "^6.13.3",
-    "zod": "^3.23.8"
+    "zod": "^4.1.1"
   },
   "devDependencies": {
     "@types/node": "^20.17.6",
