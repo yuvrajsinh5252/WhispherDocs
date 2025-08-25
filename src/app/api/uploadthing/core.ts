@@ -44,7 +44,7 @@ export const ourFileRouter = {
 
         const embeddings = new CohereEmbeddings({
           apiKey: process.env.COHERE_API_KEY,
-          model: "embed-english-v3.0",
+          model: "embed-multilingual-v3.0",
         });
 
         const pineconeStore = await PineconeStore.fromDocuments(

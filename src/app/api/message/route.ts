@@ -19,7 +19,11 @@ export const POST = async (req: NextRequest) => {
 
   if (!user?.id) return new Response("Unauthorized", { status: 401 });
 
-  const { fileId, message } = MessageValidator.parse(body);
+  const {
+    fileId,
+    message,
+    model: selectedModel,
+  } = MessageValidator.parse(body);
 
   const file = await db.file.findFirst({
     where: {
@@ -42,7 +46,7 @@ export const POST = async (req: NextRequest) => {
   try {
     const embeddings = new CohereEmbeddings({
       apiKey: process.env.COHERE_API_KEY,
-      model: "embed-english-v3.0",
+      model: "embed-multilingual-v3.0",
     });
 
     const pinecone = PineconeClient();
@@ -128,12 +132,22 @@ export const POST = async (req: NextRequest) => {
     });
 
     const chatConfig: V2ChatStreamRequest = {
-      model: "command-a-03-2025",
+      model: selectedModel,
       temperature: 0.2,
+      ...(selectedModel === "command-a-reasoning-08-2025" && {
+        thinking: {
+          type: "enabled" as const,
+          token_budget: 1000,
+        },
+      }),
       messages: [
         {
           role: "system",
-          content: `You are a helpful document assistant that primarily answers questions about the user's uploaded document.
+          content: `You are a helpful document assistant powered by ${
+            selectedModel === "aya" ? "Aya" : "Command A Reasoning"
+          } with advanced ${
+            selectedModel === "aya" ? "multilingual" : "reasoning"
+          } capabilities.
 
           INSTRUCTIONS:
           1. Your primary function is to help users understand their document content.
@@ -144,12 +158,30 @@ export const POST = async (req: NextRequest) => {
              - Briefly answer general knowledge questions related to the document's domain
              - For completely unrelated questions, gently redirect to document-related assistance
           6. Format responses with markdown for better readability when appropriate.
-          7. Be concise but comprehensive in your answers.`,
+          7. Be concise but comprehensive in your answers.
+
+          ${
+            selectedModel === "aya"
+              ? `MULTILINGUAL CAPABILITIES:
+            - Detect and respond in the user's preferred language
+            - Handle documents in multiple languages naturally
+            - Provide culturally appropriate responses
+            - Understand cross-language references and context`
+              : `ADVANCED REASONING CAPABILITIES:
+            - Use multi-step logical analysis for complex questions
+            - Provide confidence levels for analytical conclusions
+            - Show clear thinking process in responses
+            - Offer strategic insights and recommendations`
+          }`,
         },
         {
           role: "user",
           content: needsDocumentContext
-            ? `Answer the user's question in a helpful and informative way.
+            ? `Answer the user's question in a helpful and informative way using your ${
+                selectedModel === "aya"
+                  ? "multilingual and culturally-aware"
+                  : "advanced reasoning"
+              } capabilities.
 
           INSTRUCTIONS:
           1. First, determine the type of request:
@@ -173,6 +205,20 @@ export const POST = async (req: NextRequest) => {
 
           5. For follow-up questions, maintain context from the conversation history
 
+          ${
+            selectedModel === "aya"
+              ? `MULTILINGUAL APPROACH:
+          - Respond in the user's language when appropriate
+          - Consider cultural context in your analysis
+          - Handle multilingual documents naturally
+          - Provide culturally sensitive interpretations`
+              : `REASONING APPROACH:
+          - Show your analytical thinking process
+          - Provide confidence levels for complex conclusions
+          - Break down complex problems step-by-step
+          - Offer strategic insights and recommendations`
+          }
+
           RECENT CONVERSATION:
           ${formattedHistory}
 
@@ -180,7 +226,23 @@ export const POST = async (req: NextRequest) => {
           ${results.map((r) => r.pageContent).join("\n\n")}
 
           USER QUESTION: ${message}`
-            : `Answer the user's general question without referring to document context.
+            : `Answer the user's general question using your ${
+                selectedModel === "aya"
+                  ? "multilingual and culturally-aware"
+                  : "advanced reasoning"
+              } capabilities.
+
+          ${
+            selectedModel === "aya"
+              ? `MULTILINGUAL APPROACH:
+          - Respond in the user's language when appropriate
+          - Consider cultural context in your response
+          - Provide culturally sensitive answers`
+              : `REASONING APPROACH:
+          - Show clear analytical thinking
+          - Provide confidence levels when making claims
+          - Structure complex responses logically`
+          }
 
           RECENT CONVERSATION:
           ${formattedHistory}
@@ -200,15 +262,27 @@ export const POST = async (req: NextRequest) => {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          const finalMessage = await processCitationsInStream(
+          let currentThinking = "";
+
+          const result = await processCitationsInStream(
             response,
             controller,
-            file.name
+            file.name,
+            (thinking) => {
+              const thinkingUpdate =
+                JSON.stringify({
+                  type: "thinking",
+                  content: thinking,
+                }) + "\n";
+              controller.enqueue(thinkingUpdate);
+              currentThinking = thinking;
+            }
           );
 
           await db.messages.create({
             data: {
-              text: finalMessage,
+              text: result.finalMessage,
+              thinking: result.thinking,
               isUserMessage: false,
               userId: user?.id,
               fileId: fileId,
