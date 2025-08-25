@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import MaxWidthWrapper from "../components/MaxWidthWrapper";
 import { motion } from "framer-motion";
 import {
@@ -11,19 +10,14 @@ import {
   Search,
   Upload,
   Zap,
-  Settings,
+  LucideSettings,
   Brain,
   Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const SignInButton = dynamic(() => import("@/components/signInButton"), {
-  ssr: false,
-});
-
-const UploadButton = dynamic(() => import("@/components/UploadButton"), {
-  ssr: false,
-});
+import SignInButton from "@/components/signInButton";
+import UploadButton from "@/components/UploadButton";
 
 export default function Home() {
   return (
@@ -101,18 +95,10 @@ export default function Home() {
               }}
               className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full max-w-md"
             >
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.15 }}
-              >
+              <div>
                 <SignInButton />
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.15 }}
-              >
+              </div>
+              <div>
                 <Button
                   variant="outline"
                   className="sm:w-auto group border-gray-300 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors duration-200"
@@ -120,7 +106,7 @@ export default function Home() {
                   Learn more{" "}
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1 duration-200" />
                 </Button>
-              </motion.div>
+              </div>
             </motion.div>
           </motion.div>
         </div>
@@ -244,49 +230,31 @@ export default function Home() {
               delay: 0.3,
             },
           ].map((feature, index) => (
-            <motion.div
+            <div
               key={index}
-              initial={{ opacity: 0, y: 20, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{
-                duration: 0.3,
-                delay: 0.5 + feature.delay * 0.05,
-                ease: [0.25, 0.46, 0.45, 0.94],
-              }}
-              whileHover={{
-                y: -8,
-                scale: 1.02,
-                transition: { duration: 0.2 },
-              }}
-              className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 hover:shadow-2xl hover:border-indigo-200 dark:hover:border-indigo-800 transition-all duration-300 group cursor-pointer"
+              className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 hover:shadow-xl hover:border-indigo-200 dark:hover:border-indigo-800 transition-all duration-300 group cursor-pointer"
             >
-              <motion.div
-                className={`p-3 bg-${feature.color}-100 dark:bg-${feature.color}-900/20 rounded-xl w-fit mb-4 group-hover:scale-110 transition-transform duration-200`}
-                whileHover={{ rotate: [0, -5, 5, 0] }}
-                transition={{ duration: 0.3 }}
+              <div
+                className={`p-3 bg-${feature.color}-100 dark:bg-${feature.color}-900/20 rounded-xl w-fit mb-4 transition-transform duration-200`}
               >
                 <feature.icon
                   className={`h-6 w-6 text-${feature.color}-600 dark:text-${feature.color}-400`}
                 />
-              </motion.div>
+              </div>
               <h3 className="font-bold text-lg mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
                 {feature.title}
               </h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                 {feature.description}
               </p>
-            </motion.div>
+            </div>
           ))}
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{
-            duration: 0.4,
-            delay: 0.9,
-            ease: [0.25, 0.46, 0.45, 0.94],
-          }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.3 }}
           className="mt-24 w-full max-w-4xl bg-gradient-to-b from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-900/50 rounded-2xl p-8 border border-gray-200 dark:border-gray-800 shadow-xl hover:shadow-2xl transition-shadow duration-300"
         >
           <motion.h2
@@ -295,7 +263,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{
               duration: 0.3,
-              delay: 0.95,
+              delay: 0.35,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
           >
@@ -329,24 +297,10 @@ export default function Home() {
                 delay: 0.4,
               },
             ].map((benefit, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{
-                  duration: 0.3,
-                  delay: 1.0 + benefit.delay * 0.03,
-                  ease: [0.25, 0.46, 0.45, 0.94],
-                }}
-                className="flex items-start gap-3 group"
-              >
-                <motion.div
-                  className="mt-1 p-1.5 rounded-lg bg-green-100 dark:bg-green-900/20 group-hover:scale-110 transition-transform duration-200"
-                  whileHover={{ rotate: [0, -10, 10, 0] }}
-                  transition={{ duration: 0.3 }}
-                >
+              <div key={i} className="flex items-start gap-3 group">
+                <div className="mt-1 p-1.5 rounded-lg bg-green-100 dark:bg-green-900/20 transition-transform duration-200">
                   <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                </motion.div>
+                </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
                     {benefit.title}
@@ -355,19 +309,15 @@ export default function Home() {
                     {benefit.description}
                   </p>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{
-            duration: 0.3,
-            delay: 0.7,
-            ease: [0.25, 0.46, 0.45, 0.94],
-          }}
+          transition={{ duration: 0.3, delay: 0.4 }}
           className="mt-16 w-full max-w-5xl"
         >
           <motion.h2
@@ -376,7 +326,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{
               duration: 0.3,
-              delay: 0.75,
+              delay: 0.45,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
           >
@@ -386,7 +336,7 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {[
               {
-                icon: Settings,
+                icon: LucideSettings,
                 color: "indigo",
                 title: "Model Selection",
                 description:
@@ -410,53 +360,35 @@ export default function Home() {
                 delay: 0.3,
               },
             ].map((feature, index) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{
-                  duration: 0.3,
-                  delay: 0.8 + feature.delay * 0.05,
-                  ease: [0.25, 0.46, 0.45, 0.94],
-                }}
-                whileHover={{
-                  y: -5,
-                  scale: 1.02,
-                  transition: { duration: 0.2 },
-                }}
                 className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 hover:shadow-xl hover:border-indigo-200 dark:hover:border-indigo-800 transition-all duration-300 group cursor-pointer"
               >
-                <motion.div
-                  className={`p-3 bg-${feature.color}-100 dark:bg-${feature.color}-900/20 rounded-xl w-fit mb-4 group-hover:scale-110 transition-transform duration-200`}
-                  whileHover={{ rotate: [0, -5, 5, 0] }}
-                  transition={{ duration: 0.3 }}
+                <div
+                  className={`p-3 bg-${feature.color}-100 dark:bg-${feature.color}-900/20 rounded-xl w-fit mb-4 transition-transform duration-200`}
                 >
                   <feature.icon
                     className={`h-6 w-6 text-${feature.color}-600 dark:text-${feature.color}-400`}
                   />
-                </motion.div>
+                </div>
                 <h3 className="font-bold text-lg mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
                   {feature.title}
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                   {feature.description}
                 </p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 40, scale: 0.95 }}
+          initial={{ opacity: 0, y: 30, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{
             duration: 0.4,
-            delay: 1.1,
+            delay: 0.5,
             ease: [0.25, 0.46, 0.45, 0.94],
-          }}
-          whileHover={{
-            scale: 1.02,
-            transition: { duration: 0.3 },
           }}
           className="mt-24 w-full max-w-3xl bg-gradient-to-r from-indigo-500 to-blue-600 rounded-2xl p-8 text-center shadow-xl relative overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-300"
         >
@@ -468,7 +400,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{
               duration: 0.3,
-              delay: 1.15,
+              delay: 0.6,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
           >
@@ -480,38 +412,21 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{
               duration: 0.3,
-              delay: 1.2,
+              delay: 0.65,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
           >
             Stop wasting time searching. Start getting answers. Upload your
             first document and experience the difference in minutes.
           </motion.p>
-          <motion.div
-            className="flex flex-col sm:flex-row gap-4 justify-center relative z-10"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.3,
-              delay: 1.25,
-              ease: [0.25, 0.46, 0.45, 0.94],
-            }}
-          >
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.15 }}
-            >
+          <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
+            <div>
               <SignInButton />
-            </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.15 }}
-            >
+            </div>
+            <div>
               <UploadButton />
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </motion.div>
       </MaxWidthWrapper>
     </>

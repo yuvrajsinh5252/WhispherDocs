@@ -1,9 +1,9 @@
-"use server";
+"use client";
 
-import { LoginLink } from "@kinde-oss/kinde-auth-nextjs/server";
+import { LoginLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import { Button } from "@/components/ui/button";
 
-export default async function SignInButton() {
+export default function SignInButton() {
   return (
     <Button className="font-bold">
       <LoginLink>
