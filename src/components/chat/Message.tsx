@@ -61,26 +61,26 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
     return (
       <div
         ref={ref}
-        className={cn("flex items-end my-1.5 sm:my-2 transition-all", {
+        className={cn("flex items-end my-0.5 sm:my-1 transition-all", {
           "justify-end": message.isUserMessage,
         })}
         data-message
       >
         {!message.isUserMessage && !isNextMessageSamePerson && (
-          <div className="flex-shrink-0 mr-2 max-sm:hidden">
-            <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-indigo-100 to-blue-200 dark:from-indigo-800/50 dark:to-indigo-600/30 flex items-center justify-center shadow-md border border-indigo-200/50 dark:border-indigo-600/30">
-              <Bot className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600 dark:text-indigo-200" />
+          <div className="flex-shrink-0 mr-1.5 max-sm:hidden">
+            <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-gradient-to-br from-indigo-100 to-blue-200 dark:from-indigo-800/50 dark:to-indigo-600/30 flex items-center justify-center shadow-md border border-indigo-200/50 dark:border-indigo-600/30">
+              <Bot className="h-3 w-3 sm:h-4 sm:w-4 text-indigo-600 dark:text-indigo-200" />
             </div>
           </div>
         )}
 
         {!message.isUserMessage && isNextMessageSamePerson && (
-          <div className="w-8 sm:w-9 mr-2" />
+          <div className="w-6 sm:w-7 mr-1.5" />
         )}
 
         <div
           className={cn(
-            "sm:max-w-[75%] rounded-2xl px-3.5 py-2.5 sm:px-5 sm:py-3 transition-all hover:shadow-lg",
+            "sm:max-w-[80%] max-w-[85%] rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 transition-all hover:shadow-lg",
             {
               "bg-gradient-to-br from-indigo-500/90 to-violet-600/90 text-white backdrop-blur-sm border border-white/20 dark:border-white/10 shadow-md hover:shadow-indigo-500/20 dark:hover:shadow-indigo-400/10":
                 message.isUserMessage,
@@ -117,14 +117,14 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
             shouldShowThinking={shouldShowThinking}
           />
 
-          <div
-            className={cn(
-              "prose prose-sm dark:prose-invert max-w-none",
-              !message.isUserMessage &&
-                "prose-a:text-indigo-600 dark:prose-a:text-indigo-300 prose-headings:text-gray-800 dark:prose-headings:text-gray-100 prose-strong:text-indigo-700 dark:prose-strong:text-indigo-200",
-              message.isUserMessage &&
-                "prose-headings:text-white text-white prose-a:text-blue-100 prose-strong:text-indigo-100"
-            )}
+           <div
+             className={cn(
+               "prose prose-xs dark:prose-invert max-w-none leading-relaxed",
+               !message.isUserMessage &&
+                 "prose-a:text-indigo-600 dark:prose-a:text-indigo-300 prose-headings:text-gray-800 dark:prose-headings:text-gray-100 prose-strong:text-indigo-700 dark:prose-strong:text-indigo-200 prose-p:text-gray-700 dark:prose-p:text-gray-200 prose-p:my-1",
+               message.isUserMessage &&
+                 "prose-headings:text-white text-white prose-a:text-blue-100 prose-strong:text-indigo-100 prose-p:text-white prose-p:my-1"
+             )}
           >
             {typeof message.text === "string" ? (
               <ReactMarkdown>{message.text}</ReactMarkdown>
@@ -142,12 +142,12 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
             )}
           >
             <div
-              className={cn("flex-shrink-0 mr-2 sm:hidden", {
+              className={cn("flex-shrink-0 mr-1 sm:hidden", {
                 hidden: message.isUserMessage,
               })}
             >
-              <div className="h-4 w-4 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-indigo-100 to-blue-200 dark:from-indigo-800/50 dark:to-indigo-600/30 flex items-center justify-center shadow-md border border-indigo-200/50 dark:border-indigo-600/30">
-                <Bot className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600 dark:text-indigo-200" />
+              <div className="h-3 w-3 rounded-full bg-gradient-to-br from-indigo-100 to-blue-200 dark:from-indigo-800/50 dark:to-indigo-600/30 flex items-center justify-center shadow-sm border border-indigo-200/50 dark:border-indigo-600/30">
+                <Bot className="h-2 w-2 text-indigo-600 dark:text-indigo-200" />
               </div>
             </div>
             {format(new Date(message.createdAt), "h:mm a")}
@@ -155,15 +155,15 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
         </div>
 
         {message.isUserMessage && !isNextMessageSamePerson && (
-          <div className="flex-shrink-0 ml-2">
-            <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md ring-2 ring-indigo-400/40 dark:ring-indigo-300/30">
-              <UserRound className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+          <div className="flex-shrink-0 ml-1.5">
+            <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md ring-2 ring-indigo-400/40 dark:ring-indigo-300/30">
+              <UserRound className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
             </div>
           </div>
         )}
 
         {message.isUserMessage && isNextMessageSamePerson && (
-          <div className="w-8 sm:w-9 ml-2" />
+          <div className="w-6 sm:w-7 ml-1.5" />
         )}
       </div>
     );

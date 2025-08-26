@@ -96,3 +96,22 @@
 .scrollbar-thumb-rounded::-webkit-scrollbar-thumb {
   border-radius: 7px;
 }
+
+/* Chat interface scrollbar behavior */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hover\:scrollbar-thin:hover::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.hover\:scrollbar-thin:hover {
+  scrollbar-width: thin;
+}

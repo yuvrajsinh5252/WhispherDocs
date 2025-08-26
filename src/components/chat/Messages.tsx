@@ -3,9 +3,11 @@ import { INFINITE_QUERY_LIMIT } from "@/config/infiinte-querry";
 import { MessagesSquare } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Message } from "./Message";
-import { useContext, useEffect, useRef } from "react";
-import { ChatContext } from "./ChatContext";
+import { useEffect, useRef } from "react";
 import { useIntersection } from "@mantine/hooks";
+import { useChatStore } from "@/stores/chatStore";
+import { ChatMessage } from "@/stores/chatStore";
+import { ModelId } from "@/lib/chat-api/constants";
 
 const LoadingDots = ({
   className = "bg-indigo-400",
@@ -28,30 +30,61 @@ const LoadingDots = ({
   </div>
 );
 
-interface MessageProps {
-  fileId: string;
+interface MessagesProps {
+  messages?: ChatMessage[];
+  isLoading?: boolean;
+  selectedModel?: ModelId;
 }
 
-export default function Messages({ fileId }: MessageProps) {
-  const { isLoading: isAiThinking, selectedModel } = useContext(ChatContext);
+export default function Messages({
+  messages: propMessages,
+  isLoading: propIsLoading,
+  selectedModel: propSelectedModel,
+}: MessagesProps = {}) {
+  const {
+    isLoading: isAiThinking,
+    selectedModel: storeSelectedModel,
+    messages: localMessages,
+    fileId,
+  } = useChatStore();
+
+  // Use props if provided, otherwise fall back to store values
+  const isLoading = propIsLoading ?? isAiThinking;
+  const selectedModel = propSelectedModel ?? storeSelectedModel;
+  const messages = propMessages ?? localMessages;
 
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const prevMessagesLengthRef = useRef<number>(0);
   const loadingMoreRef = useRef<boolean>(false);
 
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    trpc.getMessages.useInfiniteQuery(
-      {
-        fileId,
-        limit: INFINITE_QUERY_LIMIT,
-      },
-      {
-        getNextPageParam: (lastPage) => lastPage?.nextCursor,
-        refetchOnWindowFocus: false,
-      }
-    );
+  const {
+    data,
+    isLoading: isServerLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = trpc.getMessages.useInfiniteQuery(
+    {
+      fileId: fileId!,
+      limit: INFINITE_QUERY_LIMIT,
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage?.nextCursor,
+      refetchOnWindowFocus: false,
+      enabled: !!fileId,
+    }
+  );
 
-  const messages = data?.pages.flatMap((page) => page.messages);
+  const serverMessages = data?.pages.flatMap((page) => page.messages);
+
+  // Merge server messages with local messages, avoiding duplicates
+  const allMessages = [
+    ...(serverMessages ?? []),
+    ...messages.filter(
+      (localMsg: any) =>
+        !serverMessages?.some((serverMsg: any) => serverMsg.id === localMsg.id)
+    ),
+  ];
 
   const loadingMessage = {
     createdAt: new Date().toISOString(),
@@ -68,9 +101,9 @@ export default function Messages({ fileId }: MessageProps) {
     ),
   };
 
-  const allMessages = [
-    ...(isAiThinking ? [loadingMessage] : []),
-    ...(messages ?? []),
+  const finalMessages = [
+    ...(isLoading ? [loadingMessage] : []),
+    ...(allMessages ?? []),
   ];
 
   const scrollRef = useRef<{
@@ -89,30 +122,29 @@ export default function Messages({ fileId }: MessageProps) {
   });
 
   useEffect(() => {
-    const currentLatestMessageId = messages?.[0]?.id;
+    const currentLatestMessageId = allMessages?.[0]?.id;
 
     // Case: First meaningful render with messages - scroll to bottom
-    if (messages?.length && scrollRef.current.isFirstRender) {
+    if (allMessages?.length && scrollRef.current.isFirstRender) {
       scrollRef.current.endElementRef?.scrollIntoView({ behavior: "auto" });
       scrollRef.current.isFirstRender = false;
       scrollRef.current.lastMessageId = currentLatestMessageId ?? null;
       return;
     }
 
-    // Case: New message received and AI is thinking
-    if (
-      currentLatestMessageId !== scrollRef.current.lastMessageId &&
-      isAiThinking
-    ) {
-      scrollRef.current.endElementRef?.scrollIntoView({ behavior: "smooth" });
+    // Case: New message received - scroll to bottom
+    if (currentLatestMessageId !== scrollRef.current.lastMessageId) {
+      setTimeout(() => {
+        scrollRef.current.endElementRef?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
       scrollRef.current.lastMessageId = currentLatestMessageId ?? null;
     }
-  }, [messages, isAiThinking]);
+  }, [allMessages]);
 
   useEffect(() => {
-    if (!messages) return;
+    if (!allMessages) return;
 
-    const messagesLength = messages.length;
+    const messagesLength = allMessages.length;
     const container = messagesContainerRef.current;
 
     if (
@@ -140,18 +172,24 @@ export default function Messages({ fileId }: MessageProps) {
     }
 
     prevMessagesLengthRef.current = messagesLength;
-  }, [messages]);
+  }, [allMessages]);
 
   useEffect(() => {
     if (entry?.isIntersecting && hasNextPage && !isFetchingNextPage) {
       // Set loading flag before fetching next page
       loadingMoreRef.current = true;
-      prevMessagesLengthRef.current = messages?.length || 0;
+      prevMessagesLengthRef.current = allMessages?.length || 0;
       fetchNextPage();
     }
-  }, [entry, fetchNextPage, hasNextPage, isFetchingNextPage, messages?.length]);
+  }, [
+    entry,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    allMessages?.length,
+  ]);
 
-  if (isLoading) {
+  if (isServerLoading && !serverMessages) {
     return (
       <div className="flex flex-col gap-4 p-4 sm:p-6 animate-in fade-in duration-500">
         {Array(3)
@@ -224,13 +262,9 @@ export default function Messages({ fileId }: MessageProps) {
   return (
     <div
       ref={messagesContainerRef}
-      className="flex-1 flex flex-col-reverse relative px-3 sm:px-4 gap-1 sm:gap-2 scroll-smooth scrolling-touch"
-      style={{
-        scrollbarWidth: "thin",
-        scrollbarColor: "rgba(156, 163, 175, 0.5) transparent",
-      }}
+      className="h-full flex flex-col-reverse overflow-y-auto px-2 sm:px-3 gap-0.5 sm:gap-1 scroll-smooth scrollbar-none hover:scrollbar-thin hover:scrollbar-thumb-gray-200 dark:hover:scrollbar-thumb-gray-700 hover:scrollbar-track-transparent hover:scrollbar-thumb-gray-300 dark:hover:scrollbar-thumb-gray-600 hover:scrollbar-thumb-rounded-full"
     >
-      {allMessages && allMessages.length > 0 ? (
+      {finalMessages && finalMessages.length > 0 ? (
         <>
           <div
             ref={(el) => {
@@ -239,10 +273,10 @@ export default function Messages({ fileId }: MessageProps) {
             className="h-1"
           />
 
-          {allMessages.map((message, i) => {
+          {finalMessages.map((message, i) => {
             const isNextMessageSamePerson =
-              allMessages[i - 1]?.isUserMessage ===
-              allMessages[i]?.isUserMessage;
+              finalMessages[i - 1]?.isUserMessage ===
+              finalMessages[i]?.isUserMessage;
 
             return (
               <Message

@@ -12,13 +12,16 @@
     "db:migrate": "prisma migrate deploy"
   },
   "dependencies": {
+    "@ai-sdk/cohere": "^2.0.6",
     "@ai-sdk/groq": "^2.0.14",
+    "@ai-sdk/react": "^2.0.24",
     "@kinde-oss/kinde-auth-nextjs": "^2.4.6",
     "@langchain/cohere": "^0.2.2",
     "@langchain/pinecone": "^0.0.1",
     "@mantine/hooks": "^7.14.1",
+    "@nanostores/react": "ai/react",
     "@pinecone-database/pinecone": "^2.2.2",
-    "@prisma/client": "^5.22.0",
+    "@prisma/client": "6.14.0",
     "@radix-ui/react-dialog": "^1.1.7",
     "@radix-ui/react-dropdown-menu": "^2.1.2",
     "@radix-ui/react-icons": "^1.3.2",
@@ -49,7 +52,7 @@
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",
     "pdfjs-dist": "^4.8.69",
-    "prisma": "^5.22.0",
+    "prisma": "^6.14.0",
     "react": "^18.3.1",
     "react-burger-menu": "^3.0.9",
     "react-dom": "^18.3.1",
@@ -65,7 +68,8 @@
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "uploadthing": "^6.13.3",
-    "zod": "^4.1.1"
+    "zod": "^4.1.1",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@types/node": "^20.17.6",

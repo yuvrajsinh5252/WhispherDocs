@@ -1,5 +1,7 @@
+import { UIMessage } from "ai";
+import { ModelId } from "./constants";
 import { db } from "@/db";
-import { MESSAGE_HISTORY_LIMIT, ERROR_MESSAGES } from "./constants";
+import { ERROR_MESSAGES } from "./constants";
 
 export async function saveUserMessage(
   message: string,
@@ -19,24 +21,6 @@ export async function saveUserMessage(
   } catch (error) {
     console.error("Error saving user message:", error);
     return false;
-  }
-}
-
-export async function getMessageHistory(fileId: string): Promise<string> {
-  try {
-    const prevMessages = await db.messages.findMany({
-      where: { fileId: fileId },
-      orderBy: { createdAt: "desc" },
-      take: MESSAGE_HISTORY_LIMIT,
-    });
-
-    return prevMessages
-      .reverse()
-      .map((m) => `${m.isUserMessage ? "Human" : "Assistant"}: ${m.text}`)
-      .join("\n\n");
-  } catch (error) {
-    console.error("Message history error:", error);
-    return "";
   }
 }
 
@@ -99,4 +83,30 @@ export async function handleErrorAndCleanup(
     status: 500,
     headers: { "Content-Type": "application/json" },
   });
+}
+
+export function getLastUserMessageWithMeta(messages: UIMessage[]): {
+  text: string | null;
+  fileId: string;
+  model?: ModelId;
+} {
+  const lastUserMsg = [...messages].reverse().find((m) => m.role === "user") as
+    | (UIMessage & { metadata?: { fileId?: string; model?: ModelId } })
+    | undefined;
+
+  if (!lastUserMsg) throw new Error("No new user message found");
+
+  const textPart = lastUserMsg.parts.find((part) => part.type === "text") as
+    | { type: "text"; text: string }
+    | undefined;
+
+  const text = textPart?.text ?? null;
+  const fileId = lastUserMsg.metadata?.fileId;
+  const model = lastUserMsg.metadata?.model as ModelId | undefined;
+
+  if (!fileId) {
+    throw new Error("No field id found");
+  }
+
+  return { text, fileId, model };
 }

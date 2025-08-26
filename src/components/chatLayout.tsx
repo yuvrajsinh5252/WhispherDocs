@@ -5,10 +5,14 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import Chatwrapper from "@/components/chat/Chatwrapper";
+import Messages from "@/components/chat/Messages";
+import ChatInput from "@/components/chat/ChatInput";
+import { ModelSelector } from "@/components/chat/ModelSelector";
 import PDFrenderer from "@/components/PDFrenderer";
 import { GripVertical, GripHorizontal } from "lucide-react";
 import { useScreenSize } from "@/hooks/useScreenSize";
+import { useChatStore } from "@/stores/chatStore";
+import { useEffect } from "react";
 
 export function ChatLayout(
   props: React.PropsWithChildren<{
@@ -16,6 +20,11 @@ export function ChatLayout(
   }>
 ) {
   const { isMobile } = useScreenSize();
+  const { setFileId } = useChatStore();
+
+  useEffect(() => {
+    setFileId(props.file.id);
+  }, [props.file.id, setFileId]);
 
   return (
     <ResizablePanelGroup
@@ -51,8 +60,19 @@ export function ChatLayout(
         minSize={!isMobile ? 30 : 0}
         className="relative flex flex-col sm:min-h-0"
       >
-        <div className="absolute inset-0 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-          <Chatwrapper fileId={props.file.id} />
+        <div className="absolute inset-0 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 flex flex-col min-h-0">
+          <div className="flex-1 min-h-0 overflow-hidden scrollbar-none hover:scrollbar-thin">
+            <Messages />
+          </div>
+
+          <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-2">
+            <div className="space-y-1">
+              <div className="flex items-center justify-center">
+                <ModelSelector />
+              </div>
+              <ChatInput />
+            </div>
+          </div>
         </div>
       </ResizablePanel>
     </ResizablePanelGroup>
