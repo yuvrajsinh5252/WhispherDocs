@@ -88,23 +88,59 @@ export function createGroqChatConfig(
   searchResults: any[],
   message: string
 ): { messages: ChatMessage[] } {
-  return {
-    messages: [
-      {
-        role: "user",
-        content: getUnifiedPrompt(
-          selectedModel,
-          needsDocumentContext,
-          formattedHistory,
-          searchResults,
-          message
-        ),
-      },
-    ],
-  };
+  const modelConfig = ALL_MODELS[selectedModel];
+
+  // Base system message
+  const systemMessage = `You are a helpful document assistant powered by ${
+    modelConfig.name
+  } with ${getCapabilityDescription(modelConfig)} capabilities.
+
+CORE INSTRUCTIONS:
+1. Your primary function is to help users understand their document content
+2. Prioritize information from the document when answering specific questions about its content
+3. Handle conversational queries naturally while keeping focus on helping with the document
+4. Format responses with markdown for better readability when appropriate
+5. Be concise but comprehensive in your answers
+
+${getCapabilityInstructions(modelConfig)}
+
+RECENT CONVERSATION:
+${formattedHistory}`;
+
+  // Create messages array
+  const messages: ChatMessage[] = [
+    {
+      role: "system",
+      content: systemMessage,
+    },
+    {
+      role: "user",
+      content: message,
+    },
+  ];
+
+  // Handle document context and citations for Groq models
+  if (needsDocumentContext && modelConfig.supportsCitations) {
+    // Add citation instructions to system message
+    messages[0].content += `
+
+CITATION INSTRUCTIONS:
+When referencing information from the document context, use numbered citations like [1], [2], etc.
+Match the citation numbers to the document chunks provided in the context.
+Always provide citations when making specific claims about the document content.`;
+
+    // Add document context to user message
+    const contextText = searchResults
+      .map((result, index) => `[Document ${index + 1}]: ${result.pageContent}`)
+      .join("\n\n");
+
+    messages[1].content += `\n\nDOCUMENT CONTEXT:\n${contextText}`;
+  }
+
+  return { messages };
 }
 
-export function createChatConfig(
+export function createCohereChatConfig(
   selectedModel: ModelId,
   needsDocumentContext: boolean,
   formattedHistory: string,

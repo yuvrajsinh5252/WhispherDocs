@@ -1,4 +1,12 @@
 export const GROQ_MODELS = {
+  "deepseek-r1-distill-llama-70b": {
+    name: "DeepSeek R1 Distill 70B",
+    description: "Advanced reasoning model with step-by-step thinking",
+    maxTokens: 32768,
+    supportsCitations: true,
+    supportsReasoning: true,
+    provider: "groq",
+  },
   "llama-3.3-70b-versatile": {
     name: "Llama 3.3 70B",
     description: "Most capable Llama model with enhanced reasoning",

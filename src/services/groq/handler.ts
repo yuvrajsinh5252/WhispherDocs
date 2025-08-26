@@ -1,46 +1,53 @@
-import { CohereClientV2 } from "cohere-ai";
-import { processCitationsInStream } from "./citationProcessor";
-import { createCohereChatConfig } from "../../lib/message-api/chat-config";
+import { streamText } from "ai";
+import { groq } from "@ai-sdk/groq";
+import { type GroqModelId } from "./constants";
+import { createGroqChatConfig } from "../../lib/message-api/chat-config";
 import { saveAssistantMessage } from "../../lib/message-api/messages";
-import { type CohereModelId } from "./constants";
+import processGroqCitations from "./citationProcessor";
 
-interface CohereHandlerParams {
-  selectedModel: CohereModelId;
+interface GroqHandlerParams {
+  selectedModel: GroqModelId;
   needsDocumentContext: boolean;
   formattedHistory: string;
   searchResults: any[];
   message: string;
-  documentChunks: any[];
   file: { id: string; name: string };
   userId: string;
 }
 
-export async function handleCohereRequest({
+export async function handleGroqRequest({
   selectedModel,
   needsDocumentContext,
   formattedHistory,
   searchResults,
   message,
-  documentChunks,
   file,
   userId,
-}: CohereHandlerParams): Promise<Response> {
-  const cohere = new CohereClientV2({ token: process.env.COHERE_API_KEY });
-  const chatConfig = createCohereChatConfig(
+}: GroqHandlerParams): Promise<Response> {
+  const groqConfig = createGroqChatConfig(
     selectedModel,
     needsDocumentContext,
     formattedHistory,
     searchResults,
-    message,
-    documentChunks
+    message
   );
 
-  const response = await cohere.chatStream(chatConfig);
+  const response = streamText({
+    model: groq(selectedModel),
+    providerOptions: {
+      groq: {
+        reasoningFormat: "parsed",
+        user: userId,
+      },
+    },
+    messages: groqConfig.messages,
+    temperature: 0.2,
+  });
 
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        const result = await processCitationsInStream(
+        const result = await processGroqCitations(
           response,
           controller,
           file.name

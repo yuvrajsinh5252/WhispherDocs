@@ -5,6 +5,7 @@ import { forwardRef, useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { format } from "date-fns";
 import { trpc } from "@/app/_trpc/client";
+import { ThinkingContent } from "./Thiking";
 
 interface MessageProps {
   message: ExtendedMessages;
@@ -55,26 +56,7 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
       (isCompletedMessage && (message.hasThinking || hasThinkingContent));
 
     const shouldShowThinking =
-      shouldAutoExpandThinking || (isThinkingExpanded && hasThinkingContent);
-
-    const ThinkingContent = ({
-      content,
-      isStreaming,
-    }: {
-      content: string;
-      isStreaming?: boolean;
-    }) => (
-      <div className="mb-3 pb-3 border-b border-gray-200/50 dark:border-gray-700/50">
-        <div className="bg-gray-50/50 dark:bg-gray-800/30 rounded-md p-2 border border-gray-200/30 dark:border-gray-700/30">
-          <div className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed max-h-32 overflow-y-auto whitespace-pre-wrap">
-            {content}
-            {isStreaming && (
-              <span className="ml-1 inline-flex h-1.5 w-1.5 rounded-full bg-gray-500 animate-pulse"></span>
-            )}
-          </div>
-        </div>
-      </div>
-    );
+      shouldAutoExpandThinking || (isThinkingExpanded && !!hasThinkingContent);
 
     return (
       <div
@@ -111,7 +93,6 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
             }
           )}
         >
-          {/* Show toggle button for completed messages with thinking - at the top */}
           {!message.isUserMessage &&
             shouldShowThinkingToggle &&
             !shouldAutoExpandThinking && (
@@ -130,13 +111,11 @@ export const Message = forwardRef<HTMLDivElement, MessageProps>(
               </button>
             )}
 
-          {/* Show reasoning content when expanded - below the toggle button */}
-          {shouldShowThinking && (
-            <ThinkingContent
-              content={message.thinking || fetchedThinking || ""}
-              isStreaming={!!shouldAutoExpandThinking}
-            />
-          )}
+          <ThinkingContent
+            content={message.thinking || fetchedThinking || ""}
+            isStreaming={!!shouldAutoExpandThinking}
+            shouldShowThinking={shouldShowThinking}
+          />
 
           <div
             className={cn(
