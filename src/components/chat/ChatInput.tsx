@@ -1,5 +1,6 @@
 import { ArrowUp } from "lucide-react";
 import { Button } from "../ui/button";
+import { ModelSelector } from "./ModelSelector";
 import { Textarea } from "../ui/textarea";
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
@@ -44,9 +45,13 @@ export default function ChatInput({
   }, [message, isMobile]);
 
   return (
-    <div className="relative w-full max-w-4xl mx-auto">
+    <div className="relative w-full max-w-4xl mx-auto group">
+      <div className="flex justify-center mb-2 opacity-0 scale-95 pointer-events-none transition-all duration-200 group-focus-within:opacity-100 group-focus-within:scale-100 group-focus-within:pointer-events-auto">
+        <ModelSelector />
+      </div>
+
       <div className="relative mb-3">
-        <div className="relative rounded-xl border-0 shadow-lg bg-gray-800/50 backdrop-blur-sm focus-within:ring-2 focus-within:ring-blue-500/30 focus-within:bg-gray-800/70 transition-all duration-300">
+        <div className="relative rounded-xl border-0 shadow-lg bg-gray-800/50 backdrop-blur-xl focus-within:ring-2 focus-within:ring-blue-500/30 focus-within:bg-gray-800/70 transition-all duration-300">
           <Textarea
             placeholder="Ask a question..."
             ref={textAreaRef}

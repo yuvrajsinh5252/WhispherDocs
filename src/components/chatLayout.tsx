@@ -23,7 +23,7 @@ export function ChatLayout(
       className="flex-1 gap-1 rounded-lg overflow-hidden"
     >
       <ResizablePanel
-        defaultSize={!isMobile ? 60 : 30}
+        defaultSize={!isMobile ? 50 : 30}
         minSize={!isMobile ? 40 : 0}
         className="relative flex flex-col sm:min-h-0"
       >
