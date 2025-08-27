@@ -1,155 +1,121 @@
+import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Cpu, Check, Languages } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  ALL_AVAILABLE_MODELS as ALL_MODELS,
-  type ModelId,
-} from "@/lib/chat-api/constants";
+import { ALL_MODELS, type ModelId } from "@/lib/chat-api/models";
 import { useChatStore } from "@/stores/chatStore";
+import { Check, Lightbulb, MessageSquare } from "lucide-react";
 
-interface ModelSelectorProps {
-  className?: string;
-}
-
-interface SimpleModel {
-  id: ModelId;
-  name: string;
-  description: string;
-  maxTokens: number;
-  provider: string;
-  supportsCitations: boolean;
-  supportsReasoning: boolean;
-  icon: React.ComponentType<any>;
-  useCase: string;
-}
-
-const getModelIcon = (config: any): React.ComponentType<any> => {
-  if (config.provider === "groq") return Cpu;
-  if (config.supportsReasoning) return Cpu;
-  if (config.name.toLowerCase().includes("aya")) return Languages;
-  return Cpu;
-};
-
-const getUseCase = (config: any): string => {
-  if (config.supportsReasoning) return "Reasoning & Analysis";
-  if (config.supportsCitations) return "Document Q&A";
-  if (config.provider === "groq") return "Fast Processing";
-  return "General Purpose";
-};
-
-const models: SimpleModel[] = Object.entries(ALL_MODELS).map(
-  ([id, config]) => ({
-    id: id as ModelId,
-    name: config.name,
-    description: config.description,
-    maxTokens: config.maxTokens,
-    provider: config.provider,
-    supportsCitations: config.supportsCitations,
-    supportsReasoning: config.supportsReasoning,
-    icon: getModelIcon(config),
-    useCase: getUseCase(config),
-  })
-);
-
-export function ModelSelector({ className }: ModelSelectorProps) {
+export function ModelSelector() {
   const { selectedModel, setSelectedModel } = useChatStore();
-  const selectedModelData = models.find((m) => m.id === selectedModel);
+  const selectedModelData =
+    ALL_MODELS[selectedModel as keyof typeof ALL_MODELS];
+
+  const getModelDisplayName = (modelId: string) => {
+    if (modelId.includes("aya")) return "Aya";
+    if (modelId.includes("command")) return "Command";
+    if (modelId.includes("deepseek")) return "DeepSeek";
+    if (modelId.includes("llama")) return "Llama";
+    if (modelId.includes("mixtral")) return "Mixtral";
+    if (modelId.includes("gemma")) return "Gemma";
+    return selectedModelData?.name || "Select";
+  };
 
   return (
-    <div className={cn("relative w-full", className)}>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="h-8 px-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              {selectedModel === "command-a-reasoning-08-2025" ? (
-                <Cpu className="h-3.5 w-3.5" />
-              ) : (
-                <Languages className="h-3.5 w-3.5" />
-              )}
-              <span>{selectedModelData?.name}</span>
-            </div>
-          </Button>
-        </DropdownMenuTrigger>
-
-        <DropdownMenuContent
-          className="w-80 p-4 space-y-2"
-          side="top"
-          sideOffset={8}
-          align="center"
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="h-8 px-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
         >
-          <DropdownMenuLabel className="mb-3">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-              Choose AI Model
-            </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 font-normal">
-              Select the model that best fits your needs
-            </p>
-          </DropdownMenuLabel>
+          <div className="flex items-center gap-2">
+            {selectedModel && selectedModelData.icon && (
+              <selectedModelData.icon className="h-3.5 w-3.5" />
+            )}
+            <span>{getModelDisplayName(selectedModel || "")}</span>
+          </div>
+        </Button>
+      </DropdownMenuTrigger>
 
-          <DropdownMenuSeparator />
+      <DropdownMenuContent
+        className="w-64 max-h-64 overflow-y-auto p-1.5 border border-gray-200/50 dark:border-gray-700/50 shadow-xl backdrop-blur-sm bg-white/95 dark:bg-gray-900/95 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300/50 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600/50 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-400/50 dark:[&::-webkit-scrollbar-thumb]:hover:bg-gray-500/50"
+        side="top"
+        sideOffset={4}
+        align="center"
+      >
+        {Object.entries(ALL_MODELS).map(([modelId, model]) => {
+          const isSelected = selectedModel === modelId;
 
-          {models.map((model) => {
-            const Icon = model.icon;
-            const isSelected = selectedModel === model.id;
-
-            return (
-              <DropdownMenuItem
-                key={model.id}
+          return (
+            <DropdownMenuItem
+              key={modelId}
+              className={cn(
+                "flex items-start gap-2 px-2.5 py-2 rounded-md cursor-pointer transition-all duration-200 border border-transparent",
+                isSelected
+                  ? "bg-blue-50/80 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200/50 dark:border-blue-800/50 shadow-sm"
+                  : "hover:bg-gray-50/80 dark:hover:bg-gray-800/50 hover:border-gray-200/50 dark:hover:border-gray-700/50"
+              )}
+              onSelect={() => setSelectedModel(modelId as ModelId)}
+            >
+              <div
                 className={cn(
-                  "w-full p-3 rounded-lg border text-left transition-all hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer",
+                  "p-1 rounded-md transition-all duration-200",
                   isSelected
-                    ? "border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/30"
-                    : "border-gray-200 dark:border-gray-700"
+                    ? "bg-blue-100/80 dark:bg-blue-900/60 text-blue-600 dark:text-blue-400 shadow-sm"
+                    : "bg-gray-100/80 dark:bg-gray-800/80 text-gray-600 dark:text-gray-400"
                 )}
-                onSelect={() => setSelectedModel(model.id)}
               >
-                <div className="flex items-start gap-3">
-                  <div
-                    className={cn(
-                      "p-1.5 rounded-md",
-                      isSelected
-                        ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400"
-                        : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                  </div>
+                <model.icon className="h-3.5 w-3.5" />
+              </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {model.name}
-                      </h4>
-                      {isSelected && (
-                        <Check className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                      )}
-                    </div>
-
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                      {model.description}
-                    </p>
-
-                    <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1 font-medium">
-                      {model.useCase}
-                    </p>
-                  </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {model.name}
+                  </span>
+                  {isSelected && (
+                    <Check className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                  )}
                 </div>
-              </DropdownMenuItem>
-            );
-          })}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                    {model.provider}
+                  </span>
+                  <span className="text-[10px] text-gray-400">•</span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                    {model.maxTokens.toLocaleString()} tokens
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 mt-0.5">
+                  {model.supportsCitations && (
+                    <div className="flex items-center gap-1">
+                      <MessageSquare className="h-2.5 w-2.5 text-green-600 dark:text-green-400" />
+                      <span className="text-xs text-green-600 dark:text-green-400">
+                        Citations
+                      </span>
+                    </div>
+                  )}
+                  {model.supportsReasoning && (
+                    <div className="flex items-center gap-1">
+                      <Lightbulb className="h-2.5 w-2.5 text-blue-600 dark:text-blue-400" />
+                      <span className="text-xs text-blue-600 dark:text-blue-400">
+                        Reasoning
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

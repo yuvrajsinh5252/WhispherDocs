@@ -5,64 +5,43 @@ import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useScreenSize } from "@/hooks/useScreenSize";
 import { useChatStore } from "@/stores/chatStore";
-
-interface ChatInputProps {
-  input?: string;
-  handleInputChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  handleSubmit?: (e?: React.FormEvent) => void;
-  isLoading?: boolean;
-  error?: Error | undefined;
-}
+import { ChatStatus } from "ai";
 
 export default function ChatInput({
-  input: propInput,
-  handleInputChange: propHandleInputChange,
-  handleSubmit: propHandleSubmit,
-  isLoading: propIsLoading,
-  error,
-}: ChatInputProps = {}) {
-  const {
-    message,
-    handleInputChange: storeHandleInputChange,
-    addMessage,
-    isLoading: storeIsLoading,
-  } = useChatStore();
-
-  const input = propInput ?? message;
-  const handleInputChange = propHandleInputChange ?? storeHandleInputChange;
-  const isLoading = propIsLoading ?? storeIsLoading;
-
+  status,
+  sendMessage,
+}: {
+  status: ChatStatus;
+  sendMessage: any;
+}) {
+  const { message, setUserMessage, fileId, selectedModel } = useChatStore();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useScreenSize();
+  const isBusy = status === "submitted" || status === "streaming";
 
   const handleSendMessage = () => {
-    if (input.trim() && !isLoading) {
-      if (propHandleSubmit) {
-        propHandleSubmit();
-      } else {
-        addMessage();
-      }
-      textAreaRef.current?.focus();
-    }
+    sendMessage({
+      text: message,
+      metadata: { fileId: fileId, model: selectedModel },
+    });
+    setUserMessage("");
   };
 
   useEffect(() => {
-    if (!isMobile && textAreaRef.current && !isLoading) {
+    if (!isMobile && textAreaRef.current && status === "ready") {
       textAreaRef.current.focus();
     }
-  }, [isMobile, isLoading]);
+  }, [isMobile, status]);
 
   useEffect(() => {
     if (textAreaRef.current) {
       textAreaRef.current.style.height = "auto";
-
       const scrollHeight = textAreaRef.current.scrollHeight;
       const maxHeight = isMobile ? 120 : 160;
-
       textAreaRef.current.style.height =
         Math.min(scrollHeight, maxHeight) + "px";
     }
-  }, [input, isMobile]);
+  }, [message, isMobile]);
 
   return (
     <div className="relative w-full max-w-4xl mx-auto">
@@ -73,32 +52,31 @@ export default function ChatInput({
             ref={textAreaRef}
             rows={1}
             maxRows={isMobile ? 3 : 4}
-            value={input}
-            onChange={handleInputChange}
+            value={message}
+            onChange={(e) => setUserMessage(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 handleSendMessage();
               }
             }}
-            disabled={isLoading}
+            disabled={isBusy}
             className={cn(
               "min-h-[56px] w-full resize-none border-0 bg-transparent py-4 pl-4 pr-16 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base leading-relaxed text-gray-100 placeholder-gray-400 transition-colors duration-200 rounded-xl",
-              isLoading && "text-gray-500",
-              !isLoading && "hover:placeholder-gray-300"
+              isBusy && "text-gray-500",
+              !isBusy && "hover:placeholder-gray-300"
             )}
           />
 
-          {/* Send button */}
           <div className="absolute right-3 bottom-3">
             <Button
               size="sm"
               type="submit"
-              disabled={!input.trim() || isLoading}
+              disabled={!message.trim() || isBusy}
               onClick={handleSendMessage}
               className={cn(
                 "h-10 w-10 p-0 rounded-full transition-all duration-300 shadow-lg",
-                input.trim() && !isLoading
+                message.trim() && !isBusy
                   ? "bg-blue-500 hover:bg-blue-600 hover:scale-105 shadow-blue-500/25"
                   : "bg-gray-600 hover:bg-gray-500"
               )}

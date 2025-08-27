@@ -7,7 +7,6 @@ import {
 import { groq } from "@ai-sdk/groq";
 import { cohere } from "@ai-sdk/cohere";
 import { ModelId, GROQ_MODELS, COHERE_MODELS } from "@/lib/chat-api/constants";
-import { NextResponse } from "next/server";
 
 async function handleChatRequest(
   messages: UIMessage[],

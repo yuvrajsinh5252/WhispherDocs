@@ -6,85 +6,39 @@ import { Message } from "./Message";
 import { useEffect, useRef } from "react";
 import { useIntersection } from "@mantine/hooks";
 import { useChatStore } from "@/stores/chatStore";
-import { ChatMessage } from "@/stores/chatStore";
-import { ModelId } from "@/lib/chat-api/constants";
-
-const LoadingDots = ({
-  className = "bg-indigo-400",
-}: {
-  className?: string;
-}) => (
-  <div className="flex space-x-1.5 py-0.5">
-    <div
-      className={`h-2.5 w-2.5 ${className} rounded-full animate-bounce shadow-sm`}
-      style={{ animationDelay: "0ms" }}
-    />
-    <div
-      className={`h-2.5 w-2.5 ${className} rounded-full animate-bounce shadow-sm`}
-      style={{ animationDelay: "200ms" }}
-    />
-    <div
-      className={`h-2.5 w-2.5 ${className} rounded-full animate-bounce shadow-sm`}
-      style={{ animationDelay: "400ms" }}
-    />
-  </div>
-);
-
-interface MessagesProps {
-  messages?: ChatMessage[];
-  isLoading?: boolean;
-  selectedModel?: ModelId;
-}
+import { LoadingDots } from "./Thinking";
+import { UIMessage } from "@ai-sdk/react";
+import { ChatStatus } from "ai";
 
 export default function Messages({
-  messages: propMessages,
-  isLoading: propIsLoading,
-  selectedModel: propSelectedModel,
-}: MessagesProps = {}) {
-  const {
-    isLoading: isAiThinking,
-    selectedModel: storeSelectedModel,
-    messages: localMessages,
-    fileId,
-  } = useChatStore();
-
-  // Use props if provided, otherwise fall back to store values
-  const isLoading = propIsLoading ?? isAiThinking;
-  const selectedModel = propSelectedModel ?? storeSelectedModel;
-  const messages = propMessages ?? localMessages;
-
+  status,
+  uiMessages,
+}: {
+  status: ChatStatus;
+  uiMessages: UIMessage[];
+}) {
+  const { selectedModel, fileId } = useChatStore();
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const prevMessagesLengthRef = useRef<number>(0);
   const loadingMoreRef = useRef<boolean>(false);
 
-  const {
-    data,
-    isLoading: isServerLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = trpc.getMessages.useInfiniteQuery(
-    {
-      fileId: fileId!,
-      limit: INFINITE_QUERY_LIMIT,
-    },
-    {
-      getNextPageParam: (lastPage) => lastPage?.nextCursor,
-      refetchOnWindowFocus: false,
-      enabled: !!fileId,
-    }
-  );
+  console.log(uiMessages);
 
-  const serverMessages = data?.pages.flatMap((page) => page.messages);
+  const isAiThinking = status === "submitted" || status === "streaming";
 
-  // Merge server messages with local messages, avoiding duplicates
-  const allMessages = [
-    ...(serverMessages ?? []),
-    ...messages.filter(
-      (localMsg: any) =>
-        !serverMessages?.some((serverMsg: any) => serverMsg.id === localMsg.id)
-    ),
-  ];
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    trpc.getMessages.useInfiniteQuery(
+      {
+        fileId: fileId ?? "",
+        limit: INFINITE_QUERY_LIMIT,
+      },
+      {
+        getNextPageParam: (lastPage) => lastPage?.nextCursor,
+        refetchOnWindowFocus: false,
+      }
+    );
+
+  const messages = data?.pages.flatMap((page) => page.messages);
 
   const loadingMessage = {
     createdAt: new Date().toISOString(),
@@ -101,9 +55,9 @@ export default function Messages({
     ),
   };
 
-  const finalMessages = [
-    ...(isLoading ? [loadingMessage] : []),
-    ...(allMessages ?? []),
+  const allMessages = [
+    ...(isAiThinking ? [loadingMessage] : []),
+    ...(messages ?? []),
   ];
 
   const scrollRef = useRef<{
@@ -122,29 +76,30 @@ export default function Messages({
   });
 
   useEffect(() => {
-    const currentLatestMessageId = allMessages?.[0]?.id;
+    const currentLatestMessageId = messages?.[0]?.id;
 
     // Case: First meaningful render with messages - scroll to bottom
-    if (allMessages?.length && scrollRef.current.isFirstRender) {
+    if (messages?.length && scrollRef.current.isFirstRender) {
       scrollRef.current.endElementRef?.scrollIntoView({ behavior: "auto" });
       scrollRef.current.isFirstRender = false;
       scrollRef.current.lastMessageId = currentLatestMessageId ?? null;
       return;
     }
 
-    // Case: New message received - scroll to bottom
-    if (currentLatestMessageId !== scrollRef.current.lastMessageId) {
-      setTimeout(() => {
-        scrollRef.current.endElementRef?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
+    // Case: New message received and AI is thinking
+    if (
+      currentLatestMessageId !== scrollRef.current.lastMessageId &&
+      isAiThinking
+    ) {
+      scrollRef.current.endElementRef?.scrollIntoView({ behavior: "smooth" });
       scrollRef.current.lastMessageId = currentLatestMessageId ?? null;
     }
-  }, [allMessages]);
+  }, [messages, isAiThinking]);
 
   useEffect(() => {
-    if (!allMessages) return;
+    if (!messages) return;
 
-    const messagesLength = allMessages.length;
+    const messagesLength = messages.length;
     const container = messagesContainerRef.current;
 
     if (
@@ -172,24 +127,18 @@ export default function Messages({
     }
 
     prevMessagesLengthRef.current = messagesLength;
-  }, [allMessages]);
+  }, [messages]);
 
   useEffect(() => {
     if (entry?.isIntersecting && hasNextPage && !isFetchingNextPage) {
       // Set loading flag before fetching next page
       loadingMoreRef.current = true;
-      prevMessagesLengthRef.current = allMessages?.length || 0;
+      prevMessagesLengthRef.current = messages?.length || 0;
       fetchNextPage();
     }
-  }, [
-    entry,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    allMessages?.length,
-  ]);
+  }, [entry, fetchNextPage, hasNextPage, isFetchingNextPage, messages?.length]);
 
-  if (isServerLoading && !serverMessages) {
+  if (isLoading) {
     return (
       <div className="flex flex-col gap-4 p-4 sm:p-6 animate-in fade-in duration-500">
         {Array(3)
@@ -262,9 +211,13 @@ export default function Messages({
   return (
     <div
       ref={messagesContainerRef}
-      className="h-full flex flex-col-reverse overflow-y-auto px-2 sm:px-3 gap-0.5 sm:gap-1 scroll-smooth scrollbar-none hover:scrollbar-thin hover:scrollbar-thumb-gray-200 dark:hover:scrollbar-thumb-gray-700 hover:scrollbar-track-transparent hover:scrollbar-thumb-gray-300 dark:hover:scrollbar-thumb-gray-600 hover:scrollbar-thumb-rounded-full"
+      className="flex-1 flex flex-col-reverse relative px-3 sm:px-4 gap-1 sm:gap-2 scroll-smooth scrolling-touch overflow-y-auto"
+      style={{
+        scrollbarWidth: "thin",
+        scrollbarColor: "rgba(156, 163, 175, 0.5) transparent",
+      }}
     >
-      {finalMessages && finalMessages.length > 0 ? (
+      {allMessages && allMessages.length > 0 ? (
         <>
           <div
             ref={(el) => {
@@ -273,10 +226,10 @@ export default function Messages({
             className="h-1"
           />
 
-          {finalMessages.map((message, i) => {
+          {allMessages.map((message, i) => {
             const isNextMessageSamePerson =
-              finalMessages[i - 1]?.isUserMessage ===
-              finalMessages[i]?.isUserMessage;
+              allMessages[i - 1]?.isUserMessage ===
+              allMessages[i]?.isUserMessage;
 
             return (
               <Message
@@ -304,11 +257,11 @@ export default function Messages({
           <div className="h-16 w-16 rounded-full bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-indigo-900/40 dark:to-indigo-700/30 flex items-center justify-center mb-5 shadow-md border border-indigo-200/50 dark:border-indigo-700/30 ring-8 ring-indigo-50/20 dark:ring-indigo-900/10">
             <MessagesSquare className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
           </div>
-          <h3 className="font-medium text-lg text-gray-900 dark:text-gray-100">
-            Start the conversation
+          <h3 className="font-medium text-base text-gray-900 dark:text-gray-100">
+            Start conversation
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 max-w-sm leading-relaxed">
-            Ask questions about your document to get instant, accurate answers
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 max-w-sm leading-relaxed">
+            Ask questions about your document
           </p>
         </div>
       )}

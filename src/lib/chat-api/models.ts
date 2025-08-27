@@ -1,3 +1,6 @@
+import { Brain, Cpu } from "lucide-react";
+import { Languages } from "lucide-react";
+
 export const GROQ_MODELS = {
   "deepseek-r1-distill-llama-70b": {
     name: "DeepSeek R1 Distill 70B",
@@ -6,6 +9,7 @@ export const GROQ_MODELS = {
     supportsCitations: true,
     supportsReasoning: true,
     provider: "groq",
+    icon: Cpu,
   },
   "llama-3.3-70b-versatile": {
     name: "Llama 3.3 70B",
@@ -14,6 +18,7 @@ export const GROQ_MODELS = {
     supportsCitations: true,
     supportsReasoning: true,
     provider: "groq",
+    icon: Cpu,
   },
   "llama-3.1-70b-versatile": {
     name: "Llama 3.1 70B",
@@ -22,6 +27,7 @@ export const GROQ_MODELS = {
     supportsCitations: true,
     supportsReasoning: true,
     provider: "groq",
+    icon: Cpu,
   },
   "llama-3.1-8b-instant": {
     name: "Llama 3.1 8B",
@@ -30,6 +36,7 @@ export const GROQ_MODELS = {
     supportsCitations: true,
     supportsReasoning: false,
     provider: "groq",
+    icon: Cpu,
   },
   "mixtral-8x7b-32768": {
     name: "Mixtral 8x7B",
@@ -38,6 +45,7 @@ export const GROQ_MODELS = {
     supportsCitations: true,
     supportsReasoning: true,
     provider: "groq",
+    icon: Cpu,
   },
   "gemma2-9b-it": {
     name: "Gemma 2 9B",
@@ -46,6 +54,7 @@ export const GROQ_MODELS = {
     supportsCitations: false,
     supportsReasoning: false,
     provider: "groq",
+    icon: Cpu,
   },
 } as const;
 
@@ -59,6 +68,7 @@ export const COHERE_MODELS = {
     supportsCitations: true,
     supportsReasoning: true,
     provider: "cohere",
+    icon: Brain,
   },
   "c4ai-aya-expanse-32b": {
     name: "Aya Expanse",
@@ -68,6 +78,7 @@ export const COHERE_MODELS = {
     supportsCitations: true,
     supportsReasoning: false,
     provider: "cohere",
+    icon: Languages,
   },
 } as const;
 
