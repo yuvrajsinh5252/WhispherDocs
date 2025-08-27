@@ -19,11 +19,6 @@ export interface DocumentChunk {
   };
 }
 
-export interface SearchMetadata {
-  source: string;
-  [key: string]: any;
-}
-
 export async function searchDocumentContext(
   message: string,
   fileId: string,

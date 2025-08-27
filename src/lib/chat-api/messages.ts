@@ -105,7 +105,7 @@ export function getLastUserMessageWithMeta(messages: UIMessage[]): {
   const model = lastUserMsg.metadata?.model as ModelId | undefined;
 
   if (!fileId) {
-    throw new Error("No field id found");
+    throw new Error("No file id found");
   }
 
   return { text, fileId, model };

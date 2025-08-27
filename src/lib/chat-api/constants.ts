@@ -13,8 +13,6 @@ export const MESSAGE_HISTORY_LIMIT = 4;
 export const EMBEDDING_MODEL = "embed-multilingual-v3.0";
 export const PINECONE_INDEX_NAME = "cohere-pinecone-trec";
 
-export const ALL_AVAILABLE_MODELS = ALL_MODELS;
-
 export type ModelId = keyof typeof ALL_MODELS;
 
 export { GROQ_MODELS, COHERE_MODELS };
