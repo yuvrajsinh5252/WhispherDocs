@@ -10,6 +10,7 @@ import { buttonVariants } from "./ui/button";
 import { useEffect } from "react";
 import { useChatStore } from "@/stores/chatStore";
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 
 interface ChatwrapperProps {
   fileId: string;
@@ -18,7 +19,11 @@ interface ChatwrapperProps {
 export default function Chatwrapper({ fileId }: ChatwrapperProps) {
   const { data, isLoading } = trpc.getFileUploadStatus.useQuery({ fileId });
   const { setFileId } = useChatStore();
-  const { status, sendMessage, messages } = useChat();
+  const { status, sendMessage, messages } = useChat({
+    transport: new DefaultChatTransport({
+      api: "/api/chat",
+    }),
+  });
 
   useEffect(() => {
     setFileId(fileId);
@@ -116,7 +121,7 @@ export default function Chatwrapper({ fileId }: ChatwrapperProps) {
         </div>
       </div>
 
-      <div className="flex-1  overflow-y-auto pb-[200px]">
+      <div className="flex-1  overflow-y-auto pb-[200px] pt-5">
         <Messages status={status} uiMessages={messages} />
       </div>
 
