@@ -78,6 +78,10 @@ export default function Messages({
       }
     );
 
+  console.log(
+    uiMessages[0]?.parts.map((e) => (e.type == "text" ? e.text : ""))
+  );
+
   const databaseMessages = data?.pages
     .flatMap((page) => page.messages)
     .reverse();
@@ -93,7 +97,6 @@ export default function Messages({
     threshold: 0.1,
   });
 
-  // Consolidated scroll logic
   useEffect(() => {
     if (!containerRef.current || !lastMessageRef.current) return;
 
@@ -102,7 +105,6 @@ export default function Messages({
     const bottomDist = scrollHeight - scrollTop - clientHeight;
     const lastMessage = allMessages[allMessages.length - 1];
 
-    // Scroll to bottom conditions
     const shouldScrollToBottom =
       isInitial.current ||
       bottomDist <= 100 ||
@@ -114,7 +116,6 @@ export default function Messages({
         container.scrollTop = container.scrollHeight;
         isInitial.current = false;
       } else {
-        // Small delay for smooth scrolling on new messages
         setTimeout(() => {
           container.scrollTop = container.scrollHeight;
         }, 50);
@@ -122,7 +123,6 @@ export default function Messages({
     }
   }, [allMessages, status, isAiThinking]);
 
-  // Handle infinite scroll
   useEffect(() => {
     if (entry?.isIntersecting && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();

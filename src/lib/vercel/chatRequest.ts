@@ -10,13 +10,8 @@ import { ModelId, GROQ_MODELS, COHERE_MODELS } from "@/lib/chat-api/constants";
 
 async function handleChatRequest(
   messages: UIMessage[],
-  userId: string,
   selectedModel: ModelId
-): Promise<{
-  result: StreamTextResult<any, any>;
-  text: string;
-  thinking: string;
-}> {
+): Promise<StreamTextResult<any, any>> {
   let modelProvider;
 
   if (GROQ_MODELS[selectedModel as keyof typeof GROQ_MODELS]) {
@@ -31,20 +26,16 @@ async function handleChatRequest(
     model: modelProvider,
     messages: convertToModelMessages(messages),
     temperature: 0.2,
+    onFinish: async ({ text, finishReason, usage }) => {
+      console.log("Stream finished:", {
+        text: text?.slice(0, 100) + "...",
+        finishReason,
+        usage,
+      });
+    },
   });
 
-  let text = "";
-  let thinking = "";
-
-  for await (const chunk of result.fullStream) {
-    if (chunk.type === "text-delta") {
-      text += chunk.text;
-    } else if (chunk.type === "reasoning-delta") {
-      thinking += chunk.text;
-    }
-  }
-
-  return { result, text, thinking };
+  return result;
 }
 
 export default handleChatRequest;

@@ -7,7 +7,6 @@ import {
   saveUserMessage,
   handleErrorAndCleanup,
   getLastUserMessageWithMeta,
-  saveAssistantMessage,
 } from "@/lib/chat-api/messages";
 import { DEFAULT_MODEL, type ModelId } from "@/lib/chat-api/constants";
 import handleChatRequest from "@/lib/vercel/chatRequest";
@@ -63,23 +62,9 @@ export const POST = async (req: Request) => {
       user_message
     );
 
-    console.log(chatMessages);
+    const result = await handleChatRequest(chatMessages, selectedModel);
 
-    const stream = await handleChatRequest(
-      chatMessages,
-      user.id,
-      selectedModel
-    );
-
-    console.log(stream);
-
-    // await saveAssistantMessage(
-    //   result.text || "",
-    //   result.thinking || "",
-    //   user.id,
-    //   fileId
-    // );
-    return stream.result.toUIMessageStreamResponse();
+    return result.toUIMessageStreamResponse();
   } catch (error) {
     return await handleErrorAndCleanup(error, user.id, fileId, user_message);
   }
