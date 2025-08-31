@@ -41,24 +41,42 @@ const DashboardComponent = () => {
   const [fileSizes, setFileSizes] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    if (files) {
-      files.forEach(async (file) => {
-        try {
-          const response = await fetch(file.url, { method: "HEAD" });
-          const size = parseInt(response.headers.get("content-length") || "0");
+    if (!files) return;
+
+    let isMounted = true;
+    const abortController = new AbortController();
+
+    files.forEach(async (file) => {
+      try {
+        const response = await fetch(file.url, {
+          method: "HEAD",
+          signal: abortController.signal,
+        });
+        const size = parseInt(response.headers.get("content-length") || "0");
+
+        if (isMounted) {
           setFileSizes((prev) => ({
             ...prev,
             [file.id]: size,
           }));
-        } catch (error) {
-          console.error("Error fetching file size:", error);
-          setFileSizes((prev) => ({
-            ...prev,
-            [file.id]: 0,
-          }));
         }
-      });
-    }
+      } catch (error) {
+        if (error instanceof Error && error.name !== "AbortError") {
+          console.error("Error fetching file size:", error);
+          if (isMounted) {
+            setFileSizes((prev) => ({
+              ...prev,
+              [file.id]: 0,
+            }));
+          }
+        }
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      abortController.abort();
+    };
   }, [files]);
 
   const { mutate: deleteFile } = trpc.deleteFile.useMutation({

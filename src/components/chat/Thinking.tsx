@@ -1,18 +1,5 @@
-export function LoadingDots({
-  className = "bg-indigo-500",
-  size = "md",
-  label = "Thinking",
-}: {
-  className?: string;
-  size?: "sm" | "md" | "lg";
-  label?: string;
-}) {
-  const sizeClass =
-    size === "sm"
-      ? "h-1.5 w-1.5"
-      : size === "lg"
-      ? "h-3.5 w-3.5"
-      : "h-2.5 w-2.5";
+export function LoadingDots({ label = "Thinking" }: { label?: string }) {
+  const sizeClass = "h-1.5 w-1.5";
 
   return (
     <div
@@ -22,13 +9,13 @@ export function LoadingDots({
       aria-label={`${label}…`}
     >
       <div
-        className={`${sizeClass} ${className} rounded-full shadow-sm animate-[pulse_1.2s_ease-in-out_0ms_infinite]`}
+        className={`${sizeClass} bg-indigo-500 dark:bg-indigo-400 rounded-full shadow-sm animate-[pulse_1.2s_ease-in-out_0ms_infinite]`}
       />
       <div
-        className={`${sizeClass} ${className} rounded-full shadow-sm animate-[pulse_1.2s_ease-in-out_200ms_infinite]`}
+        className={`${sizeClass} bg-indigo-500 dark:bg-indigo-400 rounded-full shadow-sm animate-[pulse_1.2s_ease-in-out_200ms_infinite]`}
       />
       <div
-        className={`${sizeClass} ${className} rounded-full shadow-sm animate-[pulse_1.2s_ease-in-out_400ms_infinite]`}
+        className={`${sizeClass} bg-indigo-500 dark:bg-indigo-400 rounded-full shadow-sm animate-[pulse_1.2s_ease-in-out_400ms_infinite]`}
       />
     </div>
   );
@@ -55,11 +42,7 @@ export function ThinkingContent({
           {content}
           {isStreaming && (
             <span className="ml-1 align-middle">
-              <LoadingDots
-                className="bg-gray-400 dark:bg-gray-500"
-                size="sm"
-                label="Streaming reasoning"
-              />
+              <LoadingDots label="Streaming reasoning" />
             </span>
           )}
         </div>
