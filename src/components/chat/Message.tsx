@@ -17,14 +17,6 @@ export const Message = forwardRef<
       })}
       data-message-id={message.id}
     >
-      {!message.isUserMessage && (
-        <div className="flex-shrink-0 mr-2 max-sm:hidden">
-          <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center border border-gray-200 dark:border-gray-600">
-            <Bot className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-300" />
-          </div>
-        </div>
-      )}
-
       <div
         className={cn("rounded-2xl px-2 py-1.5 sm:px-3 sm:py-2.5", {
           "max-w-[85%] sm:max-w-[70%] bg-indigo-500 text-white border border-indigo-400/30 shadow-sm":
@@ -53,30 +45,23 @@ export const Message = forwardRef<
           className={cn(
             "text-[10px] select-none mt-1 flex items-center font-light gap-1",
             message.isUserMessage
-              ? "text-indigo-100"
+              ? "text-indigo-100 justify-end"
               : "text-indigo-600/70 dark:text-gray-300/70"
           )}
         >
-          <div
-            className={cn("flex-shrink-0 mr-1 sm:hidden", {
-              hidden: message.isUserMessage,
-            })}
-          >
-            <div className="h-3 w-3 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center border border-gray-200 dark:border-gray-600">
-              <Bot className="h-2 w-2 text-gray-600 dark:text-gray-300" />
+          {!message.isUserMessage && (
+            <div className="h-4 w-4 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center border border-gray-300 dark:border-gray-600 shadow-sm">
+              <Bot className="h-2.5 w-2.5 text-gray-700 dark:text-gray-200" />
             </div>
-          </div>
+          )}
           {format(new Date(message.createdAt), "h:mm a")}
+          {message.isUserMessage && (
+            <div className="h-4 w-4 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-900/40 dark:to-indigo-800/40 flex items-center justify-center border border-indigo-300 dark:border-indigo-600/50 shadow-sm">
+              <UserRound className="h-2.5 w-2.5 text-indigo-700 dark:text-indigo-300" />
+            </div>
+          )}
         </div>
       </div>
-
-      {message.isUserMessage && (
-        <div className="flex-shrink-0 ml-1.5">
-          <div className="h-5 w-5 sm:h-7 sm:w-7 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center border border-indigo-200 dark:border-indigo-700/50">
-            <UserRound className="h-2.5 w-2.5 sm:h-4 sm:w-4 text-indigo-600 dark:text-indigo-400" />
-          </div>
-        </div>
-      )}
     </div>
   );
 });

@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function LoadingSkeleton() {
   return (
-    <div className="flex flex-col mt-10 gap-4 p-4 sm:p-6 animate-in fade-in duration-500">
+    <div className="flex flex-col mt-10 h-full gap-4 p-4 sm:p-6 animate-in fade-in duration-500">
       {Array(3)
         .fill(0)
         .map((_, i) => (

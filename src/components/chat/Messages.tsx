@@ -1,7 +1,7 @@
 import { trpc } from "@/app/_trpc/client";
 import { INFINITE_QUERY_LIMIT } from "@/config/infiinte-querry";
 import { Message } from "./Message";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useIntersection } from "@mantine/hooks";
 import { useChatStore } from "@/stores/chatStore";
 import { LoadingDots } from "./Thinking";
@@ -12,6 +12,47 @@ import LoadingSkeleton from "./interface/LoadingSkeleton";
 import EmptyState from "./interface/EmptyState";
 import { ExtendedMessages } from "@/types/messages";
 
+const processUIMessages = (
+  uiMessages: UIMessage[],
+  existingMessages: any[] | undefined
+): any[] => {
+  if (uiMessages.length === 0) {
+    return existingMessages ?? [];
+  }
+
+  const existingMessagesMap = new Map(
+    existingMessages?.map((msg) => [msg.id, msg]) ?? []
+  );
+
+  uiMessages.forEach((uiMessage) => {
+    const messageText =
+      uiMessage.parts.find((part) => part.type === "text")?.text ?? "";
+
+    if (existingMessagesMap.has(uiMessage.id)) {
+      const existingMessage = existingMessagesMap.get(uiMessage.id)!;
+      existingMessagesMap.set(uiMessage.id, {
+        ...existingMessage,
+        text: messageText,
+        hasThinking: false,
+        isUserMessage: uiMessage.role === "user",
+      });
+    } else {
+      const newMessage = {
+        id: uiMessage.id,
+        createdAt: new Date().toISOString(),
+        text: messageText,
+        hasThinking: false,
+        isUserMessage: uiMessage.role === "user",
+      };
+      existingMessagesMap.set(uiMessage.id, newMessage);
+    }
+  });
+
+  return Array.from(existingMessagesMap.values()).sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
+};
+
 export default function Messages({
   status,
   uiMessages,
@@ -19,13 +60,11 @@ export default function Messages({
   status: ChatStatus;
   uiMessages: UIMessage[];
 }) {
-  const { selectedModel, fileId } = useChatStore();
+  const { fileId } = useChatStore();
   const isAiThinking = status === "submitted" || status === "streaming";
-  const scrollToBottom = useRef(true);
   const lastMessageRef = useRef<HTMLDivElement | null>(null);
-  const firstMessageRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [scrollPosition, setScrollPosition] = useState<number | null>(null);
+  const isInitial = useRef(true);
 
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     trpc.getMessages.useInfiniteQuery(
@@ -39,51 +78,14 @@ export default function Messages({
       }
     );
 
-  let messages = data?.pages.flatMap((page) => page.messages).reverse();
-
-  // Get the last UI message
-  const lastUIMessage = uiMessages[uiMessages.length - 1];
-
-  // Check if we have a valid last UI message
-  if (lastUIMessage) {
-    // Check if this message ID already exists in the messages array
-    const existingMessageIndex = messages?.findIndex(
-      (message) => message.id === lastUIMessage.id
-    );
-
-    if (
-      existingMessageIndex !== undefined &&
-      existingMessageIndex !== -1 &&
-      messages
-    ) {
-      // Update existing message
-      const existingMessage = messages[existingMessageIndex];
-      messages[existingMessageIndex] = {
-        ...existingMessage,
-        text:
-          lastUIMessage.parts.find((part) => part.type === "text")?.text ??
-          existingMessage.text,
-        // Update other fields as needed based on UIMessage type
-        hasThinking: false,
-        isUserMessage: lastUIMessage.role === "user",
-      };
-    } else {
-      // Add new message
-      const newMessage = {
-        id: lastUIMessage.id,
-        createdAt: new Date().toISOString(),
-        text:
-          lastUIMessage.parts.find((part) => part.type === "text")?.text ?? "",
-        hasThinking: false,
-        isUserMessage: lastUIMessage.role === "user",
-      };
-      messages = messages ? [...messages, newMessage] : [newMessage];
-    }
-  }
+  const databaseMessages = data?.pages
+    .flatMap((page) => page.messages)
+    .reverse();
+  const messages = processUIMessages(uiMessages, databaseMessages);
 
   const allMessages: ExtendedMessages[] = [
-    ...(isAiThinking ? [loadingMessage] : []),
     ...(messages ?? []),
+    ...(isAiThinking ? [loadingMessage] : []),
   ];
 
   const { ref, entry } = useIntersection({
@@ -91,73 +93,67 @@ export default function Messages({
     threshold: 0.1,
   });
 
+  // Consolidated scroll logic
   useEffect(() => {
-    if (!messages || !scrollToBottom.current) return;
-    if (lastMessageRef.current) {
-      lastMessageRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-      });
-      scrollToBottom.current = false;
-    }
-  }, [messages]);
+    if (!containerRef.current || !lastMessageRef.current) return;
 
+    const container = containerRef.current;
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    const bottomDist = scrollHeight - scrollTop - clientHeight;
+    const lastMessage = allMessages[allMessages.length - 1];
+
+    // Scroll to bottom conditions
+    const shouldScrollToBottom =
+      isInitial.current ||
+      bottomDist <= 100 ||
+      isAiThinking ||
+      (lastMessage && lastMessage.isUserMessage);
+
+    if (shouldScrollToBottom) {
+      if (isInitial.current) {
+        container.scrollTop = container.scrollHeight;
+        isInitial.current = false;
+      } else {
+        // Small delay for smooth scrolling on new messages
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight;
+        }, 50);
+      }
+    }
+  }, [allMessages, status, isAiThinking]);
+
+  // Handle infinite scroll
   useEffect(() => {
     if (entry?.isIntersecting && hasNextPage && !isFetchingNextPage) {
-      if (containerRef.current) {
-        const scrollHeight = containerRef.current.scrollHeight;
-        const scrollTop = containerRef.current.scrollTop;
-        setScrollPosition(scrollHeight - scrollTop);
-      }
       fetchNextPage();
     }
   }, [entry, fetchNextPage, hasNextPage, isFetchingNextPage]);
-
-  useEffect(() => {
-    if (isFetchingNextPage || !containerRef.current || scrollPosition === null)
-      return;
-    const newScrollHeight = containerRef.current.scrollHeight;
-    containerRef.current.scrollTop = newScrollHeight - scrollPosition;
-    setScrollPosition(null);
-  }, [isFetchingNextPage, messages]);
 
   if (isLoading) return <LoadingSkeleton />;
 
   return (
     <div
       ref={containerRef}
-      className="flex-1 flex flex-col relative px-3 sm:px-4 gap-1 sm:gap-2 overflow-y-auto pb-[200px] pt-5 custom-scrollbar"
+      className="flex-1 flex flex-col relative px-3 sm:px-4 gap-1 sm:gap-2 overflow-y-auto pb-20 mb-10 pt-5 custom-scrollbar"
     >
       <div ref={ref} className="h-10" />
       {allMessages && allMessages.length > 0 ? (
         <>
-          {allMessages.map((message, i) => {
-            const isNextMessageSamePerson =
-              allMessages[i - 1]?.isUserMessage ===
-              allMessages[i]?.isUserMessage;
-
-            return (
-              <Message
-                message={message}
-                isNextMessageSamePerson={isNextMessageSamePerson}
-                status={status}
-                selectedModel={selectedModel}
-                key={message.id}
-                ref={(el) => {
-                  if (i === 0) {
-                    firstMessageRef.current = el;
-                  }
-                  if (i === allMessages.length - 1) {
-                    lastMessageRef.current = el;
-                  }
-                }}
-                data-message-id={message.id}
-              />
-            );
-          })}
+          {allMessages.map((message, i) => (
+            <Message
+              message={message}
+              key={message.id}
+              ref={(el) => {
+                if (i === allMessages.length - 1) {
+                  lastMessageRef.current = el;
+                }
+              }}
+              data-message-id={message.id}
+            />
+          ))}
 
           {isFetchingNextPage && (
-            <div className="absolute left-1/2 top-10">
+            <div className="absolute left-1/2 top-20">
               <LoadingDots />
             </div>
           )}
