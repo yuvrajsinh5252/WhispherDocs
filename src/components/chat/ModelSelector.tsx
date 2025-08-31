@@ -31,7 +31,7 @@ export function ModelSelector() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="h-8 px-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+          className="h-8 px-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 backdrop-blur-lg hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
         >
           <div className="flex items-center gap-2">
             {selectedModel && selectedModelData.icon && (
@@ -43,7 +43,7 @@ export function ModelSelector() {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="w-64 max-h-64 overflow-y-auto p-1.5 border border-gray-200/50 dark:border-gray-700/50 shadow-xl backdrop-blur-sm bg-white/95 dark:bg-gray-900/95 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300/50 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600/50 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-400/50 dark:[&::-webkit-scrollbar-thumb]:hover:bg-gray-500/50"
+        className="w-64 max-h-64 overflow-y-auto p-1.5 border flex flex-col gap-2 border-gray-200/50 dark:border-gray-700/50 shadow-xl backdrop-blur-3xl bg-transparent custom-scrollbar"
         side="top"
         sideOffset={4}
         align="center"
@@ -55,10 +55,10 @@ export function ModelSelector() {
             <DropdownMenuItem
               key={modelId}
               className={cn(
-                "flex items-start gap-2 px-2.5 py-2 rounded-md cursor-pointer transition-all duration-200 border border-transparent",
+                "flex items-start gap-2 px-2.5 py-2 border-b border-gray-200/50 dark:border-gray-700/45 rounded-md cursor-pointer transition-all duration-200 border",
                 isSelected
-                  ? "bg-blue-50/80 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200/50 dark:border-blue-800/50 shadow-sm"
-                  : "hover:bg-gray-50/80 dark:hover:bg-gray-800/50 hover:border-gray-200/50 dark:hover:border-gray-700/50"
+                  ? "bg-blue-50/80 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200/50 dark:border-blue-800/50 shadow-sm"
+                  : "hover:bg-gray-50/80 dark:hover:bg-gray-900/90 hover:border-gray-200/50 dark:hover:border-gray-700/50"
               )}
               onSelect={() => setSelectedModel(modelId as ModelId)}
             >

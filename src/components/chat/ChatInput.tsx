@@ -51,7 +51,7 @@ export default function ChatInput({
       </div>
 
       <div className="relative mb-3">
-        <div className="relative rounded-xl border-0 shadow-lg bg-gray-800/50 backdrop-blur-xl focus-within:ring-2 focus-within:ring-blue-500/30 focus-within:bg-gray-800/70 transition-all duration-300">
+        <div className="relative rounded-xl border border-gray-200/60 dark:border-gray-700/60 shadow-lg bg-white/80 dark:bg-gray-800/50 backdrop-blur-xl focus-within:ring-2 focus-within:ring-blue-500/30 focus-within:bg-white/95 dark:focus-within:bg-gray-800/70 transition-all duration-300">
           <Textarea
             placeholder="Ask a question..."
             ref={textAreaRef}
@@ -67,9 +67,10 @@ export default function ChatInput({
             }}
             disabled={isBusy}
             className={cn(
-              "min-h-[56px] w-full resize-none border-0 bg-transparent py-4 pl-4 pr-16 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base leading-relaxed text-gray-100 placeholder-gray-400 transition-colors duration-200 rounded-xl",
-              isBusy && "text-gray-500",
-              !isBusy && "hover:placeholder-gray-300"
+              "min-h-[56px] w-full resize-none border-0 bg-transparent py-4 pl-4 pr-16 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base leading-relaxed text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200 rounded-xl",
+              isBusy && "text-gray-400 dark:text-gray-500",
+              !isBusy &&
+                "hover:placeholder-gray-400 dark:hover:placeholder-gray-300"
             )}
           />
 
@@ -83,7 +84,7 @@ export default function ChatInput({
                 "h-10 w-10 p-0 rounded-full transition-all duration-300 shadow-lg",
                 message.trim() && !isBusy
                   ? "bg-blue-500 hover:bg-blue-600 hover:scale-105 shadow-blue-500/25"
-                  : "bg-gray-600 hover:bg-gray-500"
+                  : "bg-gray-400 dark:bg-gray-600 hover:bg-gray-500 dark:hover:bg-gray-500"
               )}
               aria-label="Send message"
             >

@@ -121,7 +121,7 @@ export default function Chatwrapper({ fileId }: ChatwrapperProps) {
         </div>
       </div>
 
-      <div className="flex-1  overflow-y-auto pb-[200px] pt-5">
+      <div className="flex-1 overflow-y-auto pb-[200px] pt-5 custom-scrollbar">
         <Messages status={status} uiMessages={messages} />
       </div>
 
