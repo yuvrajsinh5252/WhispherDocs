@@ -7,9 +7,9 @@ export async function saveUserMessage(
   message: string,
   userId: string,
   fileId: string
-): Promise<boolean> {
+): Promise<string> {
   try {
-    await db.messages.create({
+    const savedMessage = await db.messages.create({
       data: {
         text: message,
         isUserMessage: true,
@@ -17,10 +17,10 @@ export async function saveUserMessage(
         fileId: fileId,
       },
     });
-    return true;
+    return savedMessage.id;
   } catch (error) {
     console.error("Error saving user message:", error);
-    return false;
+    throw new Error("Failed to save user message");
   }
 }
 
@@ -29,9 +29,9 @@ export async function saveAssistantMessage(
   thinking: string,
   userId: string,
   fileId: string
-): Promise<boolean> {
+): Promise<string> {
   try {
-    await db.messages.create({
+    const savedMessage = await db.messages.create({
       data: {
         text,
         thinking,
@@ -41,10 +41,10 @@ export async function saveAssistantMessage(
         fileId,
       },
     });
-    return true;
+    return savedMessage.id;
   } catch (error) {
     console.error("Error saving assistant message:", error);
-    return false;
+    throw new Error("Failed to save assistant message");
   }
 }
 

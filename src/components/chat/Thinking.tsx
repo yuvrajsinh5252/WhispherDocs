@@ -46,7 +46,7 @@ export function ThinkingContent({
   if (!shouldShowThinking) return null;
 
   return (
-    <div className="mb-3 pb-3 border-b border-gray-200/50 dark:border-gray-700/50">
+    <div className="pb-3 border-b border-gray-200/50 dark:border-gray-700/50">
       <div className="relative rounded-md p-2 border bg-gradient-to-br from-gray-50/80 to-white/40 dark:from-gray-800/40 dark:to-gray-900/30 border-gray-200/40 dark:border-gray-700/40">
         <div className="absolute inset-0 rounded-md pointer-events-none [mask-image:radial-gradient(200px_80px_at_10%_10%,_black,_transparent)]">
           <div className="absolute -inset-0.5 rounded-md bg-gradient-to-r from-indigo-500/10 via-violet-500/10 to-purple-500/10 blur" />
