@@ -85,11 +85,7 @@ export async function handleErrorAndCleanup(
   });
 }
 
-export function getLastUserMessageWithMeta(messages: UIMessage[]): {
-  text: string | null;
-  fileId: string;
-  model?: ModelId;
-} {
+export function getLastUserMessage(messages: UIMessage[]): string {
   const lastUserMsg = [...messages].reverse().find((m) => m.role === "user") as
     | (UIMessage & { metadata?: { fileId?: string; model?: ModelId } })
     | undefined;
@@ -100,13 +96,7 @@ export function getLastUserMessageWithMeta(messages: UIMessage[]): {
     | { type: "text"; text: string }
     | undefined;
 
-  const text = textPart?.text ?? null;
-  const fileId = lastUserMsg.metadata?.fileId;
-  const model = lastUserMsg.metadata?.model as ModelId | undefined;
+  if (!textPart) throw new Error("No text found in last use message");
 
-  if (!fileId) {
-    throw new Error("No file id found");
-  }
-
-  return { text, fileId, model };
+  return textPart.text;
 }

@@ -6,7 +6,7 @@ import {
 import {
   saveUserMessage,
   handleErrorAndCleanup,
-  getLastUserMessageWithMeta,
+  getLastUserMessage,
 } from "@/lib/chat-api/messages";
 import { DEFAULT_MODEL, type ModelId } from "@/lib/chat-api/constants";
 import handleChatRequest from "@/lib/vercel/chatRequest";
@@ -17,13 +17,13 @@ import createChatMessages from "@/lib/chat-api/prompt";
 export const maxDuration = 30;
 
 export const POST = async (req: Request) => {
-  const { messages }: { messages: UIMessage[] } = await req.json();
-
+  const data = await req.json();
   const {
-    text: user_message,
+    messages,
     fileId,
     model,
-  } = getLastUserMessageWithMeta(messages);
+  }: { messages: UIMessage[]; fileId: string; model: string } = data;
+  const user_message = getLastUserMessage(messages);
 
   if (!user_message) {
     return new Response(JSON.stringify({ error: "No user message" }), {
@@ -64,7 +64,10 @@ export const POST = async (req: Request) => {
 
     const result = await handleChatRequest(chatMessages, selectedModel);
 
-    return result.toUIMessageStreamResponse();
+    return result.toUIMessageStreamResponse({
+      sendSources: true,
+      sendReasoning: true,
+    });
   } catch (error) {
     return await handleErrorAndCleanup(error, user.id, fileId, user_message);
   }

@@ -2,7 +2,7 @@ import { ArrowUp } from "lucide-react";
 import { Button } from "../ui/button";
 import { ModelSelector } from "./ModelSelector";
 import { Textarea } from "../ui/textarea";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useScreenSize } from "@/hooks/useScreenSize";
 import { useChatStore } from "@/stores/chatStore";
@@ -15,17 +15,23 @@ export default function ChatInput({
   status: ChatStatus;
   sendMessage: any;
 }) {
-  const { message, setUserMessage, fileId, selectedModel } = useChatStore();
+  const { fileId, selectedModel } = useChatStore();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useScreenSize();
   const isBusy = status === "submitted" || status === "streaming";
+  const [input, setInput] = useState("");
 
-  const handleSendMessage = () => {
-    sendMessage({
-      text: message,
-      metadata: { fileId: fileId, model: selectedModel },
-    });
-    setUserMessage("");
+  const handleSendMessage = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    e.preventDefault();
+    sendMessage(
+      {
+        text: input.trim(),
+      },
+      {
+        body: { fileId: fileId, model: selectedModel },
+      }
+    );
+    setInput("");
   };
 
   useEffect(() => {
@@ -42,7 +48,7 @@ export default function ChatInput({
       textAreaRef.current.style.height =
         Math.min(scrollHeight, maxHeight) + "px";
     }
-  }, [message, isMobile]);
+  }, [isMobile]);
 
   return (
     <div className="relative w-full max-w-4xl mx-auto group">
@@ -56,18 +62,16 @@ export default function ChatInput({
             placeholder="Ask a question..."
             ref={textAreaRef}
             rows={1}
-            maxRows={isMobile ? 3 : 4}
-            value={message}
-            onChange={(e) => setUserMessage(e.target.value)}
+            onChange={(e) => setInput(e.target.value)}
+            value={input}
+            disabled={isBusy}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage();
+                handleSendMessage(e);
               }
             }}
-            disabled={isBusy}
             className={cn(
-              "min-h-[56px] w-full resize-none border-0 bg-transparent py-4 pl-4 pr-16 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base leading-relaxed text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200 rounded-xl",
+              "min-h-[56px] w-full resize-none border-0 bg-transparent py-4 pl-4 pr-16 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base leading-relaxed text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200 rounded-xl custom-scrollbar",
               isBusy && "text-gray-400 dark:text-gray-500",
               !isBusy &&
                 "hover:placeholder-gray-400 dark:hover:placeholder-gray-300"
@@ -78,11 +82,11 @@ export default function ChatInput({
             <Button
               size="sm"
               type="submit"
-              disabled={!message.trim() || isBusy}
-              onClick={handleSendMessage}
+              disabled={!input.trim() || isBusy}
+              onClick={(e) => handleSendMessage(e as any)}
               className={cn(
                 "h-10 w-10 p-0 rounded-full transition-all duration-300 shadow-lg",
-                message.trim() && !isBusy
+                input.trim() && !isBusy
                   ? "bg-blue-500 hover:bg-blue-600 hover:scale-105 shadow-blue-500/25"
                   : "bg-gray-400 dark:bg-gray-600 hover:bg-gray-500 dark:hover:bg-gray-500"
               )}
