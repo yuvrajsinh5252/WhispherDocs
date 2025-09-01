@@ -69,3 +69,26 @@ export default function LoadingSkeleton() {
     </div>
   );
 }
+
+export function LoadingDots({ label = "Thinking" }: { label?: string }) {
+  const sizeClass = "h-1.5 w-1.5";
+
+  return (
+    <div
+      className="flex items-center gap-1.5 py-0.5"
+      role="status"
+      aria-live="polite"
+      aria-label={`${label}…`}
+    >
+      <div
+        className={`${sizeClass} bg-indigo-600 rounded-full shadow-sm animate-[pulse_1.2s_ease-in-out_0ms_infinite]`}
+      />
+      <div
+        className={`${sizeClass} bg-indigo-600 rounded-full shadow-sm animate-[pulse_1.2s_ease-in-out_200ms_infinite]`}
+      />
+      <div
+        className={`${sizeClass} bg-indigo-600 rounded-full shadow-sm animate-[pulse_1.2s_ease-in-out_400ms_infinite]`}
+      />
+    </div>
+  );
+}

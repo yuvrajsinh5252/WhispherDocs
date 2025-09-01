@@ -7,10 +7,13 @@ import {
 import { groq } from "@ai-sdk/groq";
 import { cohere } from "@ai-sdk/cohere";
 import { ModelId, GROQ_MODELS, COHERE_MODELS } from "@/lib/chat-api/constants";
+import { saveAssistantMessage } from "../chat-api/messages";
 
 async function handleChatRequest(
   messages: UIMessage[],
-  selectedModel: ModelId
+  selectedModel: ModelId,
+  userId: string,
+  fileId: string
 ): Promise<StreamTextResult<any, any>> {
   let modelProvider;
 
@@ -27,11 +30,8 @@ async function handleChatRequest(
     messages: convertToModelMessages(messages),
     temperature: 0.2,
     onFinish: async ({ text, finishReason, usage }) => {
-      console.log("Stream finished:", {
-        text: text?.slice(0, 100) + "...",
-        finishReason,
-        usage,
-      });
+      let thinking = "";
+      await saveAssistantMessage(text, thinking, userId, fileId);
     },
   });
 

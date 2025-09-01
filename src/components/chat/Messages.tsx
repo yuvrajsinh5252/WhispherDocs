@@ -5,7 +5,7 @@ import { useIntersection } from "@mantine/hooks";
 import { useChatStore } from "@/stores/chatStore";
 import { UIMessage } from "@ai-sdk/react";
 import { ChatStatus } from "ai";
-import LoadingSkeleton from "./interface/LoadingSkeleton";
+import LoadingSkeleton, { LoadingDots } from "./interface/LoadingSkeleton";
 import { combineNormalizedMessages } from "@/lib/message-normalizer";
 import {
   Conversation,
@@ -26,6 +26,7 @@ import {
   ReasoningTrigger,
 } from "@/components/ai-elements/reasoning";
 import { Loader } from "@/components/ai-elements/loader";
+import EmptyState from "./interface/EmptyState";
 
 export default function Messages({
   status,
@@ -66,97 +67,86 @@ export default function Messages({
     if (entry?.isIntersecting && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [entry, fetchNextPage, hasNextPage, isFetchingNextPage]);
+  }, [entry?.isIntersecting, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   if (isLoading) return <LoadingSkeleton />;
 
-  const totalPages = data?.pages?.length || 0;
-  const totalMessages = messages.length;
-  const hasMoreMessages = hasNextPage;
-
   return (
-    <div className="flex flex-col h-full relative">
-      {/* Pagination Loading Indicator */}
+    <div className="flex flex-col h-full relative" ref={containerRef}>
       {isFetchingNextPage && (
-        <div className="absolute top-0 left-0 right-0 z-10 bg-background/80 backdrop-blur-sm p-2">
-          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Loader />
-            <span>Loading older messages...</span>
-          </div>
+        <div className="absolute top-5 left-1/2 z-10 flex items-center justify-center">
+          <LoadingDots />
         </div>
       )}
 
-      {/* Message Count Indicator */}
-      {totalPages > 1 && (
-        <div className="absolute top-0 right-0 z-10 bg-background/90 backdrop-blur-sm rounded-bl-lg px-3 py-1 text-xs text-muted-foreground border-l border-b">
-          {totalMessages} messages • {totalPages} pages
-          {hasMoreMessages && " • More available"}
-        </div>
-      )}
+      {messages && messages.length > 0 ? (
+        <Conversation className="h-full mb-20 pb-6">
+          <ConversationContent>
+            {messages.map((message, index) => (
+              <div key={message.id}>
+                {hasNextPage &&
+                  index === messages.length - messages.length * 0.6 && (
+                    <div ref={intersectionRef} className="h-1 w-full" />
+                  )}
 
-      <Conversation className="h-full mb-20 pb-6">
-        <ConversationContent>
-          {/* Load More Trigger - Place at the top */}
-          {hasMoreMessages && (
-            <div ref={intersectionRef} className="h-1 w-full" />
-          )}
-
-          {messages.map((message) => (
-            <div key={message.id}>
-              {message.role === "assistant" && (
-                <Sources>
-                  <SourcesTrigger
-                    count={
-                      message.parts.filter((part) => part.type === "source-url")
-                        .length
-                    }
-                  />
-                  {message.parts
-                    .filter((part) => part.type === "source-url")
-                    .map((part, i) => (
-                      <SourcesContent key={`${message.id}-${i}`}>
-                        <Source
-                          key={`${message.id}-${i}`}
-                          href={part.url}
-                          title={part.url}
-                        />
-                      </SourcesContent>
-                    ))}
-                </Sources>
-              )}
-              <Message from={message.role} key={message.id}>
-                <MessageContent>
-                  {message.parts.map((part, i) => {
-                    switch (part.type) {
-                      case "text":
-                        return (
-                          <Response key={`${message.id}-${i}`}>
-                            {part.text}
-                          </Response>
-                        );
-                      case "reasoning":
-                        return (
-                          <Reasoning
+                {message.role === "assistant" && (
+                  <Sources>
+                    <SourcesTrigger
+                      count={
+                        message.parts.filter(
+                          (part) => part.type === "source-url"
+                        ).length
+                      }
+                    />
+                    {message.parts
+                      .filter((part) => part.type === "source-url")
+                      .map((part, i) => (
+                        <SourcesContent key={`${message.id}-${i}`}>
+                          <Source
                             key={`${message.id}-${i}`}
-                            className="w-full"
-                            isStreaming={status === "streaming"}
-                          >
-                            <ReasoningTrigger />
-                            <ReasoningContent>{part.text}</ReasoningContent>
-                          </Reasoning>
-                        );
-                      default:
-                        return null;
-                    }
-                  })}
-                </MessageContent>
-              </Message>
-            </div>
-          ))}
-          {status === "submitted" && <Loader />}
-        </ConversationContent>
-        <ConversationScrollButton />
-      </Conversation>
+                            href={part.url}
+                            title={part.url}
+                          />
+                        </SourcesContent>
+                      ))}
+                  </Sources>
+                )}
+                <Message from={message.role} key={message.id}>
+                  <MessageContent>
+                    {message.parts.map((part, i) => {
+                      switch (part.type) {
+                        case "text":
+                          return (
+                            <Response key={`${message.id}-${i}`}>
+                              {part.text}
+                            </Response>
+                          );
+                        case "reasoning":
+                          return (
+                            <Reasoning
+                              key={`${message.id}-${i}`}
+                              className="w-full"
+                              isStreaming={status === "streaming"}
+                            >
+                              <ReasoningTrigger />
+                              <ReasoningContent>{part.text}</ReasoningContent>
+                            </Reasoning>
+                          );
+                        default:
+                          return null;
+                      }
+                    })}
+                  </MessageContent>
+                </Message>
+              </div>
+            ))}
+            {status === "submitted" && <Loader />}
+          </ConversationContent>
+          <ConversationScrollButton />
+        </Conversation>
+      ) : (
+        <EmptyState />
+      )}
     </div>
   );
 }

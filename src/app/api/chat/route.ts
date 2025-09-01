@@ -49,7 +49,7 @@ export const POST = async (req: Request) => {
   if (fileError) return fileError;
 
   try {
-    // await saveUserMessage(user_message, user.id, fileId);
+    await saveUserMessage(user_message, user.id, fileId);
   } catch (error) {
     console.error("Failed to save user message");
   }
@@ -62,7 +62,12 @@ export const POST = async (req: Request) => {
       user_message
     );
 
-    const result = await handleChatRequest(chatMessages, selectedModel);
+    const result = await handleChatRequest(
+      chatMessages,
+      selectedModel,
+      user.id,
+      file.id
+    );
 
     return result.toUIMessageStreamResponse({
       sendSources: true,
