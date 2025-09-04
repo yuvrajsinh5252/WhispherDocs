@@ -8,17 +8,6 @@ import {
 } from "./constants";
 import { UIMessage } from "ai";
 
-export interface DocumentChunk {
-  id: string;
-  data: {
-    text: string;
-  };
-  metadata?: {
-    source: string;
-    [key: string]: any;
-  };
-}
-
 export async function searchDocumentContext(
   message: string,
   fileId: string,
@@ -43,40 +32,43 @@ export async function searchDocumentContext(
       SEARCH_RESULTS_LIMIT
     );
 
-    const formattedResults = (results || []).map((result, index) => ({
-      id: `doc-${index + 1}`,
-      data: { text: result.pageContent || "" },
-      ...(result.metadata && {
-        metadata: {
-          ...result.metadata,
-          source: fileName || fileId,
-        },
-      }),
-    }));
+    console.log(results);
 
-    return buildSourceDocsMessage(formattedResults);
+    const documentContext = results
+      .map((result, index) => {
+        const content = result.pageContent || "";
+        const source = result.metadata?.source || fileName || fileId;
+        const pageNum = result.metadata?.pageNumber
+          ? ` (Page ${result.metadata.pageNumber})`
+          : "";
+
+        return `--- Document Chunk ${
+          index + 1
+        } from ${source}${pageNum} ---\n${content}`;
+      })
+      .join("\n\n");
+
+    return {
+      id: "document-context",
+      role: "system",
+      parts: [
+        {
+          type: "text",
+          text: `Here is the relevant document context to help answer the user's question:\n\n${documentContext}\n\nPlease use this context to answer the user's question accurately and cite specific parts when relevant.`,
+        },
+      ],
+    };
   } catch (error) {
     console.error("Document search error:", error);
     return {
-      id: "retrieved-docs",
-      role: "assistant",
-      parts: [],
+      id: "document-context",
+      role: "system",
+      parts: [
+        {
+          type: "text",
+          text: "No document context available due to search error.",
+        },
+      ],
     };
   }
-}
-
-export function buildSourceDocsMessage(docs: DocumentChunk[]): UIMessage {
-  return {
-    id: "retrieved-docs",
-    role: "assistant",
-    parts: docs.map((doc) => ({
-      type: "data-source-document",
-      data: {
-        sourceId: doc.id,
-        mediaType: "text/plain",
-        title: doc.metadata?.source,
-        text: doc.data.text,
-      },
-    })),
-  };
 }

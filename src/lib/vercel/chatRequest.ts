@@ -21,7 +21,7 @@ async function handleChatRequest(
         user: userId,
       },
     },
-    messages: convertToModelMessages([messages[messages.length - 1]]),
+    messages: convertToModelMessages(messages),
     temperature: 0.2,
     onFinish: async (response) => {
       await saveAssistantMessage(

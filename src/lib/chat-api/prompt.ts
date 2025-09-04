@@ -1,4 +1,6 @@
 import { UIMessage } from "ai";
+import { searchDocumentContext } from "./document-search";
+import { getLastUserMessage } from "./messages";
 
 const SYSTEM_PROMPT = `You are an expert assistant that helps users understand and analyze documents.
 
@@ -11,10 +13,10 @@ When answering questions:
 
 Always maintain a helpful, professional tone and focus on providing value through document insights.`;
 
-export function createChatMessages(
+export async function createChatMessages(
   uiMessages: UIMessage[],
-  userMessage: string
-): UIMessage[] {
+  fileId: string
+): Promise<UIMessage[]> {
   const messages: UIMessage[] = [];
 
   messages.push({
@@ -23,13 +25,10 @@ export function createChatMessages(
     parts: [{ type: "text", text: SYSTEM_PROMPT }],
   });
 
-  messages.push(...uiMessages);
-
-  messages.push({
-    id: "user-message",
-    role: "user",
-    parts: [{ type: "text", text: userMessage }],
-  });
+  const user_message = getLastUserMessage(messages);
+  const searchResults = await searchDocumentContext(user_message, fileId);
+  messages.push(searchResults);
+  messages.push(uiMessages[uiMessages.length - 1]);
 
   return messages;
 }

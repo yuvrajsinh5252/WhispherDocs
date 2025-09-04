@@ -6,7 +6,6 @@ import {
 } from "@/lib/chat-api/messages";
 import { DEFAULT_MODEL } from "@/lib/chat-api/constants";
 import handleChatRequest from "@/lib/vercel/chatRequest";
-import { searchDocumentContext } from "@/lib/chat-api/document-search";
 import { UIMessage } from "ai";
 import createChatMessages from "@/lib/chat-api/prompt";
 import { ModelId } from "@/lib/chat-api/models";
@@ -44,12 +43,7 @@ export const POST = async (req: Request) => {
   }
 
   try {
-    const searchResults = await searchDocumentContext(user_message, file.id);
-
-    const chatMessages = createChatMessages(
-      [...messages, searchResults],
-      user_message
-    );
+    const chatMessages = await createChatMessages(messages, file.id);
 
     const result = await handleChatRequest(
       chatMessages,
