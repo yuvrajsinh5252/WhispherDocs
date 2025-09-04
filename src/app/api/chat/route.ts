@@ -1,18 +1,15 @@
-import {
-  validateEnvironment,
-  authenticateUser,
-  validateAndGetFile,
-} from "@/lib/chat-api/auth";
+import { authenticateUser, validateAndGetFile } from "@/lib/chat-api/auth";
 import {
   saveUserMessage,
   handleErrorAndCleanup,
   getLastUserMessage,
 } from "@/lib/chat-api/messages";
-import { DEFAULT_MODEL, type ModelId } from "@/lib/chat-api/constants";
+import { DEFAULT_MODEL } from "@/lib/chat-api/constants";
 import handleChatRequest from "@/lib/vercel/chatRequest";
 import { searchDocumentContext } from "@/lib/chat-api/document-search";
 import { UIMessage } from "ai";
 import createChatMessages from "@/lib/chat-api/prompt";
+import { ModelId } from "@/lib/chat-api/models";
 
 export const maxDuration = 30;
 
@@ -30,14 +27,6 @@ export const POST = async (req: Request) => {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
-  }
-
-  if (!validateEnvironment()) {
-    console.error("Missing required environment variables");
-    return new Response(
-      JSON.stringify({ error: "Server configuration error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
   }
 
   const { user, error: authError } = await authenticateUser();

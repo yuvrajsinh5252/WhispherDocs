@@ -2,10 +2,6 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { db } from "@/db";
 import { ERROR_MESSAGES } from "./constants";
 
-export function validateEnvironment(): boolean {
-  return !!(process.env.COHERE_API_KEY && process.env.GROQ_API_KEY);
-}
-
 export async function authenticateUser(): Promise<{
   user: any;
   error?: Response;

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import { DEFAULT_MODEL, ModelId } from "@/lib/chat-api/constants";
+import { DEFAULT_MODEL } from "@/lib/chat-api/constants";
+import { ModelId } from "@/lib/chat-api/models";
 
 export interface ChatState {
   selectedModel: ModelId | undefined;

@@ -7,14 +7,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { ALL_MODELS, type ModelId } from "@/lib/chat-api/models";
+import { MODELS, type ModelId } from "@/lib/chat-api/models";
 import { useChatStore } from "@/stores/chatStore";
 import { Check, Lightbulb, MessageSquare } from "lucide-react";
 
 export function ModelSelector() {
   const { selectedModel, setSelectedModel } = useChatStore();
-  const selectedModelData =
-    ALL_MODELS[selectedModel as keyof typeof ALL_MODELS];
+  const selectedModelData = MODELS[selectedModel as keyof typeof MODELS];
 
   const getModelDisplayName = (modelId: string) => {
     if (modelId.includes("aya")) return "Aya";
@@ -34,7 +33,7 @@ export function ModelSelector() {
           className="h-8 px-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 backdrop-blur-lg hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
         >
           <div className="flex items-center gap-2">
-            {selectedModel && selectedModelData.icon && (
+            {selectedModel && selectedModelData && selectedModelData.icon && (
               <selectedModelData.icon className="h-3.5 w-3.5" />
             )}
             <span>{getModelDisplayName(selectedModel || "")}</span>
@@ -48,7 +47,7 @@ export function ModelSelector() {
         sideOffset={4}
         align="center"
       >
-        {Object.entries(ALL_MODELS).map(([modelId, model]) => {
+        {Object.entries(MODELS).map(([modelId, model]) => {
           const isSelected = selectedModel === modelId;
 
           return (
@@ -70,7 +69,7 @@ export function ModelSelector() {
                     : "bg-gray-100/80 dark:bg-gray-800/80 text-gray-600 dark:text-gray-400"
                 )}
               >
-                <model.icon className="h-3.5 w-3.5" />
+                {model.icon && <model.icon className="h-3.5 w-3.5" />}
               </div>
 
               <div className="flex-1 min-w-0">
@@ -85,11 +84,11 @@ export function ModelSelector() {
 
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="text-[10px] text-gray-500 dark:text-gray-400">
-                    {model.provider}
+                    {model.provider?.provider || "Unknown"}
                   </span>
                   <span className="text-[10px] text-gray-400">•</span>
                   <span className="text-[10px] text-gray-500 dark:text-gray-400">
-                    {model.maxTokens.toLocaleString()} tokens
+                    {model.maxTokens?.toLocaleString() || "0"} tokens
                   </span>
                 </div>
 
