@@ -8,13 +8,15 @@ export function cn(...inputs: ClassValue[]) {
 
 export function absoluteUrl(path: string) {
   if (typeof window !== "undefined") return path;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}${path}`;
+  if (process.env.VERCEL_URL) {
+    return `${SEO_CONFIG.siteUrl}${path}`;
+  }
   return `http://localhost:${process.env.PORT ?? 3000}${path}`;
 }
 
 export const SEO_CONFIG = {
   siteName: "WhispherDocs",
-  siteUrl: "https://whispher-docs.vercel.app",
+  siteUrl: "https://docs.yuvrajsinh.dev",
   defaultTitle: "WhispherDocs - Chat with Your Documents Intelligently",
   defaultDescription:
     "Get instant, accurate answers from your PDFs using advanced AI technology. Upload documents and chat naturally with your content.",
@@ -86,7 +88,11 @@ export function constructMetadata({
     formatDetection: SEO_CONFIG.formatDetection,
     metadataBase: new URL(SEO_CONFIG.siteUrl),
     alternates: {
-      canonical: canonical,
+      canonical: canonical || SEO_CONFIG.siteUrl,
+      languages: {
+        "en-US": SEO_CONFIG.siteUrl,
+        "x-default": SEO_CONFIG.siteUrl,
+      },
     },
     openGraph: {
       type,

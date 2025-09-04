@@ -16,7 +16,7 @@ export const metadata: Metadata = constructMetadata({
     "PDF dashboard",
     "my documents",
   ],
-  canonical: "https://whispher-docs.vercel.app/dashboard",
+  canonical: "https://docs.yuvrajsinh.dev/dashboard",
   noIndex: true,
 });
 

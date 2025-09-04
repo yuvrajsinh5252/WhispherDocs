@@ -9,7 +9,7 @@ import { constructMetadata } from "@/lib/utils";
 import JsonLd from "@/components/JsonLd";
 
 export const metadata = constructMetadata({
-  canonical: "https://whispher-docs.vercel.app",
+  canonical: "https://docs.yuvrajsinh.dev",
 });
 
 export default function RootLayout({
@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="no-scrollbar">
       <head>
-        <link rel="canonical" href="https://whispher-docs.vercel.app" />
+        <link rel="canonical" href="https://docs.yuvrajsinh.dev" />
         <JsonLd type="website" />
         <JsonLd type="organization" />
       </head>

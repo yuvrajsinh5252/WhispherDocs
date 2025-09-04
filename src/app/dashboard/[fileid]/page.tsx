@@ -27,7 +27,7 @@ export async function generateMetadata({
         title: "Document Chat",
         description: "Chat with your documents using AI",
         noIndex: true,
-        canonical: `https://whispher-docs.vercel.app/dashboard/${fileid}`,
+        canonical: `https://docs.yuvrajsinh.dev/dashboard/${fileid}`,
       });
     }
 
@@ -43,7 +43,7 @@ export async function generateMetadata({
         title: "Document Not Found",
         description: "The requested document could not be found",
         noIndex: true,
-        canonical: `https://whispher-docs.vercel.app/dashboard/${fileid}`,
+        canonical: `https://docs.yuvrajsinh.dev/dashboard/${fileid}`,
       });
     }
 
@@ -51,7 +51,7 @@ export async function generateMetadata({
       title: `Chat with ${file.name}`,
       description: `Chat with your document "${file.name}" using AI to get instant answers and insights.`,
       noIndex: true,
-      canonical: `https://whispher-docs.vercel.app/dashboard/${fileid}`,
+      canonical: `https://docs.yuvrajsinh.dev/dashboard/${fileid}`,
       type: "article",
       publishedTime: file.createdAt.toISOString(),
     });
@@ -60,7 +60,7 @@ export async function generateMetadata({
       title: "Document Chat",
       description: "Chat with your documents using AI",
       noIndex: true,
-      canonical: `https://whispher-docs.vercel.app/dashboard/${fileid}`,
+      canonical: `https://docs.yuvrajsinh.dev/dashboard/${fileid}`,
     });
   }
 }
