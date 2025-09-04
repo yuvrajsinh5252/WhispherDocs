@@ -61,8 +61,8 @@ export const MODELS = {
     provider: groq("gemma2-9b-it"),
     icon: Cpu,
   },
-  "gemini 2.5 flash": {
-    name: "gemini-2.5-flash",
+  "gemini-2.5-flash": {
+    name: "gemini 2.5 flash",
     description: "Google's fast reasoning model",
     maxTokens: 0,
     supportsCitations: true,

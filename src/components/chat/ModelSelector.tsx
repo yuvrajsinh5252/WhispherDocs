@@ -15,16 +15,6 @@ export function ModelSelector() {
   const { selectedModel, setSelectedModel } = useChatStore();
   const selectedModelData = MODELS[selectedModel as keyof typeof MODELS];
 
-  const getModelDisplayName = (modelId: string) => {
-    if (modelId.includes("aya")) return "Aya";
-    if (modelId.includes("command")) return "Command";
-    if (modelId.includes("deepseek")) return "DeepSeek";
-    if (modelId.includes("llama")) return "Llama";
-    if (modelId.includes("mixtral")) return "Mixtral";
-    if (modelId.includes("gemma")) return "Gemma";
-    return selectedModelData?.name || "Select";
-  };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -36,7 +26,7 @@ export function ModelSelector() {
             {selectedModel && selectedModelData && selectedModelData.icon && (
               <selectedModelData.icon className="h-3.5 w-3.5" />
             )}
-            <span>{getModelDisplayName(selectedModel || "")}</span>
+            <span>{selectedModelData?.name || "Select"}</span>
           </div>
         </Button>
       </DropdownMenuTrigger>

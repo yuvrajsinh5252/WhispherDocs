@@ -20,18 +20,16 @@ async function handleChatRequest(
         reasoningFormat: "parsed",
         user: userId,
       },
-      google: {
-        thinkingConfig: {
-          thinkingBudget: 3000,
-          includeThoughts: true,
-        },
-      },
     },
-    messages: convertToModelMessages(messages),
+    messages: convertToModelMessages([messages[messages.length - 1]]),
     temperature: 0.2,
     onFinish: async (response) => {
-      console.log(response);
-      // await saveAssistantMessage(text, thinking, userId, fileId);
+      await saveAssistantMessage(
+        response.text,
+        response.reasoningText || "",
+        userId,
+        fileId
+      );
     },
   });
 

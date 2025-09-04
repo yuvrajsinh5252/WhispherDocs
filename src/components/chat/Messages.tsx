@@ -1,6 +1,6 @@
 import { trpc } from "@/app/_trpc/client";
 import { INFINITE_QUERY_LIMIT } from "@/config/infiinte-querry";
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, Fragment } from "react";
 import { useIntersection } from "@mantine/hooks";
 import { useChatStore } from "@/stores/chatStore";
 import { UIMessage } from "@ai-sdk/react";
@@ -14,18 +14,14 @@ import {
 } from "@/components/ai-elements/conversation";
 import { Message, MessageContent } from "@/components/ai-elements/message";
 import { Response } from "@/components/ai-elements/response";
-import {
-  Source,
-  Sources,
-  SourcesContent,
-  SourcesTrigger,
-} from "@/components/ai-elements/sources";
+import { Actions, Action } from "@/components/ai-elements/actions";
 import {
   Reasoning,
   ReasoningContent,
   ReasoningTrigger,
 } from "@/components/ai-elements/reasoning";
 import { Loader } from "@/components/ai-elements/loader";
+import { CopyIcon } from "lucide-react";
 import EmptyState from "./interface/EmptyState";
 
 export default function Messages({
@@ -82,63 +78,56 @@ export default function Messages({
       {messages && messages.length > 0 ? (
         <Conversation className="h-full mb-20 pb-6">
           <ConversationContent>
-            {messages.map((message, index) => (
-              <div key={message.id}>
+            {messages.map((message, messageIndex) => (
+              <Fragment key={message.id}>
                 {hasNextPage &&
-                  index === messages.length - messages.length * 0.6 && (
+                  messageIndex === messages.length - messages.length * 0.6 && (
                     <div ref={intersectionRef} className="h-1 w-full" />
                   )}
 
-                {message.role === "assistant" && (
-                  <Sources>
-                    <SourcesTrigger
-                      count={
-                        message.parts.filter(
-                          (part) => part.type === "source-url"
-                        ).length
-                      }
-                    />
-                    {message.parts
-                      .filter((part) => part.type === "source-url")
-                      .map((part, i) => (
-                        <SourcesContent key={`${message.id}-${i}`}>
-                          <Source
-                            key={`${message.id}-${i}`}
-                            href={part.url}
-                            title={part.url}
-                          />
-                        </SourcesContent>
-                      ))}
-                  </Sources>
-                )}
-                <Message from={message.role} key={message.id}>
-                  <MessageContent>
-                    {message.parts.map((part, i) => {
-                      switch (part.type) {
-                        case "text":
-                          return (
-                            <Response key={`${message.id}-${i}`}>
-                              {part.text}
-                            </Response>
-                          );
-                        case "reasoning":
-                          return (
-                            <Reasoning
-                              key={`${message.id}-${i}`}
-                              className="w-full"
-                              isStreaming={status === "streaming"}
-                            >
-                              <ReasoningTrigger />
-                              <ReasoningContent>{part.text}</ReasoningContent>
-                            </Reasoning>
-                          );
-                        default:
-                          return null;
-                      }
-                    })}
-                  </MessageContent>
-                </Message>
-              </div>
+                {message.parts.map((part, i) => {
+                  switch (part.type) {
+                    case "text":
+                      const isLastMessage =
+                        messageIndex === messages.length - 1;
+
+                      return (
+                        <Fragment key={`${message.id}-${i}`}>
+                          <Message from={message.role}>
+                            <MessageContent>
+                              <Response>{part.text}</Response>
+                            </MessageContent>
+                          </Message>
+                          {message.role === "assistant" && isLastMessage && (
+                            <Actions>
+                              <Action
+                                onClick={() =>
+                                  navigator.clipboard.writeText(part.text)
+                                }
+                                label="Copy"
+                              >
+                                <CopyIcon className="size-3" />
+                              </Action>
+                            </Actions>
+                          )}
+                        </Fragment>
+                      );
+                    case "reasoning":
+                      return (
+                        <Reasoning
+                          key={`${message.id}-${i}`}
+                          className="w-full"
+                          isStreaming={status === "streaming"}
+                        >
+                          <ReasoningTrigger />
+                          <ReasoningContent>{part.text}</ReasoningContent>
+                        </Reasoning>
+                      );
+                    default:
+                      return null;
+                  }
+                })}
+              </Fragment>
             ))}
             {status === "submitted" && <Loader />}
           </ConversationContent>
