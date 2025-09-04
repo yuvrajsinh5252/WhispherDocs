@@ -27,24 +27,24 @@ const Navbar = async () => {
   const image_url = user?.picture || "https://example.com/default-profile.png";
 
   return (
-    <nav className="sticky top-0 z-50 w-full backdrop-blur-xl bg-white/70 dark:bg-gray-900/80 border-b border-gray-200/50 dark:border-gray-800/50 shadow-sm">
+    <nav className="sticky top-0 z-50 w-full backdrop-blur-sm bg-white/95 dark:bg-gray-950/95 border-b border-gray-200 dark:border-gray-800">
       <MaxWidthWrapper>
         <div className="flex h-16 items-center justify-between">
           <Link
             href="/"
-            className="flex items-center gap-2.5 transition-transform hover:scale-[1.02] duration-200"
+            className="flex items-center gap-3 transition-all hover:opacity-80 duration-200"
           >
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 via-blue-500 to-cyan-400 flex items-center justify-center shadow-md shadow-indigo-500/20 dark:shadow-indigo-400/20">
-              <span className="text-white font-bold text-xl">W</span>
+            <div className="h-8 w-8 rounded-lg bg-blue-600 dark:bg-blue-500 flex items-center justify-center">
+              <span className="text-white font-bold text-lg">W</span>
             </div>
-            <span className="hidden sm:inline-block text-xl font-semibold bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-800 dark:from-white dark:via-indigo-200 dark:to-gray-200 bg-clip-text text-transparent">
+            <span className="hidden sm:inline-block text-xl font-bold text-gray-900 dark:text-white">
               WhispherDocs
             </span>
           </Link>
 
           <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-3">
-              <div className="flex items-center  bg-gray-100/50 dark:bg-gray-800/50 rounded-full border border-gray-200/50 dark:border-gray-700/50 shadow-inner">
+            <div className="hidden sm:flex items-center gap-4">
+              <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
                 <NavLink href="/" label="Home" />
                 <NavLink href="/dashboard" label="Dashboard" />
               </div>
@@ -52,7 +52,7 @@ const Navbar = async () => {
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="relative h-10 w-10 rounded-full overflow-hidden outline-none ring-2 ring-indigo-200/50 dark:ring-indigo-500/30 transition duration-300 hover:ring-indigo-300 dark:hover:ring-indigo-400 shadow-sm hover:shadow-md hover:shadow-indigo-300/10 dark:hover:shadow-indigo-400/10">
+                    <button className="relative h-9 w-9 rounded-lg overflow-hidden outline-none ring-2 ring-transparent hover:ring-gray-300 dark:hover:ring-gray-600 transition-all duration-200">
                       <Image
                         src={image_url}
                         alt="Profile picture"
@@ -63,10 +63,10 @@ const Navbar = async () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="end"
-                    className="p-1.5 rounded-xl shadow-lg border-gray-200/70 dark:border-gray-700/70 bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg"
+                    className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
                   >
-                    <DropdownMenuLabel className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100/60 dark:hover:bg-gray-800/60">
-                      <div className="h-10 w-10 rounded-full overflow-hidden relative ring-2 ring-indigo-200/50 dark:ring-indigo-500/30">
+                    <DropdownMenuLabel className="flex items-center gap-3 p-2 rounded-md">
+                      <div className="h-8 w-8 rounded-md overflow-hidden relative">
                         <Image
                           src={image_url}
                           alt="Profile picture"
@@ -75,7 +75,7 @@ const Navbar = async () => {
                         />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-semibold">
+                        <span className="text-sm font-medium">
                           {user.given_name}
                         </span>
                         <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -83,13 +83,13 @@ const Navbar = async () => {
                         </span>
                       </div>
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="my-1 bg-gray-200/70 dark:bg-gray-700/70" />
+                    <DropdownMenuSeparator className="my-1" />
                     <DropdownMenuItem
                       asChild
-                      className="p-2.5 rounded-lg transition-all duration-200 focus:bg-gray-100/60 dark:focus:bg-gray-800/60"
+                      className="p-2 rounded-md focus:bg-gray-100 dark:focus:bg-gray-800"
                     >
                       <LogoutLink className="w-full cursor-pointer">
-                        <span className="text-red-500 dark:text-red-400 font-medium flex items-center justify-center gap-2">
+                        <span className="text-red-600 dark:text-red-400 font-medium">
                           Log out
                         </span>
                       </LogoutLink>
@@ -97,10 +97,10 @@ const Navbar = async () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Button className="bg-gradient-to-r from-indigo-500 via-blue-500 to-cyan-400 hover:from-indigo-600 hover:via-blue-600 hover:to-cyan-500 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 transition-all duration-300 rounded-xl px-5">
+                <Button className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg px-4 transition-colors">
                   <LoginLink className="flex items-center gap-2">
                     Get started
-                    <FaArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    <FaArrowRight className="h-4 w-4" />
                   </LoginLink>
                 </Button>
               )}

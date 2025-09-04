@@ -5,9 +5,12 @@ import { Button } from "@/components/ui/button";
 
 export default function SignInButton() {
   return (
-    <Button className="font-bold">
+    <Button
+      variant="outline"
+      className="bg-white text-blue-600 border-white hover:bg-blue-50 hover:text-blue-700 font-medium"
+    >
       <LoginLink>
-        <span className="flex gap-2">
+        <span className="flex items-center gap-2">
           Get started
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -15,7 +18,7 @@ export default function SignInButton() {
             viewBox="0 0 24 24"
             stroke="currentColor"
             strokeWidth={2}
-            className="w-5 h-5"
+            className="w-4 h-4"
           >
             <path
               strokeLinecap="round"
