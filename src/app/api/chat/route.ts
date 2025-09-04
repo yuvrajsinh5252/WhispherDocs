@@ -5,7 +5,7 @@ import {
   getLastUserMessage,
 } from "@/lib/chat-api/messages";
 import { DEFAULT_MODEL } from "@/lib/chat-api/constants";
-import handleChatRequest from "@/lib/vercel/chatRequest";
+import handleChatRequest from "@/lib/chat-api/chatRequest";
 import { UIMessage } from "ai";
 import createChatMessages from "@/lib/chat-api/prompt";
 import { ModelId } from "@/lib/chat-api/models";

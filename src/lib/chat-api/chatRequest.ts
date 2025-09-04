@@ -4,8 +4,8 @@ import {
   UIMessage,
   StreamTextResult,
 } from "ai";
-import { saveAssistantMessage } from "../chat-api/messages";
-import { ModelId, MODELS } from "../chat-api/models";
+import { saveAssistantMessage } from "./messages";
+import { ModelId, MODELS } from "./models";
 
 async function handleChatRequest(
   messages: UIMessage[],
