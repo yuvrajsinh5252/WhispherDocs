@@ -32,8 +32,6 @@ export async function searchDocumentContext(
       SEARCH_RESULTS_LIMIT
     );
 
-    console.log(results);
-
     const documentContext = results
       .map((result, index) => {
         const content = result.pageContent || "";
@@ -54,7 +52,7 @@ export async function searchDocumentContext(
       parts: [
         {
           type: "text",
-          text: `Here is the relevant document context to help answer the user's question:\n\n${documentContext}\n\nPlease use this context to answer the user's question accurately and cite specific parts when relevant.`,
+          text: `Here is the relevant document context to help answer the user's question:\n\n${documentContext}\n\nUse this context to provide both explicit facts and reasonable inferences. Make educated assessments based on the information provided, and clearly distinguish between what is directly stated versus what can be reasonably inferred.`,
         },
       ],
     };

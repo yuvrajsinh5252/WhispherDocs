@@ -7,7 +7,6 @@ type OmitText = Omit<Messages[number], "text">;
 type ExtendedText = {
   text: string | JSX.Element;
   thinking?: string | null;
-  hasThinking?: boolean;
 };
 
 export type ExtendedMessages = OmitText & ExtendedText;

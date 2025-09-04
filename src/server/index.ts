@@ -138,7 +138,7 @@ export const appRouter = router({
           text: true,
           createdAt: true,
           isUserMessage: true,
-          hasThinking: true,
+          thinking: true, // Include thinking content directly
         },
       });
 

@@ -51,6 +51,7 @@ export default function Messages({
     const dbMessages = data?.pages
       .flatMap((page) => page.messages || [])
       .reverse();
+
     return combineNormalizedMessages(dbMessages || [], uiMessages);
   }, [uiMessages, data?.pages]);
 
