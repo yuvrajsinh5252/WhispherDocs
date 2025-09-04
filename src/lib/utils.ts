@@ -140,7 +140,7 @@ export function constructMetadata({
       },
     }),
     verification: {
-      google: "6AlGTN6eLoflhRhp6xeB3ajmvAZpO26ia7zOxbN21CY",
+      google: "PGoceaWXj9AkjGmmKyMlP-Ns9EoR_rb_j4exhV6gR60",
     },
   };
 
