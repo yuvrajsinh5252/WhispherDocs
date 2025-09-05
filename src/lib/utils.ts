@@ -16,7 +16,7 @@ export function absoluteUrl(path: string) {
 
 export const SEO_CONFIG = {
   siteName: "WhispherDocs",
-  siteUrl: "https://docs.yuvrajsinh.dev",
+  siteUrl: "https://whispherdocs.yuvrajsinh.dev",
   defaultTitle: "WhispherDocs - Chat with Your Documents Intelligently",
   defaultDescription:
     "Get instant, accurate answers from your PDFs using advanced AI technology. Upload documents and chat naturally with your content.",

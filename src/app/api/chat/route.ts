@@ -10,7 +10,7 @@ import { UIMessage } from "ai";
 import createChatMessages from "@/lib/chat-api/prompt";
 import { ModelId } from "@/lib/chat-api/models";
 
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 export const POST = async (req: Request) => {
   const data = await req.json();

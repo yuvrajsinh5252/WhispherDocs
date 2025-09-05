@@ -7,54 +7,6 @@ import { Languages } from "lucide-react";
 export type ModelId = keyof typeof MODELS;
 
 export const MODELS = {
-  "llama-3.1-8b-instant": {
-    name: "Llama 3.1 8B Instant",
-    description: "Fast and compact variant - Production ready",
-    maxTokens: 131072,
-    supportsCitations: true,
-    supportsReasoning: false,
-    provider: groq("llama-3.1-8b-instant"),
-    icon: Cpu,
-  },
-  "llama-3.3-70b-versatile": {
-    name: "Llama 3.3 70B Versatile",
-    description: "Highly capable for large context tasks - Production ready",
-    maxTokens: 32768,
-    supportsCitations: true,
-    supportsReasoning: false,
-    provider: groq("llama-3.3-70b-versatile"),
-    icon: Cpu,
-  },
-  "meta-llama/llama-guard-4-12b": {
-    name: "Llama Guard 4 12B",
-    description:
-      "Guarded version for safe and controlled outputs - Production ready",
-    maxTokens: 1024,
-    supportsCitations: false,
-    supportsReasoning: false,
-    provider: groq("meta-llama/llama-guard-4-12b"),
-    icon: Cpu,
-  },
-  "openai/gpt-oss-120b": {
-    name: "GPT OSS 120B",
-    description:
-      "Large open-weight model with reasoning capabilities - Production ready",
-    maxTokens: 65536,
-    supportsCitations: false,
-    supportsReasoning: true,
-    provider: groq("openai/gpt-oss-120b"),
-    icon: Cpu,
-  },
-  "openai/gpt-oss-20b": {
-    name: "GPT OSS 20B",
-    description:
-      "Smaller open-weight model with high reasoning power - Production ready",
-    maxTokens: 65536,
-    supportsCitations: false,
-    supportsReasoning: true,
-    provider: groq("openai/gpt-oss-20b"),
-    icon: Cpu,
-  },
   "gemini-2.5-pro": {
     name: "Gemini 2.5 Pro",
     description:
@@ -63,6 +15,11 @@ export const MODELS = {
     supportsCitations: true,
     supportsReasoning: true,
     provider: google("gemini-2.5-pro"),
+    providerOptions: {
+      google: {
+        thinkingMode: true,
+      },
+    },
     icon: Cpu,
   },
   "gemini-2.5-flash": {
@@ -73,6 +30,11 @@ export const MODELS = {
     supportsCitations: true,
     supportsReasoning: true,
     provider: google("gemini-2.5-flash"),
+    providerOptions: {
+      google: {
+        thinkingMode: true,
+      },
+    },
     icon: Cpu,
   },
   "gemini-2.5-flash-lite": {
@@ -83,6 +45,9 @@ export const MODELS = {
     supportsCitations: true,
     supportsReasoning: false,
     provider: google("gemini-2.5-flash-lite"),
+    providerOptions: {
+      google: {},
+    },
     icon: Cpu,
   },
   "command-a-03-2025": {
@@ -93,26 +58,9 @@ export const MODELS = {
     supportsCitations: true,
     supportsReasoning: false,
     provider: cohere("command-a-03-2025"),
-    icon: Brain,
-  },
-  "command-a-reasoning-08-2025": {
-    name: "Command A Reasoning",
-    description:
-      "First reasoning model able to 'think' before generating output for nuanced problem-solving and agents - 23 languages",
-    maxTokens: 32768,
-    supportsCitations: true,
-    supportsReasoning: true,
-    provider: cohere("command-a-reasoning-08-2025"),
-    icon: Brain,
-  },
-  "command-a-vision-07-2025": {
-    name: "Command A Vision",
-    description:
-      "First multimodal model for charts, OCR, document Q&A - Supports text and images in 6 languages",
-    maxTokens: 8192,
-    supportsCitations: false,
-    supportsReasoning: false,
-    provider: cohere("command-a-vision-07-2025"),
+    providerOptions: {
+      cohere: {},
+    },
     icon: Brain,
   },
   "command-r-plus-08-2024": {
@@ -123,6 +71,9 @@ export const MODELS = {
     supportsCitations: true,
     supportsReasoning: false,
     provider: cohere("command-r-plus-08-2024"),
+    providerOptions: {
+      cohere: {},
+    },
     icon: Brain,
   },
   "c4ai-aya-expanse-32b": {
@@ -133,6 +84,51 @@ export const MODELS = {
     supportsCitations: true,
     supportsReasoning: false,
     provider: cohere("c4ai-aya-expanse-32b"),
+    providerOptions: {
+      cohere: {},
+    },
     icon: Languages,
+  },
+  "llama-3.3-70b-versatile": {
+    name: "Llama 3.3 70B Versatile",
+    description: "Highly capable for large context tasks - Production ready",
+    maxTokens: 32768,
+    supportsCitations: true,
+    supportsReasoning: false,
+    provider: groq("llama-3.3-70b-versatile"),
+    providerOptions: {
+      groq: {},
+    },
+    icon: Cpu,
+  },
+  "openai/gpt-oss-120b": {
+    name: "GPT OSS 120B",
+    description:
+      "Large open-weight model with reasoning capabilities - Production ready",
+    maxTokens: 65536,
+    supportsCitations: false,
+    supportsReasoning: true,
+    provider: groq("openai/gpt-oss-120b"),
+    providerOptions: {
+      groq: {
+        reasoningFormat: "parsed",
+      },
+    },
+    icon: Cpu,
+  },
+  "openai/gpt-oss-20b": {
+    name: "GPT OSS 20B",
+    description:
+      "Smaller open-weight model with high reasoning power - Production ready",
+    maxTokens: 65536,
+    supportsCitations: false,
+    supportsReasoning: true,
+    provider: groq("openai/gpt-oss-20b"),
+    providerOptions: {
+      groq: {
+        reasoningFormat: "parsed",
+      },
+    },
+    icon: Cpu,
   },
 } as const;

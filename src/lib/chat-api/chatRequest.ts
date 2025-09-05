@@ -15,14 +15,9 @@ async function handleChatRequest(
 ): Promise<StreamTextResult<any, any>> {
   const result = streamText({
     model: MODELS[selectedModel].provider,
-    providerOptions: {
-      groq: {
-        reasoningFormat: "parsed",
-        user: userId,
-      },
-    },
+    providerOptions: MODELS[selectedModel].providerOptions,
     messages: convertToModelMessages(messages),
-    temperature: 0.2,
+    temperature: 0.4,
     onFinish: async (response) => {
       await saveAssistantMessage(
         response.text,

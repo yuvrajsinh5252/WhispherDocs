@@ -7,7 +7,8 @@ import { constructMetadata } from "@/lib/utils";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = constructMetadata({
-  title: "Dashboard - Manage Your Documents",
+  title: "Dashboard",
+
   description:
     "Access and manage your uploaded documents. Chat with your PDFs, view insights, and organize your knowledge base.",
   keywords: [
@@ -16,7 +17,7 @@ export const metadata: Metadata = constructMetadata({
     "PDF dashboard",
     "my documents",
   ],
-  canonical: "https://docs.yuvrajsinh.dev/dashboard",
+  canonical: "https://whispherdocs.yuvrajsinh.dev/dashboard",
   noIndex: true,
 });
 

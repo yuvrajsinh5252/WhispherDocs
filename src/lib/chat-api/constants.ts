@@ -1,4 +1,4 @@
-export const DEFAULT_MODEL = "llama-3.3-70b-versatile";
+export const DEFAULT_MODEL = "gemini-2.5-flash-lite";
 export const DEFAULT_TEMPERATURE = 0.2;
 export const SEARCH_RESULTS_LIMIT = 4;
 export const MESSAGE_HISTORY_LIMIT = 4;

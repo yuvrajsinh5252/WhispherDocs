@@ -19,50 +19,12 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const { fileid } = params;
 
-  try {
-    const user = await getKindeServerSession().getUser();
-
-    if (!user || !user.id) {
-      return constructMetadata({
-        title: "Document Chat",
-        description: "Chat with your documents using AI",
-        noIndex: true,
-        canonical: `https://docs.yuvrajsinh.dev/dashboard/${fileid}`,
-      });
-    }
-
-    const file = await db.file.findFirst({
-      where: {
-        id: fileid,
-        userId: user.id,
-      },
-    });
-
-    if (!file) {
-      return constructMetadata({
-        title: "Document Not Found",
-        description: "The requested document could not be found",
-        noIndex: true,
-        canonical: `https://docs.yuvrajsinh.dev/dashboard/${fileid}`,
-      });
-    }
-
-    return constructMetadata({
-      title: `Chat with ${file.name}`,
-      description: `Chat with your document "${file.name}" using AI to get instant answers and insights.`,
-      noIndex: true,
-      canonical: `https://docs.yuvrajsinh.dev/dashboard/${fileid}`,
-      type: "article",
-      publishedTime: file.createdAt.toISOString(),
-    });
-  } catch (error) {
-    return constructMetadata({
-      title: "Document Chat",
-      description: "Chat with your documents using AI",
-      noIndex: true,
-      canonical: `https://docs.yuvrajsinh.dev/dashboard/${fileid}`,
-    });
-  }
+  return constructMetadata({
+    title: "Chat",
+    description: "Chat with your document using AI",
+    noIndex: true,
+    canonical: `https://whispherdocs.yuvrajsinh.dev/dashboard/${fileid}`,
+  });
 }
 
 export default async function page({ params }: PageProps) {
