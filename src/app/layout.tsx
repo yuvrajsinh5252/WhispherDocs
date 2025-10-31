@@ -5,12 +5,10 @@ import "react-loading-skeleton/dist/skeleton.css";
 import { Toaster } from "@/components/ui/toaster";
 import "simplebar-react/dist/simplebar.min.css";
 import { ThemeProvider } from "@/components/theme/theme-provider";
-import { constructMetadata } from "@/lib/utils";
+import { constructMetadata, SEO_CONFIG } from "@/lib/utils";
 import JsonLd from "@/components/JsonLd";
 
-export const metadata = constructMetadata({
-  canonical: "https://whispherdocs.yuvrajsinh.dev",
-});
+export const metadata = constructMetadata({});
 
 export default function RootLayout({
   children,
@@ -20,7 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="no-scrollbar">
       <head>
-        <link rel="canonical" href="https://whispherdocs.yuvrajsinh.dev" />
+        <link rel="canonical" href={SEO_CONFIG.siteUrl} />
         <JsonLd type="website" />
         <JsonLd type="organization" />
       </head>

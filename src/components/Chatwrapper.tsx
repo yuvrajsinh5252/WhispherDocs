@@ -120,6 +120,8 @@ export default function Chatwrapper({ fileId }: ChatwrapperProps) {
         </div>
       </div>
 
+      <div className="h-12" />
+
       <Messages status={status} uiMessages={messages} />
 
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white/95 dark:from-gray-900 to-transparent pb-3 px-3 sm:px-6">

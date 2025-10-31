@@ -11,6 +11,8 @@ import {
   Shield,
   Users,
   Settings,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react";
 
 import SignInButton from "@/components/signInButton";
@@ -18,146 +20,72 @@ import SignInButton from "@/components/signInButton";
 export default function Home() {
   return (
     <>
-      <MaxWidthWrapper className="mb-12 sm:mt-28 mt-16 flex flex-col items-center justify-center">
-        <div className="flex flex-col items-center justify-center text-center">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="mb-8 px-4 py-2 flex items-center gap-2 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
-          >
-            <BookOpen className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Document Intelligence Platform
-            </span>
-          </motion.div>
+      <MaxWidthWrapper className="mb-12 sm:mt-24 mt-14 flex flex-col items-center justify-center">
+        {/* HERO */}
+        <div className="relative w-full overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-gradient-to-b from-white via-white to-blue-50/40 dark:from-gray-900 dark:via-gray-900 dark:to-blue-950/20">
+          <div className="pointer-events-none absolute inset-0 -z-10 select-none">
+            <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full blur-3xl bg-blue-300/30 dark:bg-blue-700/20" />
+            <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full blur-3xl bg-indigo-300/30 dark:bg-indigo-700/20" />
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex flex-col justify-center items-center max-w-4xl mx-auto"
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="flex flex-col mb-12"
-            >
-              <h1 className="text-5xl sm:text-6xl max-md:text-4xl font-bold mb-6 text-gray-900 dark:text-gray-100 leading-tight">
-                Your documents deserve
-                <span className="text-blue-600 dark:text-blue-400">
-                  {" "}
-                  smarter conversations
-                </span>
+          <div className="px-6 sm:px-12 py-12 sm:py-16 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+            <div className="text-left md:pr-6">
+              <div className="inline-flex items-center gap-2 rounded-full border border-blue-200/60 dark:border-blue-900/40 bg-blue-50/60 dark:bg-blue-900/20 px-3 py-1.5 mb-5">
+                <Sparkles className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                <span className="text-[12px] font-medium text-blue-700 dark:text-blue-300">New: grouped citations with exact pages</span>
+              </div>
+              <h1 className="text-5xl sm:text-6xl max-md:text-4xl font-extrabold tracking-tight leading-tight text-gray-900 dark:text-gray-100">
+                Turn PDFs into answers
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-300">in seconds</span>
               </h1>
-              <p className="text-xl max-md:text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-                Upload any PDF and start asking questions immediately. Get
-                accurate answers with precise citations from your documents in
-                seconds.
+              <p className="mt-5 text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-xl">
+                Upload, ask, and trust. Crystal‑clear responses with page‑level citations, built for real work.
               </p>
-            </motion.div>
+              <div className="mt-7 flex items-center gap-3">
+                <SignInButton />
+                <a href="#how-it-works" className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                  See how it works <ArrowRight className="h-4 w-4" />
+                </a>
+              </div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="flex justify-center items-center"
-            >
-              <SignInButton />
-            </motion.div>
-          </motion.div>
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-20 w-full max-w-6xl"
-        >
-          <div className="relative w-full h-[400px] sm:h-[500px] rounded-xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-            <div className="absolute inset-0">
-              <div className="flex w-full h-full">
-                {/* PDF Viewer Side */}
-                <div className="w-2/5 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 flex flex-col">
-                  <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-200 dark:border-gray-600">
-                    <div className="h-8 w-8 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                      <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        Research Paper.pdf
-                      </span>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        42 pages
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex-1 bg-white dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600 overflow-hidden relative">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center">
-                        <FileText className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                          PDF Document
-                        </span>
+            {/* Mock preview */}
+            <div className="relative">
+              <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 shadow-lg backdrop-blur p-4">
+                <div className="grid grid-cols-5 gap-4">
+                  <div className="col-span-2 rounded-lg border border-gray-200 dark:border-gray-800 p-4 bg-gray-50 dark:bg-gray-800">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="h-6 w-6 rounded bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+                        <FileText className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                       </div>
+                      <span className="text-xs text-gray-600 dark:text-gray-300">Paper.pdf</span>
                     </div>
+                    <div className="h-40 rounded border border-dashed border-gray-300 dark:border-gray-700" />
                   </div>
-                </div>
-
-                {/* Chat Side */}
-                <div className="w-3/5 bg-white dark:bg-gray-900 p-4 flex flex-col">
-                  <div className="flex-1 flex flex-col space-y-4 overflow-hidden">
-                    <div className="flex items-start">
-                      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 max-w-[85%] border border-gray-200 dark:border-gray-700">
-                        <p className="text-sm text-gray-800 dark:text-gray-200">
-                          What are the main conclusions from this study?
-                        </p>
-                      </div>
+                  <div className="col-span-3 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+                    <div className="space-y-3">
+                      <div className="w-3/4 h-5 rounded bg-gray-100 dark:bg-gray-800" />
+                      <div className="w-5/6 h-4 rounded bg-gray-100 dark:bg-gray-800" />
+                      <div className="w-2/3 h-4 rounded bg-gray-100 dark:bg-gray-800" />
                     </div>
-                    <div className="flex items-start justify-end">
-                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 max-w-[85%] border border-blue-200 dark:border-blue-800">
-                        <p className="text-sm text-gray-800 dark:text-gray-200 mb-3">
-                          The study concludes that implementing automated
-                          document analysis reduces processing time by 73% while
-                          maintaining 95% accuracy in information extraction.
-                        </p>
-                        <div className="text-xs text-blue-700 dark:text-blue-300 pt-2 border-t border-blue-200 dark:border-blue-700">
-                          <p className="flex items-center gap-1">
-                            <span className="font-medium">Source:</span>
-                            <span>Page 38, Abstract & Conclusions</span>
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 rounded-lg px-4 py-3 border border-gray-200 dark:border-gray-700">
-                      <input
-                        type="text"
-                        placeholder="Ask anything about your document..."
-                        className="bg-transparent border-none flex-1 focus:outline-none text-sm text-gray-700 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400"
-                        disabled
-                      />
-                      <button
-                        disabled
-                        className="text-blue-600 dark:text-blue-400 p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                      >
-                        <MessageCircle className="h-4 w-4" />
-                      </button>
+                    <div className="mt-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-3 text-[12px] text-blue-900 dark:text-blue-200">
+                      Summarized answer with grouped citations [Page 12, Page 13]
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
+
+        {/* anchor retained for hero link but duplicate demo removed */}
+        <div id="how-it-works" className="mt-4" />
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.7 }}
-          className="mt-24 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8"
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="mt-24 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8"
         >
           {[
             {
@@ -184,7 +112,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
-              className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 hover:shadow-md h-full flex flex-col"
+              className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:-translate-y-0.5 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 hover:shadow-md h-full flex flex-col"
             >
               <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg w-fit mb-4">
                 <feature.icon className="h-6 w-6 text-blue-600 dark:text-blue-400" />

@@ -32,17 +32,29 @@ export async function searchDocumentContext(
       SEARCH_RESULTS_LIMIT
     );
 
+    console.log(results);
+
+    const resolvePageNumber = (meta: any): string | undefined => {
+      if (!meta) return undefined;
+      if (meta.pageNumber) return String(meta.pageNumber);
+      if (meta["loc.pageNumber"]) return String(meta["loc.pageNumber"]);
+      if (meta.loc && typeof meta.loc === "object" && meta.loc.pageNumber) {
+        return String(meta.loc.pageNumber);
+      }
+      return undefined;
+    };
+
     const documentContext = results
       .map((result, index) => {
         const content = result.pageContent || "";
-        const source = result.metadata?.source || fileName || fileId;
-        const pageNum = result.metadata?.pageNumber
-          ? ` (Page ${result.metadata.pageNumber})`
-          : "";
+        const source =
+          (result.metadata?.source as string) || fileName || fileId;
+        const pageNum = resolvePageNumber(result.metadata);
+        const pageTag = pageNum ? ` (Page ${pageNum})` : "";
 
         return `--- Document Chunk ${
           index + 1
-        } from ${source}${pageNum} ---\n${content}`;
+        } from ${source}${pageTag} ---\n${content}`;
       })
       .join("\n\n");
 

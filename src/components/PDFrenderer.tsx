@@ -9,6 +9,7 @@ import {
   Search,
   ZoomIn,
   ZoomOut,
+  Download,
 } from "lucide-react";
 import { Document, Page, pdfjs } from "react-pdf";
 
@@ -32,9 +33,10 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 
 interface PDFRendererProps {
   url: string;
+  downloadHref?: string;
 }
 
-export default function PDFrenderer({ url }: PDFRendererProps) {
+export default function PDFrenderer({ url, downloadHref }: PDFRendererProps) {
   const [numPages, setNumPages] = useState(1);
   const [pageNumber, setPageNumber] = useState(1);
   const [zoom, setZoom] = useState(1);
@@ -164,6 +166,18 @@ export default function PDFrenderer({ url }: PDFRendererProps) {
             aria-label="Rotate 90 degrees"
           >
             <RotateCw className="h-3.5 w-3.5" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2"
+            asChild
+            aria-label="Download PDF"
+          >
+            <a href={downloadHref || url} download>
+              <Download className="h-3.5 w-3.5" />
+            </a>
           </Button>
 
           <PDFfullscreen url={url} />

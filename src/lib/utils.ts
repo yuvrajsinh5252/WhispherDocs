@@ -15,13 +15,17 @@ export function absoluteUrl(path: string) {
 }
 
 export const SEO_CONFIG = {
-  siteName: "WhispherDocs",
-  siteUrl: "https://whispherdocs.yuvrajsinh.dev",
-  defaultTitle: "WhispherDocs - Chat with Your Documents Intelligently",
+  siteName: process.env.NEXT_PUBLIC_SITE_NAME || "WhispherDocs",
+  siteUrl:
+    process.env.NEXT_PUBLIC_SITE_URL || "https://whispherdocs.yuvrajsinh.dev",
+  defaultTitle:
+    process.env.NEXT_PUBLIC_DEFAULT_TITLE ||
+    "WhispherDocs - Chat with Your Documents Intelligently",
   defaultDescription:
+    process.env.NEXT_PUBLIC_DEFAULT_DESCRIPTION ||
     "Get instant, accurate answers from your PDFs using advanced AI technology. Upload documents and chat naturally with your content.",
-  defaultImage: "/thumbnail.png",
-  twitterHandle: "@yuvrajsinh099",
+  defaultImage: process.env.NEXT_PUBLIC_DEFAULT_IMAGE || "/thumbnail.png",
+  twitterHandle: process.env.NEXT_PUBLIC_TWITTER_HANDLE || "@yuvrajsinh099",
   keywords: [
     "PDF chat",
     "document AI",
@@ -140,7 +144,9 @@ export function constructMetadata({
       },
     }),
     verification: {
-      google: "PGoceaWXj9AkjGmmKyMlP-Ns9EoR_rb_j4exhV6gR60",
+    google:
+      process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ||
+      "PGoceaWXj9AkjGmmKyMlP-Ns9EoR_rb_j4exhV6gR60",
     },
   };
 

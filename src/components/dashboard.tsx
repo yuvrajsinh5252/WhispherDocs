@@ -16,6 +16,7 @@ import {
   FileArchive,
   SortAsc,
   SortDesc,
+  Download,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
@@ -247,8 +248,17 @@ const DashboardComponent = () => {
                       target="_blank"
                       rel="noreferrer"
                       className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      aria-label="Open in new tab"
                     >
                       <FileText className="h-4 w-4 text-gray-500" />
+                    </a>
+
+                    <a
+                      href={`/api/files/${file.id}/download`}
+                      className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      aria-label="Download"
+                    >
+                      <Download className="h-4 w-4 text-gray-500" />
                     </a>
 
                     <Button

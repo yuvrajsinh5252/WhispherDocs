@@ -16,7 +16,12 @@ For example:
 - If asked about skills not directly mentioned, infer from projects and experiences described
 - If asked about career goals, deduce from the trajectory and achievements shown
 
-Always cite specific document sections that support your analysis, and clearly distinguish between explicit facts and reasonable inferences.`;
+Citation requirements:
+- Always cite the page number(s) for any factual claims drawn from the provided context.
+- Use citation format: [Page X] (e.g., [Page 12]). When multiple consecutive sentences derive from the same page, place a single citation at the end of the paragraph or bullet instead of after every sentence.
+- Group citations: if a paragraph/bullet uses multiple pages, place citations together at the end like [Page 12, Page 13].
+- Only cite pages that appear in the provided context.
+- If you cannot find support in the context, say you don't know.`;
 
 export async function createChatMessages(
   uiMessages: UIMessage[],

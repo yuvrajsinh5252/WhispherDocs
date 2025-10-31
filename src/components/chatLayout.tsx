@@ -28,7 +28,10 @@ export function ChatLayout(
         className="relative flex flex-col sm:min-h-0"
       >
         <div className="absolute inset-0 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-          <PDFrenderer url={props.file.url} />
+          <PDFrenderer
+            url={props.file.url}
+            downloadHref={`/api/files/${props.file.id}/download`}
+          />
         </div>
       </ResizablePanel>
 

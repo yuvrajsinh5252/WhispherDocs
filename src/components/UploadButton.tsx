@@ -109,7 +109,9 @@ const UploadDropZone = () => {
                   or
                   <span className="text-blue-500">drag and drop</span>
                 </p>
-                <p className="text-gray-400">PDF (upto 4MB)</p>
+                <p className="text-gray-400">
+                  PDF (upto {process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE_MB}MB)
+                </p>
                 {acceptedFiles && acceptedFiles[0] ? (
                   <div className="flex justify-center items-center gap-2 border-2 rounded-lg p-2 border-black-300 bg-white">
                     <File size={24} className="text-zinc-500" />
